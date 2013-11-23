@@ -8,7 +8,7 @@ module ListZipper
    , write , modify
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
-   , zipApply
+   , zipLoeb
    ) where
 
 import Control.Applicative
@@ -42,14 +42,12 @@ zipper i lefts cursor rights = ILZ i (cycle lefts) cursor (cycle rights)
 zipperOf :: i -> a -> Z1 i a
 zipperOf i a = zipper i [a] a [a]
 
-zipL :: Enum i => Z1 i a -> Z1 i a
-zipL (ILZ i (left : lefts) cursor rights) =
-   ILZ (pred i) lefts left (cursor : rights)
+zipL, zipR :: Enum i => Z1 i a -> Z1 i a
+
+zipL (ILZ i (left : lefts) cursor rights) = ILZ (pred i) lefts left (cursor : rights)
 zipL _ = error "zipL of non-infinite zipper; the impossible has occurred"
 
-zipR :: Enum i => Z1 i a -> Z1 i a
-zipR (ILZ i lefts cursor (right : rights)) =
-   ILZ (succ i) (cursor : lefts) right rights
+zipR (ILZ i lefts cursor (right : rights)) = ILZ (succ i) (cursor : lefts) right rights
 zipR _ = error "zipR of non-infinite zipper; the impossible has occurred"
 
 zipTo :: (Enum i, Ord i) => i -> Z1 i a -> Z1 i a
@@ -78,37 +76,23 @@ modify f = write <$> f . view <*> id
 window :: Int -> Int -> Z1 i a -> [a]
 window leftCount rightCount =
    (++) <$> reverse . take leftCount . viewL
-        <*> ((:) <$> view
-                 <*> take rightCount . viewR)
+        <*> ((:) <$> view <*> take rightCount . viewR)
 
-insertR :: a -> Z1 i a -> Z1 i a
-insertR x (ILZ i lefts cursor rights) =
-   ILZ i lefts cursor (x : rights)
+insertR, insertL :: a -> Z1 i a -> Z1 i a
+insertR x (ILZ i lefts cursor rights) = ILZ i lefts cursor (x : rights)
+insertL x (ILZ i lefts cursor rights) = ILZ i (x : lefts) cursor rights
 
-insertL :: a -> Z1 i a -> Z1 i a
-insertL x (ILZ i lefts cursor rights) =
-   ILZ i (x : lefts) cursor rights
+insertListR, insertListL :: [a] -> Z1 i a -> Z1 i a
+insertListR list (ILZ i lefts cursor rights) = ILZ i lefts cursor (list ++ rights)
+insertListL list (ILZ i lefts cursor rights) = ILZ i (list ++ lefts) cursor rights
 
-insertListR :: [a] -> Z1 i a -> Z1 i a
-insertListR list (ILZ i lefts cursor rights) =
-   ILZ i lefts cursor (list ++ rights)
-
-insertListL :: [a] -> Z1 i a -> Z1 i a
-insertListL list (ILZ i lefts cursor rights) =
-   ILZ i (list ++ lefts) cursor rights
-
-deleteL :: Z1 i a -> Z1 i a
-deleteL (ILZ i (left : lefts) cursor rights) = ILZ i lefts left rights
-
-deleteR :: Z1 i a -> Z1 i a
+deleteL, deleteR :: Z1 i a -> Z1 i a
+deleteL (ILZ i (left : lefts) cursor rights)  = ILZ i lefts left rights
 deleteR (ILZ i lefts cursor (right : rights)) = ILZ i lefts right rights
 
-zipApply :: Enum i => Z1 j (Z1 i a -> b) -> Z1 i a -> Z1 i b
-zipApply fs =
+zipLoeb :: Enum i => Z1 j (Z1 i a -> a) -> Z1 i a
+zipLoeb fs = fix $
    ILZ <$> index
        <*> zipWith ($) (viewL fs) . tail . iterate zipL
        <*>              view  fs
        <*> zipWith ($) (viewR fs) . tail . iterate zipR
-
-zipLoeb :: Enum i => Z1 i (Z1 i a -> a) -> Z1 i a
-zipLoeb = fix . zipApply

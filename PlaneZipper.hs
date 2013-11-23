@@ -49,32 +49,27 @@ modifyCell f = writeCell <$> f . viewCell <*> id
 writeRow :: Z1 c a -> Z2 c r a -> Z2 c r a
 writeRow = write
 
-insertRowD :: Z1 c a -> Z2 c r a -> Z2 c r a
-insertRowD = insertR
-
-insertRowU :: Z1 c a -> Z2 c r a -> Z2 c r a
-insertRowU = insertL
-
-deleteRowD :: Z2 c r a -> Z2 c r a
-deleteRowD = deleteR
-
-deleteRowU :: Z2 c r a -> Z2 c r a
-deleteRowU = deleteL
-
 writeCol :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
 writeCol c plane = write <$> c <*> plane
 
-insertColR :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
+insertRowU, insertRowD :: Z1 c a -> Z2 c r a -> Z2 c r a
+insertRowU = insertL
+insertRowD = insertR
+
+deleteRowD, deleteRowU :: Z2 c r a -> Z2 c r a
+deleteRowD = deleteR
+deleteRowU = deleteL
+
+insertColL, insertColR :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
+insertColL c plane = insertL <$> c <*> plane
 insertColR c plane = insertR <$> c <*> plane
 
-insertColL :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
-insertColL c plane = insertL <$> c <*> plane
-
-deleteColL :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
+deleteColL, deleteColR :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
 deleteColL = fmap deleteL
-
-deleteColR :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
 deleteColR = fmap deleteR
+
+--insertCellD, insertCellU, insertCellR, insertCellL
+--deleteCellD, deleteCellU, deleteCellR, deleteCellL
 
 -- Some example zippers for testing...
 preview2D = window2D 2 2 2 2
