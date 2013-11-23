@@ -1,81 +1,99 @@
-module ListZipper
-   ( ListZipper
+{-# LANGUAGE BangPatterns #-}
+
+module IndexedListZipper
+   ( IndexedListZipper
    , listZipper
-   , zipL , zipR
-   , insertL , insertR
-   , deleteL , deleteR
-   , viewL , viewR , view , window
+   , zipL , zipR , zipTo
+   , write , insertL , insertR , deleteL , deleteR
+   , insertListR , insertListL
+   , viewL , viewR , view , index , window
+   , zipLoeb
    ) where
 
 import Control.Applicative
 import Control.Arrow
 import Data.List
+import Data.Function
+import Data.Maybe
 
-data ListZipper a = LZ [a] a [a]
+data IndexedListZipper i a = ILZ !i [a] a [a]
 
-instance Functor ListZipper where
-   fmap f = LZ <$> fmap f . viewL
-               <*>      f . view
-               <*> fmap f . viewR
+instance Functor (IndexedListZipper i) where
+   fmap f = ILZ <$> index
+                <*> fmap f . viewL
+                <*>      f . view
+                <*> fmap f . viewR
 
-instance Applicative ListZipper where
+instance (Enum i, Ord i) => Applicative (IndexedListZipper i) where
    fs <*> xs =
-      LZ (zipWith ($) (viewL fs) (viewL xs))
-                      (view  fs $ view  xs)
-         (zipWith ($) (viewR fs) (viewR xs))
-   pure = listZipper <$> (:[]) <*> id <*> (:[])
+      ILZ (index fs)
+          (zipWith ($) (viewL fs) (viewL xs'))
+                       (view  fs $ view  xs')
+          (zipWith ($) (viewR fs) (viewR xs'))
+      where xs' = zipTo (index fs) xs
+   -- In the case of bounded lists, the (toEnum 0) might be a problem...
+   pure = listZipper (toEnum 0) <$> (:[]) <*> id <*> (:[])
 
-listZipper :: [a] -> a -> [a] -> ListZipper a
-listZipper lefts cursor rights = LZ (cycle lefts) cursor (cycle rights)
+listZipper :: i -> [a] -> a -> [a] -> IndexedListZipper i a
+listZipper i lefts cursor rights = ILZ i (cycle lefts) cursor (cycle rights)
 
-zipL :: ListZipper a -> ListZipper a
-zipL (LZ (left : lefts) cursor rights) =
-   LZ lefts left (cursor : rights)
+zipL :: (Enum i) => IndexedListZipper i a -> IndexedListZipper i a
+zipL (ILZ i (left : lefts) cursor rights) =
+   ILZ (pred i) lefts left (cursor : rights)
 
-zipR :: ListZipper a -> ListZipper a
-zipR (LZ lefts cursor (right : rights)) =
-   LZ (cursor : lefts) right rights
+zipR :: (Enum i) => IndexedListZipper i a -> IndexedListZipper i a
+zipR (ILZ i lefts cursor (right : rights)) =
+   ILZ (succ i) (cursor : lefts) right rights
 
-viewL :: ListZipper a -> [a]
-viewL (LZ lefts cursor rights) = lefts
+zipTo :: (Enum i, Ord i) => i -> IndexedListZipper i a -> IndexedListZipper i a
+zipTo i z | i < index z = zipTo i $! zipL z
+zipTo i z | i > index z = zipTo i $! zipR z
+zipTo i z | otherwise   = z
 
-viewR :: ListZipper a -> [a]
-viewR (LZ lefts cursor rights) = rights
+viewL :: IndexedListZipper i a -> [a]
+viewL (ILZ _ lefts _ _) = lefts
 
-view :: ListZipper a -> a
-view (LZ lefts cursor rights) = cursor
+viewR :: IndexedListZipper i a -> [a]
+viewR (ILZ _ _ _ rights) = rights
 
-write :: a -> ListZipper a -> ListZipper a
-write cursor (LZ lefts _ rights) = LZ lefts cursor rights
+view :: IndexedListZipper i a -> a
+view (ILZ _ _ cursor _) = cursor
 
-window :: Int -> Int -> ListZipper a -> [a]
+index :: IndexedListZipper i a -> i
+index (ILZ i _ _ _) = i
+
+write :: a -> IndexedListZipper i a -> IndexedListZipper i a
+write cursor (ILZ i lefts _ rights) = ILZ i lefts cursor rights
+
+window :: Int -> Int -> IndexedListZipper i a -> [a]
 window leftCount rightCount =
    (++) <$> reverse . take leftCount . viewL
         <*> ((:) <$> view
                  <*> take rightCount . viewR)
 
-insertR :: a -> ListZipper a -> ListZipper a
-insertR x (LZ lefts cursor rights) = LZ lefts x (cursor : rights)
+insertR :: a -> IndexedListZipper i a -> IndexedListZipper i a
+insertR x (ILZ i lefts cursor rights) = ILZ i lefts x (cursor : rights)
 
-insertL :: a -> ListZipper a -> ListZipper a
-insertL x (LZ lefts cursor rights) = LZ (cursor : lefts) x rights
+insertL :: a -> IndexedListZipper i a -> IndexedListZipper i a
+insertL x (ILZ i lefts cursor rights) = ILZ i (cursor : lefts) x rights
 
-insertListR :: [a] -> ListZipper a -> ListZipper a
-insertListR list (LZ lefts cursor rights) =
-   LZ lefts (head list) (tail list ++ cursor : rights)
+insertListR :: [a] -> IndexedListZipper i a -> IndexedListZipper i a
+insertListR list (ILZ i lefts cursor rights) =
+   ILZ i lefts (head list) (tail list ++ cursor : rights)
 
-insertListL :: [a] -> ListZipper a -> ListZipper a
-insertListL list (LZ lefts cursor rights) =
-   LZ (tail list ++ cursor : lefts) (head list) rights
+insertListL :: [a] -> IndexedListZipper i a -> IndexedListZipper i a
+insertListL list (ILZ i lefts cursor rights) =
+   ILZ i (tail list ++ cursor : lefts) (head list) rights
 
-deleteL :: ListZipper a -> ListZipper a
-deleteL (LZ (left : lefts) cursor rights) = LZ lefts left rights
+deleteL :: IndexedListZipper i a -> IndexedListZipper i a
+deleteL (ILZ i (left : lefts) cursor rights) = ILZ i lefts left rights
 
-deleteR :: ListZipper a -> ListZipper a
-deleteR (LZ lefts cursor (right : rights)) = LZ lefts right rights
+deleteR :: IndexedListZipper i a -> IndexedListZipper i a
+deleteR (ILZ i lefts cursor (right : rights)) = ILZ i lefts right rights
 
-zipLoeb :: ListZipper (ListZipper a -> a) -> ListZipper a
-zipLoeb fs =
-   go where go = LZ <$> zipWith ($) (viewL fs) . tail . iterate zipL
-                    <*>              view  fs
-                    <*> zipWith ($) (viewR fs) . tail . iterate zipR $ go
+zipLoeb :: Enum i => IndexedListZipper i (IndexedListZipper i a -> a) -> IndexedListZipper i a
+zipLoeb fs = fix $
+   ILZ <$> index
+       <*> zipWith ($) (viewL fs) . tail . iterate zipL
+       <*>              view  fs
+       <*> zipWith ($) (viewR fs) . tail . iterate zipR
