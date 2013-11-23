@@ -82,18 +82,20 @@ window leftCount rightCount =
                  <*> take rightCount . viewR)
 
 insertR :: a -> Z1 i a -> Z1 i a
-insertR x (ILZ i lefts cursor rights) = ILZ i lefts x (cursor : rights)
+insertR x (ILZ i lefts cursor rights) =
+   ILZ i lefts cursor (x : rights)
 
 insertL :: a -> Z1 i a -> Z1 i a
-insertL x (ILZ i lefts cursor rights) = ILZ i (cursor : lefts) x rights
+insertL x (ILZ i lefts cursor rights) =
+   ILZ i (x : lefts) cursor rights
 
 insertListR :: [a] -> Z1 i a -> Z1 i a
 insertListR list (ILZ i lefts cursor rights) =
-   ILZ i lefts (head list) (tail list ++ cursor : rights)
+   ILZ i lefts cursor (list ++ rights)
 
 insertListL :: [a] -> Z1 i a -> Z1 i a
 insertListL list (ILZ i lefts cursor rights) =
-   ILZ i (tail list ++ cursor : lefts) (head list) rights
+   ILZ i (list ++ lefts) cursor rights
 
 deleteL :: Z1 i a -> Z1 i a
 deleteL (ILZ i (left : lefts) cursor rights) = ILZ i lefts left rights
