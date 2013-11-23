@@ -8,7 +8,7 @@ module IndexedListZipper
    , write , modify
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
-   , zipLoeb
+   , zipApply , zipLoeb
    ) where
 
 import Control.Applicative
@@ -27,10 +27,9 @@ instance Functor (IndexedListZipper i) where
 instance (Enum i, Ord i) => Applicative (IndexedListZipper i) where
    fs <*> xs =
       ILZ (index fs)
-          (zipWith ($) (viewL fs) (viewL xs'))
-                       (view  fs $ view  xs')
-          (zipWith ($) (viewR fs) (viewR xs'))
-      where xs' = zipTo (index fs) xs
+          (zipWith ($) (viewL fs) (viewL xs))
+                       (view  fs $ view  xs)
+          (zipWith ($) (viewR fs) (viewR xs))
    -- In the case of bounded types, the (toEnum 0) might be a problem...
    pure = listZipper (toEnum 0) <$> (:[]) <*> id <*> (:[])
 
@@ -94,9 +93,12 @@ deleteL (ILZ i (left : lefts) cursor rights) = ILZ i lefts left rights
 deleteR :: IndexedListZipper i a -> IndexedListZipper i a
 deleteR (ILZ i lefts cursor (right : rights)) = ILZ i lefts right rights
 
-zipLoeb :: Enum i => IndexedListZipper i (IndexedListZipper i a -> a) -> IndexedListZipper i a
-zipLoeb fs = fix $
+zipApply :: Enum i => IndexedListZipper j (IndexedListZipper i a -> b) -> IndexedListZipper i a -> IndexedListZipper i b
+zipApply fs =
    ILZ <$> index
        <*> zipWith ($) (viewL fs) . tail . iterate zipL
        <*>              view  fs
        <*> zipWith ($) (viewR fs) . tail . iterate zipR
+
+zipLoeb :: Enum i => IndexedListZipper i (IndexedListZipper i a -> a) -> IndexedListZipper i a
+zipLoeb = fix . zipApply
