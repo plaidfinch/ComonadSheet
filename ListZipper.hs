@@ -4,9 +4,10 @@ module IndexedListZipper
    ( IndexedListZipper
    , listZipper
    , zipL , zipR , zipTo
-   , write , insertL , insertR , deleteL , deleteR
-   , insertListR , insertListL
    , viewL , viewR , view , index , window
+   , write , modify
+   , insertL , insertR , deleteL , deleteR
+   , insertListR , insertListL
    , zipLoeb
    ) where
 
@@ -14,7 +15,6 @@ import Control.Applicative
 import Control.Arrow
 import Data.List
 import Data.Function
-import Data.Maybe
 
 data IndexedListZipper i a = ILZ !i [a] a [a]
 
@@ -31,7 +31,7 @@ instance (Enum i, Ord i) => Applicative (IndexedListZipper i) where
                        (view  fs $ view  xs')
           (zipWith ($) (viewR fs) (viewR xs'))
       where xs' = zipTo (index fs) xs
-   -- In the case of bounded lists, the (toEnum 0) might be a problem...
+   -- In the case of bounded types, the (toEnum 0) might be a problem...
    pure = listZipper (toEnum 0) <$> (:[]) <*> id <*> (:[])
 
 listZipper :: i -> [a] -> a -> [a] -> IndexedListZipper i a
@@ -64,6 +64,9 @@ index (ILZ i _ _ _) = i
 
 write :: a -> IndexedListZipper i a -> IndexedListZipper i a
 write cursor (ILZ i lefts _ rights) = ILZ i lefts cursor rights
+
+modify :: (a -> a) -> IndexedListZipper i a -> IndexedListZipper i a
+modify f = write <$> f . view <*> id
 
 window :: Int -> Int -> IndexedListZipper i a -> [a]
 window leftCount rightCount =
