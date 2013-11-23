@@ -2,7 +2,7 @@
 
 module ListZipper
    ( Z1
-   , listZipper
+   , zipper , zipperOf
    , zipL , zipR , zipTo
    , viewL , viewR , view , index , window
    , write , modify
@@ -16,6 +16,9 @@ import Control.Arrow
 import Data.List
 import Data.Function
 
+-- 1-D zippers...
+
+-- | One-dimensional list zipper
 data Z1 i a = ILZ !i [a] a [a]
 
 instance Functor (Z1 i) where
@@ -30,22 +33,24 @@ instance (Enum i, Ord i) => Applicative (Z1 i) where
           (zipWith ($) (viewL fs) (viewL xs))
                        (view  fs $ view  xs)
           (zipWith ($) (viewR fs) (viewR xs))
-   -- In the case of bounded types, the (toEnum 0) might be a problem...
-   pure = listZipper (toEnum 0) <$> (:[]) <*> id <*> (:[])
+   -- In the case of bounded types, the (toEnum 0) might be a problem; use zipperOf to specify a custom starting index for the zipper
+   pure = zipperOf (toEnum 0)
 
-listZipper :: i -> [a] -> a -> [a] -> Z1 i a
-listZipper i lefts cursor rights = ILZ i (cycle lefts) cursor (cycle rights)
+zipper :: i -> [a] -> a -> [a] -> Z1 i a
+zipper i lefts cursor rights = ILZ i (cycle lefts) cursor (cycle rights)
 
 zipperOf :: i -> a -> Z1 i a
-zipperOf i a = listZipper i [a] a [a]
+zipperOf i a = zipper i [a] a [a]
 
-zipL :: (Enum i) => Z1 i a -> Z1 i a
+zipL :: Enum i => Z1 i a -> Z1 i a
 zipL (ILZ i (left : lefts) cursor rights) =
    ILZ (pred i) lefts left (cursor : rights)
+zipL _ = error "zipL of non-infinite zipper; the impossible has occurred"
 
-zipR :: (Enum i) => Z1 i a -> Z1 i a
+zipR :: Enum i => Z1 i a -> Z1 i a
 zipR (ILZ i lefts cursor (right : rights)) =
    ILZ (succ i) (cursor : lefts) right rights
+zipR _ = error "zipR of non-infinite zipper; the impossible has occurred"
 
 zipTo :: (Enum i, Ord i) => i -> Z1 i a -> Z1 i a
 zipTo i z | i < index z = zipTo i $! zipL z
