@@ -3,78 +3,77 @@ module PlaneZipper where
 import ListZipper
 
 import Control.Applicative
-import Control.Arrow
+import Control.Arrow hiding (left, right)
 
--- 2-D zippers...
+-- | 2-dimensional zippers are nested list zippers
+type Z2 c r a = Z1 r (Z1 c a)
 
-type Z2 i j a = Z1 j (Z1 i a)
+up :: Enum r => Z2 c r a -> Z2 c r a
+up = zipL
 
-zipU :: Enum i => Z2 i j a -> Z2 i j a
-zipU = fmap zipL
+down :: Enum r => Z2 c r a -> Z2 c r a
+down = zipR
 
-zipD :: Enum i => Z2 i j a -> Z2 i j a
-zipD = fmap zipR
+left :: Enum c => Z2 c r a -> Z2 c r a
+left = fmap zipL
 
-zipToRow :: (Ord i, Enum i) => i -> Z2 i j a -> Z2 i j a
-zipToRow i z | i < fst (indexCell z) = zipToRow i $! zipU z
-zipToRow i z | i > fst (indexCell z) = zipToRow i $! zipD z
-zipToRow i z | otherwise             = z
+right :: Enum c => Z2 c r a -> Z2 c r a
+right = fmap zipR
 
-zipToCol :: (Ord j, Enum j) => j -> Z2 i j a -> Z2 i j a
-zipToCol = zipTo
+zipToCol :: (Ord c, Enum c) => c -> Z2 c r a -> Z2 c r a
+zipToCol c z | c < fst (indexCell z) = zipToCol c $! left  z
+zipToCol c z | c > fst (indexCell z) = zipToCol c $! right z
+zipToCol c z | otherwise             = z
 
-zipToCell :: (Ord i, Ord j, Enum i, Enum j) => (i,j) -> Z2 i j a -> Z2 i j a
-zipToCell (i,j) = zipToCol j . zipToRow i
+zipToRow :: (Ord r, Enum r) => r -> Z2 c r a -> Z2 c r a
+zipToRow = zipTo
 
-viewU :: Enum i => Z2 i j a -> Z1 j [a]
-viewU = fmap viewL
+zipToCell :: (Ord c, Ord r, Enum c, Enum r) => (r,c) -> Z2 c r a -> Z2 c r a
+zipToCell (r,c) = zipToCol c . zipToRow r
 
-viewD :: Enum i => Z2 i j a -> Z1 j [a]
-viewD = fmap viewR
-
-viewCell :: Z2 i j a -> a
+viewCell :: Z2 c r a -> a
 viewCell = view . view
 
-window2D :: Int -> Int -> Int -> Int -> Z2 i j a -> [[a]]
+window2D :: Int -> Int -> Int -> Int -> Z2 c r a -> [[a]]
 window2D u d l r = window u d . fmap (window l r)
 
-indexCell :: Z2 i j a -> (i,j)
+indexCell :: Z2 c r a -> (c,r)
 indexCell = (index . view &&& index)
 
-writeCell :: a -> Z2 i j a -> Z2 i j a
+writeCell :: a -> Z2 c r a -> Z2 c r a
 writeCell a = modify (write a)
 
-modifyCell :: (a -> a) -> Z2 i j a -> Z2 i j a
+modifyCell :: (a -> a) -> Z2 c r a -> Z2 c r a
 modifyCell f = writeCell <$> f . viewCell <*> id
 
-writeRow :: Z1 i a -> Z2 i j a -> Z2 i j a
+writeRow :: Z1 c a -> Z2 c r a -> Z2 c r a
 writeRow = write
 
-insertRowD :: Z1 i a -> Z2 i j a -> Z2 i j a
+insertRowD :: Z1 c a -> Z2 c r a -> Z2 c r a
 insertRowD = insertR
 
-insertRowU :: Z1 i a -> Z2 i j a -> Z2 i j a
+insertRowU :: Z1 c a -> Z2 c r a -> Z2 c r a
 insertRowU = insertL
 
-deleteRowD :: Z2 i j a -> Z2 i j a
+deleteRowD :: Z2 c r a -> Z2 c r a
 deleteRowD = deleteR
 
-deleteRowU :: Z2 i j a -> Z2 i j a
+deleteRowU :: Z2 c r a -> Z2 c r a
 deleteRowU = deleteL
 
-writeCol :: (Ord j, Enum j) => Z1 j a -> Z2 i j a -> Z2 i j a
-writeCol col plane = write <$> col <*> plane
+writeCol :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
+writeCol c plane = write <$> c <*> plane
 
-insertColR :: (Ord j, Enum j) => Z1 j a -> Z2 i j a -> Z2 i j a
-insertColR col plane = insertR <$> col <*> plane
+insertColR :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
+insertColR c plane = insertR <$> c <*> plane
 
-insertColL :: (Ord j, Enum j) => Z1 j a -> Z2 i j a -> Z2 i j a
-insertColL col plane = insertL <$> col <*> plane
+insertColL :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
+insertColL c plane = insertL <$> c <*> plane
 
-deleteColL :: (Ord j, Enum j) => Z2 i j a -> Z2 i j a
+deleteColL :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
 deleteColL = fmap deleteL
 
-deleteColR :: (Ord j, Enum j) => Z2 i j a -> Z2 i j a
+deleteColR :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
 deleteColR = fmap deleteR
 
 -- Some example zippers for testing...
