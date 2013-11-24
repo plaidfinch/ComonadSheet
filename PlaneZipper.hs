@@ -75,8 +75,25 @@ deleteColL, deleteColR :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
 deleteColL = fmap deleteL
 deleteColR = fmap deleteR
 
---insertCellD, insertCellU, insertCellR, insertCellL
---deleteCellD, deleteCellU, deleteCellR, deleteCellL
+insertCellD, insertCellU :: (Ord r, Enum r) => a -> Z2 c r a -> Z2 c r a
+insertCellD = modifyCol . insertR
+insertCellU = modifyCol . insertL
+
+insertCellR, insertCellL :: (Ord c, Enum c) => a -> Z2 c r a -> Z2 c r a
+insertCellR = modifyRow . insertR
+insertCellL = modifyRow . insertL
+
+deleteCellD, deleteCellU :: (Ord r, Enum r) => Z2 c r a -> Z2 c r a
+deleteCellD = modifyCol deleteR
+deleteCellU = modifyCol deleteL
+
+deleteCellR, deleteCellL :: (Ord c, Enum c) => Z2 c r a -> Z2 c r a
+deleteCellR = modifyRow deleteR
+deleteCellL = modifyRow deleteL
+
+--TODO...
+--insertCellsR, insertCellsL, insertCellsU, insertCellsD
+--insertColsR, insertColsL, insertRowsU, insertRowsD
 
 metaZipper2D :: (Enum c, Enum r) => Z2 c r a -> Z2 c r (Z2 c r a)
 metaZipper2D = fmap metaZipperVert . metaZipper
