@@ -4,6 +4,7 @@ import ListZipper
 
 import Control.Applicative
 import Control.Arrow hiding (left, right)
+import Data.Function
 
 -- | 2-dimensional zippers are nested list zippers
 type Z2 c r a = Z1 r (Z1 c a)
@@ -28,8 +29,8 @@ zipToCol c z | otherwise             = z
 zipToRow :: (Ord r, Enum r) => r -> Z2 c r a -> Z2 c r a
 zipToRow = zipTo
 
-zipToCell :: (Ord c, Ord r, Enum c, Enum r) => (r,c) -> Z2 c r a -> Z2 c r a
-zipToCell (r,c) = zipToCol c . zipToRow r
+zipToCell :: (Ord c, Ord r, Enum c, Enum r) => (c,r) -> Z2 c r a -> Z2 c r a
+zipToCell (c,r) = zipToCol c . zipToRow r
 
 viewCell :: Z2 c r a -> a
 viewCell = view . view
@@ -45,6 +46,12 @@ writeCell a = modify (write a)
 
 modifyCell :: (a -> a) -> Z2 c r a -> Z2 c r a
 modifyCell f = writeCell <$> f . viewCell <*> id
+
+modifyRow :: (Z1 c a -> Z1 c a) -> Z2 c r a -> Z2 c r a
+modifyRow = modify
+
+modifyCol :: (Enum r, Ord r) => (Z1 r a -> Z1 r a) -> Z2 c r a -> Z2 c r a
+modifyCol f = writeCol <$> f . fmap view <*> id
 
 writeRow :: Z1 c a -> Z2 c r a -> Z2 c r a
 writeRow = write
@@ -70,6 +77,13 @@ deleteColR = fmap deleteR
 
 --insertCellD, insertCellU, insertCellR, insertCellL
 --deleteCellD, deleteCellU, deleteCellR, deleteCellL
+
+metaZipper2D :: (Enum c, Enum r) => Z2 c r a -> Z2 c r (Z2 c r a)
+metaZipper2D = fmap metaZipperVert . metaZipper
+   where metaZipperVert = zipIterate left right <$> index . view <*> id
+
+zipLoeb2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
+zipLoeb2D fs = fix $ (fmap (<*>) fs <*>) . metaZipper2D
 
 -- Some example zippers for testing...
 preview2D = window2D 2 2 2 2

@@ -2,13 +2,13 @@
 
 module ListZipper
    ( Z1
-   , zipper , zipperOf
+   , zipper , zipperOf , zipIterate
    , zipL , zipR , zipTo
    , viewL , viewR , view , index , window
    , write , modify
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
-   , zipLoeb
+   , metaZipper , zipLoeb
    ) where
 
 import Control.Applicative
@@ -40,7 +40,13 @@ zipper :: i -> [a] -> a -> [a] -> Z1 i a
 zipper i lefts cursor rights = ILZ i (cycle lefts) cursor (cycle rights)
 
 zipperOf :: i -> a -> Z1 i a
-zipperOf i a = zipper i [a] a [a]
+zipperOf = zipIterate id id
+
+zipIterate :: (a -> a) -> (a -> a) -> i -> a -> Z1 i a
+zipIterate prev next i current =
+   ILZ i <$> (tail . iterate prev)
+         <*> id
+         <*> (tail . iterate next) $ current
 
 zipL, zipR :: Enum i => Z1 i a -> Z1 i a
 
@@ -90,9 +96,8 @@ deleteL, deleteR :: Z1 i a -> Z1 i a
 deleteL (ILZ i (left : lefts) cursor rights)  = ILZ i lefts left rights
 deleteR (ILZ i lefts cursor (right : rights)) = ILZ i lefts right rights
 
-zipLoeb :: Enum i => Z1 j (Z1 i a -> a) -> Z1 i a
-zipLoeb fs = fix $
-   ILZ <$> index
-       <*> zipWith ($) (viewL fs) . tail . iterate zipL
-       <*>              view  fs
-       <*> zipWith ($) (viewR fs) . tail . iterate zipR
+metaZipper :: Enum i => Z1 i a -> Z1 i (Z1 i a)
+metaZipper = zipIterate zipL zipR <$> index <*> id
+
+zipLoeb :: (Ord i, Enum i) => Z1 i (Z1 i a -> a) -> Z1 i a
+zipLoeb fs = fix $ (fs <*>) . metaZipper
