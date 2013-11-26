@@ -11,8 +11,8 @@ An infinite spreadsheet listing Fibonacci-like sequences which have a successive
 ```Haskell
 fibLike :: Z2 Integer Integer Integer
 fibLike = evaluate2D $ sheetOf 0 (0,0) $
-           ([1, 1]                    ++ fibRow) :
-    repeat ([1, cell (aboveBy 1) + 1] ++ fibRow)
+           ([1, 1]           ++ fibRow) :
+    repeat ([1, 1 + cell up] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 ```
 

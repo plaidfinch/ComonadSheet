@@ -175,8 +175,8 @@ numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
 
 fibLike :: Z2 Integer Integer Integer
 fibLike = evaluate2D $ sheetOf 0 (0,0) $
-           ([1, 1]                    ++ fibRow) :
-    repeat ([1, cell (aboveBy 1) + 1] ++ fibRow)
+           ([1, 1]           ++ fibRow) :
+    repeat ([1, 1 + cell up] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 pascal :: Z2 Integer Integer Integer
