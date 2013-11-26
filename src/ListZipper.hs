@@ -5,7 +5,7 @@ module ListZipper
    , zipper , zipperOf , zipIterate
    , zipL , zipR , zipTo
    , viewL , viewR , view , index , window
-   , write , modify
+   , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
    , metaZipper , zipLoeb
@@ -75,6 +75,9 @@ index (ILZ i _ _ _) = i
 
 write :: a -> Z1 i a -> Z1 i a
 write cursor (ILZ i lefts _ rights) = ILZ i lefts cursor rights
+
+switch :: Z1 i a -> Z1 i a
+switch (ILZ i lefts cursor rights) = ILZ i rights cursor lefts
 
 modify :: (a -> a) -> Z1 i a -> Z1 i a
 modify f = write <$> f . view <*> id
