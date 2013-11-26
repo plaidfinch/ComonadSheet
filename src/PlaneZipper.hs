@@ -24,8 +24,8 @@ right :: Enum c => Z2 c r a -> Z2 c r a
 right = fmap zipR
 
 zipToCol :: (Ord c, Enum c) => c -> Z2 c r a -> Z2 c r a
-zipToCol c z | c < fst (indexCell z) = zipToCol c $! left  z
-zipToCol c z | c > fst (indexCell z) = zipToCol c $! right z
+zipToCol c z | c < fst (coords z) = zipToCol c $! left  z
+zipToCol c z | c > fst (coords z) = zipToCol c $! right z
 zipToCol c z | otherwise             = z
 
 zipToRow :: (Ord r, Enum r) => r -> Z2 c r a -> Z2 c r a
@@ -47,8 +47,14 @@ rectangle (c,r) (c',r') = fmap (genericTake width  . viewR)
    where width  = toInteger $ abs (c - c')
          height = toInteger $ abs (r - r')
 
-indexCell :: Z2 c r a -> (c,r)
-indexCell = (index . view &&& index)
+coords :: Z2 c r a -> (c,r)
+coords = (col &&& row)
+
+col :: Z2 c r a -> c
+col = index . view
+
+row :: Z2 c r a -> r
+row = index
 
 writeCell :: a -> Z2 c r a -> Z2 c r a
 writeCell a = modify (write a)
@@ -158,10 +164,6 @@ sheetOf :: a -> (c,r) -> [[Z2 c r a -> a]] -> Z2 c r (Z2 c r a -> a)
 sheetOf def = genericSheet insertListR insertListR (const def) id
 
 -- Some example zippers for testing...
-preview2D = window2D 2 2 2 2
-
-ones :: Z1 Integer Integer
-ones = zipperOf 0 1
 
 numberLine :: Z1 Integer Integer
 numberLine = zipper 0 (map negate [1..]) 0 [1..]
@@ -176,3 +178,17 @@ fibs = evaluate2D $ sheetOf 0 (0,0) $
            ([1, 1]                    ++ fibRow) :
     repeat ([1, cell (aboveBy 1) + 1] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
+
+pascal :: Z2 Integer Integer Integer
+pascal = evaluate2D $ sheetOf 0 (0,0) $
+  repeat 1 : repeat (1 : pascalRow)
+  where pascalRow = repeat $ cell up + cell left
+
+pascalLists :: [[Integer]]
+pascalLists = map pascalList [0..]
+   where
+      pascalList n =
+         map viewCell .
+         takeWhile ((>= 0) . row) .
+         iterate (up . right) .
+         at (0,n) $ pascal
