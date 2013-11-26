@@ -138,7 +138,9 @@ metaZipper2D = fmap metaZipperVert . metaZipper
 evaluate2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
 evaluate2D fs = fix $ (fmap (<*>) fs <*>) . metaZipper2D
 
-genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d) -> ([d] -> Z1 c d -> Z1 c d) -> d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
+genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d)
+             -> ([d]      -> Z1 c d   -> Z1 c d)
+             -> d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
 genericSheet colInsert rowInsert def inject (c,r) =
    flip colInsert (zipperOf r (zipperOf c def)) .
    fmap (flip rowInsert $ zipperOf c def) . (fmap . fmap $ inject)
