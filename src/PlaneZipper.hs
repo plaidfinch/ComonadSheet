@@ -7,9 +7,18 @@ import Control.Applicative
 import Control.Arrow hiding (left, right)
 import Data.Function
 import Data.List
+import Control.Comonad
 
 -- | 2-dimensional zippers are nested list zippers
 type Z2 c r a = Z1 r (Z1 c a)
+
+evaluate2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
+evaluate2D fs = fix $ (fmap (<*>) fs <*>) . duplicate2D
+
+-- We can't give a comonad instance for 2D zippers, as they're (currently) implemented as a type synonym. We can, however, define a comonad's duplicate, which is what we need.
+duplicate2D :: (Ord c, Enum c, Ord r, Enum r) => Z2 c r a -> Z2 c r (Z2 c r a)
+duplicate2D = fmap duplicateVert . duplicate
+   where duplicateVert = zipIterate left right <$> index . view <*> id
 
 up :: Enum r => Z2 c r a -> Z2 c r a
 up = zipL
@@ -144,13 +153,6 @@ rightBy :: (Ord c, Enum c) => Int -> Z2 c r a -> Z2 c r a
 rightBy r | r > 0     = rightBy (pred r) . right
 rightBy r | r == 0    = id
 rightBy r | otherwise = leftBy (- r)
-
-metaZipper2D :: (Enum c, Enum r) => Z2 c r a -> Z2 c r (Z2 c r a)
-metaZipper2D = fmap metaZipperVert . metaZipper
-   where metaZipperVert = zipIterate left right <$> index . view <*> id
-
-evaluate2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
-evaluate2D fs = fix $ (fmap (<*>) fs <*>) . metaZipper2D
 
 genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d)
              -> ([d]      -> Z1 c d   -> Z1 c d)
