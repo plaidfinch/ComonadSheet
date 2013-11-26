@@ -135,8 +135,19 @@ metaZipper2D :: (Enum c, Enum r) => Z2 c r a -> Z2 c r (Z2 c r a)
 metaZipper2D = fmap metaZipperVert . metaZipper
    where metaZipperVert = zipIterate left right <$> index . view <*> id
 
-zipLoeb2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
-zipLoeb2D fs = fix $ (fmap (<*>) fs <*>) . metaZipper2D
+evaluate2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
+evaluate2D fs = fix $ (fmap (<*>) fs <*>) . metaZipper2D
+
+genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d) -> ([d] -> Z1 c d -> Z1 c d) -> d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
+genericSheet colInsert rowInsert def inject (c,r) =
+   flip colInsert (zipperOf r (zipperOf c def)) .
+   fmap (flip rowInsert $ zipperOf c def) . (fmap . fmap $ inject)
+
+sheet :: d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
+sheet = genericSheet insertListR insertListR
+
+maybeSheet :: (c,r) -> [[b -> Maybe a]] -> Z2 c r (b -> Maybe a)
+maybeSheet = sheet (const Nothing) id
 
 -- Some example zippers for testing...
 preview2D = window2D 2 2 2 2
@@ -152,20 +163,7 @@ numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
                         numberLine
                         (tail (iterate (fmap succ) numberLine))
 
--- unDigits 26 . map (subtract (pred (fromEnum 'A')) . fromEnum) $ "AB"
--- map (chr . (+ (pred (fromEnum 'A')))) . digits 26
--- (all $ (&&) <$> ('A' <=) <*> (<= 'Z')) "ABC"
-
-fibs :: [[Z2 Int Int Integer -> Integer]]
-fibs = ([0,1]                     ++ repeat (cell (leftBy 1) + cell (leftBy 2))) : repeat
-       ([0, cell (aboveBy 1) + 1] ++ repeat (cell (leftBy 1) + cell (leftBy 2)))
-
-zeroSheet :: Z2 Int Int Integer
-zeroSheet = zipperOf 0 (zipperOf 0 0)
-
-fibsZipper :: Z2 Int Int (Z2 Int Int Integer -> Integer)
-fibsZipper = fmap (listToZipper 0 0) . listToZipper 0 0 $ fibs
-
-listToZipper :: i -> a -> [a] -> Z1 i a
-listToZipper i def = fmap head . (zipIterate (const [def]) tail i)
-             
+fibs :: Z2 Integer Integer (Maybe Integer)
+fibs = evaluate2D $ maybeSheet (0,0) $
+    ([1,1]                     ++ repeat (cell (leftBy 1) + cell (leftBy 2))) : repeat
+    ([1, cell (aboveBy 1) + 1] ++ repeat (cell (leftBy 1) + cell (leftBy 2)))             

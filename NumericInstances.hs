@@ -34,4 +34,7 @@ instance (Enum (f a), Real (f a), Applicative f, Integral a) => Integral (f a) w
    x `divMod`  y = (x `div`  y, x `mod` y)
    toInteger     = error "toInteger: can't go from arbitrary functor to integer"
 
-
+-- Eventually, support strings as cell indices:
+-- unDigits 26 . map (subtract (pred (fromEnum 'A')) . fromEnum) $ "AB"
+-- map (chr . (+ (pred (fromEnum 'A')))) . digits 26
+-- (all $ (&&) <$> ('A' <=) <*> (<= 'Z')) "ABC"
