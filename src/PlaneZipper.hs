@@ -173,8 +173,8 @@ numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
                         numberLine
                         (tail (iterate (fmap succ) numberLine))
 
-fibs :: Z2 Integer Integer Integer
-fibs = evaluate2D $ sheetOf 0 (0,0) $
+fibLike :: Z2 Integer Integer Integer
+fibLike = evaluate2D $ sheetOf 0 (0,0) $
            ([1, 1]                    ++ fibRow) :
     repeat ([1, cell (aboveBy 1) + 1] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
