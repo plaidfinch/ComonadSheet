@@ -6,6 +6,7 @@ import NumericInstances
 import Control.Applicative
 import Control.Arrow hiding (left, right)
 import Data.Function
+import Data.List
 
 -- | 2-dimensional zippers are nested list zippers
 type Z2 c r a = Z1 r (Z1 c a)
@@ -38,6 +39,13 @@ viewCell = view . view
 
 window2D :: Int -> Int -> Int -> Int -> Z2 c r a -> [[a]]
 window2D u d l r = window u d . fmap (window l r)
+
+rectangle :: (Integral c, Integral r) => (c,r) -> (c,r) -> Z2 c r a -> [[a]]
+rectangle (c,r) (c',r') = fmap (genericTake width  . viewR)
+                             . (genericTake height . viewR)
+                             . zipToCell (c - 1,r - 1)
+   where width  = toInteger $ abs (c - c')
+         height = toInteger $ abs (r - r')
 
 indexCell :: Z2 c r a -> (c,r)
 indexCell = (index . view &&& index)
@@ -143,7 +151,8 @@ genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d)
              -> d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
 genericSheet colInsert rowInsert def inject (c,r) =
    flip colInsert (zipperOf r (zipperOf c def)) .
-   fmap (flip rowInsert $ zipperOf c def) . (fmap . fmap $ inject)
+   fmap (flip rowInsert $ zipperOf c def) .
+   (fmap . fmap $ inject)
 
 sheetOf :: a -> (c,r) -> [[Z2 c r a -> a]] -> Z2 c r (Z2 c r a -> a)
 sheetOf def = genericSheet insertListR insertListR (const def) id
@@ -164,7 +173,7 @@ numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
 
 fibs :: Z2 Integer Integer Integer
 fibs = evaluate2D $ sheetOf 0 (0,0) $
-            [1, 1]                    ++ fibRow :
+           ([1, 1]                    ++ fibRow) :
     repeat ([1, cell (aboveBy 1) + 1] ++ fibRow)
     where
       fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
