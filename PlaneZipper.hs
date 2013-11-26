@@ -162,11 +162,10 @@ numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
                         numberLine
                         (tail (iterate (fmap succ) numberLine))
 
-fibCell :: (Num n, Ord c, Enum c) => Z2 c r n -> n
-fibCell = cell (leftBy 1) + cell (leftBy 2)
-
 fibs :: Z2 Integer Integer Integer
 fibs = evaluate2D $ sheetOf 0 (0,0) $
     [1,1]                      ++ repeat fibCell
     : repeat
     ([1, cell (aboveBy 1) + 1] ++ repeat fibCell)
+    where
+      fibCell = cell (leftBy 1) + cell (leftBy 2)
