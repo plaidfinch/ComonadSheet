@@ -175,5 +175,4 @@ fibs :: Z2 Integer Integer Integer
 fibs = evaluate2D $ sheetOf 0 (0,0) $
            ([1, 1]                    ++ fibRow) :
     repeat ([1, cell (aboveBy 1) + 1] ++ fibRow)
-    where
-      fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
+    where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
