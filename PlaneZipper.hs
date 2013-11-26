@@ -143,11 +143,8 @@ genericSheet colInsert rowInsert def inject (c,r) =
    flip colInsert (zipperOf r (zipperOf c def)) .
    fmap (flip rowInsert $ zipperOf c def) . (fmap . fmap $ inject)
 
-sheet :: d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
-sheet = genericSheet insertListR insertListR
-
-maybeSheet :: (c,r) -> [[b -> Maybe a]] -> Z2 c r (b -> Maybe a)
-maybeSheet = sheet (const Nothing) id
+sheetOf :: a -> (c,r) -> [[Z2 c r a -> a]] -> Z2 c r (Z2 c r a -> a)
+sheetOf def = genericSheet insertListR insertListR (const def) id
 
 -- Some example zippers for testing...
 preview2D = window2D 2 2 2 2
@@ -163,7 +160,11 @@ numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
                         numberLine
                         (tail (iterate (fmap succ) numberLine))
 
-fibs :: Z2 Integer Integer (Maybe Integer)
-fibs = evaluate2D $ maybeSheet (0,0) $
-    ([1,1]                     ++ repeat (cell (leftBy 1) + cell (leftBy 2))) : repeat
-    ([1, cell (aboveBy 1) + 1] ++ repeat (cell (leftBy 1) + cell (leftBy 2)))             
+fibCell :: (Num n, Ord c, Enum c) => Z2 c r n -> n
+fibCell = cell (leftBy 1) + cell (leftBy 2)
+
+fibs :: Z2 Integer Integer Integer
+fibs = evaluate2D $ sheetOf 0 (0,0) $
+    [1,1]                      ++ repeat fibCell
+    : repeat
+    ([1, cell (aboveBy 1) + 1] ++ repeat fibCell)
