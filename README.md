@@ -3,6 +3,8 @@ ZipperSheets
 
 Spreadsheet evaluation with absolute and relative references can be implemented as the fixed-point of a two-dimensional indexed list zipper.
 
+This work was inspired by reading [this article](http://blog.emillon.org/posts/2012-10-18-comonadic-life.html) and [this one](http://blog.sigfpe.com/2006/11/from-l-theorem-to-spreadsheet.html) on the same day.
+
 Examples
 --------
 
