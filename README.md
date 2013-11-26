@@ -13,7 +13,9 @@ fibs = evaluate2D $ sheetOf 0 (0,0) $
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 ```
 
-```
+```Haskell
+> rectangle (0,0) (10,10) fibs
+
 [[1,1,2,3,5,8,13,21,34,55],
  [1,2,3,5,8,13,21,34,55,89],
  [1,3,4,7,11,18,29,47,76,123],
