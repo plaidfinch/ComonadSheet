@@ -35,7 +35,7 @@ right = fmap zipR
 zipToCol :: (Ord c, Enum c) => c -> Z2 c r a -> Z2 c r a
 zipToCol c z | c < fst (coords z) = zipToCol c $! left  z
 zipToCol c z | c > fst (coords z) = zipToCol c $! right z
-zipToCol c z | otherwise             = z
+zipToCol c z | otherwise          = z
 
 zipToRow :: (Ord r, Enum r) => r -> Z2 c r a -> Z2 c r a
 zipToRow = zipTo
