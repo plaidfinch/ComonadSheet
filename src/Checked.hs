@@ -3,15 +3,16 @@
 module Checked where
 
 import qualified Unchecked as U
-import PlaneZipper
+import PlaneZipper (Z2)
+import qualified PlaneZipper as PZ
 
-import Prelude hiding (Left, Right)
 import Control.Applicative
-import Control.Arrow
+import Control.Arrow hiding (left,right)
 import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+-- Abs case is actually un-needed and redundant... #TODO
 data Ref x = Abs x | Rel Int (Maybe x) deriving (Show, Eq, Ord)
 
 instance Monoid (Ref x) where
@@ -32,21 +33,33 @@ atCol = (,mempty) . Abs
 aboveBy :: Int -> (Ref c,Ref r)
 aboveBy = (mempty,) . flip Rel Nothing . negate
 
+above :: (Ref c,Ref r)
+above = aboveBy 1
+
 belowBy :: Int -> (Ref c,Ref r)
 belowBy = (mempty,) . flip Rel Nothing
+
+below :: (Ref c,Ref r)
+below = belowBy 1
 
 leftBy :: Int -> (Ref c,Ref r)
 leftBy = (,mempty) . flip Rel Nothing . negate
 
+left :: (Ref c,Ref r)
+left = leftBy 1
+
 rightBy :: Int -> (Ref c,Ref r)
 rightBy = (,mempty) . flip Rel Nothing
+
+right :: (Ref c,Ref r)
+right = rightBy 1
 
 type CellRef c r = (Ref c,Ref r)
 
 data CellExpr c r a b = CellExpr { cellRefs :: Set (CellRef c r)
-                                 , appCell  :: (Z2 c r a -> b) }
+                                 , appCell  :: Z2 c r a -> b }
 
-instance (Ord c, Ord r) => Functor (CellExpr c r a) where
+instance Functor (CellExpr c r a) where
    fmap f (CellExpr refs a) = CellExpr refs (f . a)
 
 instance (Ord c, Ord r) => Applicative (CellExpr c r a) where
