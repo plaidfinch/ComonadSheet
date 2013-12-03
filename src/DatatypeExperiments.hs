@@ -1,10 +1,8 @@
-{-# LANGUAGE GADTs , DataKinds , TypeFamilies , StandaloneDeriving , FlexibleInstances #-}
+{-# LANGUAGE GADTs, DataKinds, FlexibleContexts, TypeFamilies #-}
 
-module Safe where
+module DatatypeExperiments where
 
-import PlaneZipper
-
-import Prelude hiding (Left, Right)
+import Prelude hiding (Left,Right)
 import Control.Applicative
 
 data ExtentH = InfL | InfLR | InfR
