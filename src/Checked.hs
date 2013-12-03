@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module Safe where
+module Checked where
 
 import qualified Unchecked as U
 import PlaneZipper
@@ -9,8 +9,10 @@ import Prelude hiding (Left, Right)
 import Control.Applicative
 import Control.Arrow
 import Data.Monoid
+import Data.Set (Set)
+import qualified Data.Set as Set
 
-data Ref x = Abs x | Rel Int (Maybe x) deriving (Show, Eq)
+data Ref x = Abs x | Rel Int (Maybe x) deriving (Show, Eq, Ord)
 
 instance Monoid (Ref x) where
    mempty                    = Rel 0 Nothing
@@ -41,14 +43,14 @@ rightBy = (,mempty) . flip Rel Nothing
 
 type CellRef c r = (Ref c,Ref r)
 
-data CellExpr c r a b = CellExpr { cellRefs :: [CellRef c r]
+data CellExpr c r a b = CellExpr { cellRefs :: Set (CellRef c r)
                                  , appCell  :: (Z2 c r a -> b) }
 
-instance Functor (CellExpr c r a) where
+instance (Ord c, Ord r) => Functor (CellExpr c r a) where
    fmap f (CellExpr refs a) = CellExpr refs (f . a)
 
-instance Applicative (CellExpr c r a) where
-   pure                          = CellExpr [] . const
+instance (Ord c, Ord r) => Applicative (CellExpr c r a) where
+   pure                          = CellExpr Set.empty . const
    CellExpr r a <*> CellExpr s b = CellExpr (r <> s) (a <*> b)
 
 genericDeref :: (x -> a -> a) -> (Int -> a -> a) -> Ref x -> a -> a
@@ -69,9 +71,9 @@ indexDeref = genericDeref const relative
       relative n z | otherwise = iterate pred z !! (negate n)
 
 cell :: (Ord c, Ord r, Enum c, Enum r) => CellRef c r -> CellExpr c r a a
-cell ref@(c,r) = CellExpr (pure ref) $ U.cell $ derefCol c . derefRow r
+cell ref@(c,r) = CellExpr (Set.singleton ref) $ U.cell $ derefCol c . derefRow r
 
 cells :: (Ord c, Ord r, Enum c, Enum r) => [CellRef c r] -> CellExpr c r a [a]
-cells refs = CellExpr refs $ sequence $ map (appCell . cell) refs
+cells refs = CellExpr (Set.fromList refs) $ sequence $ map (appCell . cell) refs
 
 
