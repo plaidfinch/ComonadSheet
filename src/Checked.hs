@@ -68,5 +68,10 @@ indexDeref = genericDeref const relative
       relative n z | n > 0     = iterate succ z !! n
       relative n z | otherwise = iterate pred z !! (negate n)
 
-cell :: (Ord c, Ord r, Enum c, Enum r) => (Ref c,Ref r) -> CellExpr c r a a
+cell :: (Ord c, Ord r, Enum c, Enum r) => CellRef c r -> CellExpr c r a a
 cell ref@(c,r) = CellExpr (pure ref) $ U.cell $ derefCol c . derefRow r
+
+cells :: (Ord c, Ord r, Enum c, Enum r) => [CellRef c r] -> CellExpr c r a [a]
+cells refs = CellExpr refs $ sequence $ map (appCell . cell) refs
+
+

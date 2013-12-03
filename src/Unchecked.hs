@@ -5,12 +5,6 @@ import PlaneZipper
 
 import Control.Applicative
 
-cell :: (Z2 c r a -> Z2 c r a) -> Z2 c r a -> a
-cell = (viewCell .)
-
-cells :: [Z2 c r a -> Z2 c r a] -> Z2 c r a -> [a]
-cells fs = map viewCell . (fs <*>) . pure
-
 at :: (Ord c, Enum c, Ord r, Enum r) => (c,r) -> Z2 c r a -> Z2 c r a
 at = zipToCell
 
@@ -39,6 +33,12 @@ rightBy :: (Ord c, Enum c) => Int -> Z2 c r a -> Z2 c r a
 rightBy r | r > 0     = rightBy (pred r) . right
 rightBy r | r == 0    = id
 rightBy r | otherwise = leftBy (- r)
+
+cell :: (Z2 c r a -> Z2 c r a) -> Z2 c r a -> a
+cell = (viewCell .)
+
+cells :: [Z2 c r a -> Z2 c r a] -> Z2 c r a -> [a]
+cells fs = map viewCell . (fs <*>) . pure
 
 genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d)
              -> ([d]      -> Z1 c d   -> Z1 c d)
