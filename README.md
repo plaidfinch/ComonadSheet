@@ -14,7 +14,7 @@ An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwa
 pascal :: Z2 Integer Integer Integer
 pascal = evaluate2D $ sheetOf 0 (0,0) $
   repeat 1 : repeat (1 : pascalRow)
-  where pascalRow = repeat $ cell up + cell left
+  where pascalRow = repeat $ cell above + cell left
 
 pascalLists :: [[Integer]]
 pascalLists = map pascalList [0..]
@@ -64,8 +64,8 @@ An infinite spreadsheet listing Fibonacci-like sequences which have a successive
 ```Haskell
 fibLike :: Z2 Integer Integer Integer
 fibLike = evaluate2D $ sheetOf 0 (0,0) $
-           ([1, 1]           ++ fibRow) :
-    repeat ([1, 1 + cell up] ++ fibRow)
+           ([1, 1]              ++ fibRow) :
+    repeat ([1, 1 + cell above] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 ```
 
