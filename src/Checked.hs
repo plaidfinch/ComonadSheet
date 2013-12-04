@@ -1,6 +1,13 @@
 {-# LANGUAGE TupleSections #-}
 
-module Checked where
+module Checked 
+   ( Ref(..) , CellRef , CellExpr , cell , cells
+   , at , atRow , atCol
+   , aboveBy , above
+   , belowBy , below
+   , leftBy , left
+   , rightBy , right
+   ) where
 
 import qualified Unchecked as U
 import PlaneZipper (Z2)
@@ -56,7 +63,7 @@ right = rightBy 1
 
 type CellRef c r = (Ref c,Ref r)
 
-data CellExpr c r a b = CellExpr { cellRefs :: Set (CellRef c r)
+data CellExpr c r a b = CellExpr { getRefs :: Set (CellRef c r)
                                  , appCell  :: Z2 c r a -> b }
 
 instance Functor (CellExpr c r a) where
