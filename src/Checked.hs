@@ -68,6 +68,10 @@ data CellExpr c r a b =
                , appSCell :: Z2 c r a -> b } |
    DynamicCell { appDCell :: Z2 c r a -> b }
 
+appCell :: CellExpr c r a b -> Z2 c r a -> b
+appCell (StaticCell _ f) = f
+appCell (DynamicCell  f) = f
+
 instance Functor (CellExpr c r a) where
    fmap f (StaticCell refs a) = StaticCell refs (f . a)
    fmap f (DynamicCell a)     = DynamicCell     (f . a)
@@ -105,7 +109,7 @@ instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (CellRef c r) a whe
       U.cell $ derefCol c . derefRow r
    cells refs =
       StaticCell (Set.fromList refs) $
-      sequence $ map (appSCell . cell) refs
+      sequence $ map (appCell . cell) refs
 
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a where
    cell  = DynamicCell
