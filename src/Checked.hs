@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections , MultiParamTypeClasses , TypeSynonymInstances , FlexibleInstances #-}
 
 module Checked 
    ( Ref(..) , CellRef , CellExpr , cell , cells
@@ -95,10 +95,18 @@ indexDeref = genericDeref const relative
       relative n z | n > 0     = iterate succ z !! n
       relative n z | otherwise = iterate pred z !! (negate n)
 
-cell :: (Ord c, Ord r, Enum c, Enum r) => CellRef c r -> CellExpr c r a a
-cell ref@(c,r) = StaticCell (Set.singleton ref) $ U.cell $ derefCol c . derefRow r
+class ReferenceLike c r ref result where
+   cell  ::  ref  -> CellExpr c r result  result
+   cells :: [ref] -> CellExpr c r result [result]
 
-cells :: (Ord c, Ord r, Enum c, Enum r) => [CellRef c r] -> CellExpr c r a [a]
-cells refs = StaticCell (Set.fromList refs) $ sequence $ map (appSCell . cell) refs
+instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (CellRef c r) a where
+   cell ref@(c,r) =
+      StaticCell (Set.singleton ref) $
+      U.cell $ derefCol c . derefRow r
+   cells refs =
+      StaticCell (Set.fromList refs) $
+      sequence $ map (appSCell . cell) refs
 
-
+instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a where
+   cell  = DynamicCell
+   cells = DynamicCell . sequence
