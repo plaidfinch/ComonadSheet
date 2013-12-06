@@ -9,7 +9,7 @@ module Checked
 
 import qualified Unchecked as U
 import PlaneZipper (Z2)
-import qualified PlaneZipper as PZ
+import qualified PlaneZipper as Z2
 
 import Control.Applicative
 import Control.Arrow hiding (left,right)
@@ -110,7 +110,7 @@ instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (CellRef c r) a whe
       sequence $ map (appCell . cell) refs
 
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (c,r) a where
-   cell  = cell  . at
+   cell  = cell  .     at
    cells = cells . map at
 
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a where
@@ -118,5 +118,5 @@ instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a w
    cells = DynamicCell . sequence
 
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> Z2 c r a) a where
-   cell  = cell  .     (PZ.viewCell .)
-   cells = cells . map (PZ.viewCell .)
+   cell  = cell  .     (Z2.viewCell .)
+   cells = cells . map (Z2.viewCell .)
