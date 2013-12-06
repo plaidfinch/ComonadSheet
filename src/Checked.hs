@@ -114,3 +114,7 @@ instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (CellRef c r) a whe
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a where
    cell  = DynamicCell
    cells = DynamicCell . sequence
+
+instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> Z2 c r a) a where
+   cell  = DynamicCell . (PZ.viewCell .)
+   cells = DynamicCell . sequence . map (PZ.viewCell .)
