@@ -1,12 +1,10 @@
 {-# LANGUAGE TupleSections , MultiParamTypeClasses , TypeSynonymInstances , FlexibleInstances #-}
 
 module Checked 
-   ( Ref(..) , CellRef , CellExpr , cell , cells
+   ( Ref(..) , CellRef , CellExpr(DynamicCell) , ReferenceLike
    , at , atRow , atCol
-   , aboveBy , above
-   , belowBy , below
-   , leftBy , left
-   , rightBy , right
+   , aboveBy , above , belowBy , below
+   , leftBy , left , rightBy , right
    ) where
 
 import qualified Unchecked as U
@@ -111,10 +109,14 @@ instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (CellRef c r) a whe
       StaticCell (Set.fromList refs) $
       sequence $ map (appCell . cell) refs
 
+instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (c,r) a where
+   cell  = cell  . at
+   cells = cells . map at
+
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a where
    cell  = DynamicCell
    cells = DynamicCell . sequence
 
 instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> Z2 c r a) a where
-   cell  = DynamicCell . (PZ.viewCell .)
-   cells = DynamicCell . sequence . map (PZ.viewCell .)
+   cell  = cell  .     (PZ.viewCell .)
+   cells = cells . map (PZ.viewCell .)
