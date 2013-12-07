@@ -1,10 +1,11 @@
 {-# LANGUAGE TupleSections , MultiParamTypeClasses , TypeSynonymInstances , FlexibleInstances #-}
 
 module Checked 
-   ( Ref(..) , CellRef , CellExpr(DynamicCell) , ReferenceLike
+   ( Ref(..) , CellRef , CellExpr(DynamicCell)
    , at , atRow , atCol
    , aboveBy , above , belowBy , below
    , leftBy , left , rightBy , right
+   , cell , cells , dcell , dcells
    ) where
 
 import qualified Unchecked as U
@@ -59,6 +60,9 @@ rightBy = (,mempty) . Rel
 right :: (Ref c,Ref r)
 right = rightBy 1
 
+here :: (Ref c,Ref r)
+here = (mempty,mempty)
+
 type CellRef c r = (Ref c,Ref r)
 
 data CellExpr c r a b =
@@ -69,6 +73,10 @@ data CellExpr c r a b =
 appCell :: CellExpr c r a b -> Z2 c r a -> b
 appCell (StaticCell _ f) = f
 appCell (DynamicCell  f) = f
+
+instance (Show c, Show r) => Show (CellExpr c r a b) where
+   show (StaticCell refs _) = "StaticCell " ++ (show . Set.toList $ refs) ++ " _"
+   show (DynamicCell _)     = "DynamicCell _"
 
 instance Functor (CellExpr c r a) where
    fmap f (StaticCell refs a) = StaticCell refs (f . a)
@@ -91,32 +99,23 @@ derefRow = genericDeref U.atRow U.belowBy
 derefCol :: (Ord c, Enum c) => Ref c -> Z2 c r a -> Z2 c r a
 derefCol = genericDeref U.atCol U.rightBy
 
+derefCoord :: (Ord r, Enum r, Ord c, Enum c) => (Ref c,Ref r) -> Z2 c r a -> Z2 c r a
+derefCoord (c,r) = derefCol c . derefRow r
+
 indexDeref :: Enum x => Ref x -> x -> x
 indexDeref = genericDeref const relative
    where
       relative n z | n > 0     = iterate succ z !! n
       relative n z | otherwise = iterate pred z !! (negate n)
 
-class ReferenceLike c r ref result where
-   cell  ::  ref  -> CellExpr c r result  result
-   cells :: [ref] -> CellExpr c r result [result]
+cell :: (Ord r, Enum r, Ord c, Enum c) => (Ref c,Ref r) -> CellExpr c r a a
+cell = StaticCell <$> Set.singleton <*> U.cell . derefCoord
 
-instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (CellRef c r) a where
-   cell ref@(c,r) =
-      StaticCell (Set.singleton ref) $
-      U.cell $ derefCol c . derefRow r
-   cells refs =
-      StaticCell (Set.fromList refs) $
-      sequence $ map (appCell . cell) refs
+cells :: (Ord r, Enum r, Ord c, Enum c) => [(Ref c,Ref r)] -> CellExpr c r a [a]
+cells = StaticCell <$> Set.fromList <*> sequence . map (appCell . cell)
 
-instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (c,r) a where
-   cell  = cell  .     at
-   cells = cells . map at
+dcell :: (Ord r, Enum r, Ord c, Enum c) => (Z2 c r a -> a) -> CellExpr c r a a
+dcell = DynamicCell
 
-instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> a) a where
-   cell  = DynamicCell
-   cells = DynamicCell . sequence
-
-instance (Ord c, Ord r, Enum c, Enum r) => ReferenceLike c r (Z2 c r a -> Z2 c r a) a where
-   cell  = cell  .     (Z2.viewCell .)
-   cells = cells . map (Z2.viewCell .)
+dcells :: (Ord r, Enum r, Ord c, Enum c) => (Z2 c r a -> [a]) -> CellExpr c r a [a]
+dcells = DynamicCell
