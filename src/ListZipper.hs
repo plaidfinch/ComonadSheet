@@ -8,7 +8,6 @@ module ListZipper
    , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
-   , evaluate
    ) where
 
 import Control.Applicative
@@ -40,9 +39,6 @@ instance (Enum i, Ord i) => Applicative (Z1 i) where
 instance (Ord i, Enum i) => Comonad (Z1 i) where
    extract   = view
    duplicate = zipIterate zipL zipR <$> index <*> id
-
-evaluate :: (Ord i, Enum i) => Z1 i (Z1 i a -> a) -> Z1 i a
-evaluate fs = fix $ (fs <*>) . duplicate
 
 zipper :: i -> [a] -> a -> [a] -> Z1 i a
 zipper i lefts cursor rights = Z1 i (cycle lefts) cursor (cycle rights)

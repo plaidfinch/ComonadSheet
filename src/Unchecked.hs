@@ -7,14 +7,6 @@ import Control.Applicative
 import Control.Comonad
 import Data.Function
 
-evaluate2D :: (Enum c, Enum r, Ord c, Ord r) => Z2 c r (Z2 c r a -> a) -> Z2 c r a
-evaluate2D fs = fix $ (fmap (<*>) fs <*>) . duplicate2D
-
--- We can't give a comonad instance for 2D zippers, as they're (currently) implemented as a type synonym. We can, however, define a comonad's duplicate, which is what we need.
-duplicate2D :: (Ord c, Enum c, Ord r, Enum r) => Z2 c r a -> Z2 c r (Z2 c r a)
-duplicate2D = fmap duplicateVert . duplicate
-   where duplicateVert = zipIterate left right <$> index . view <*> id
-
 at :: (Ord c, Enum c, Ord r, Enum r) => (c,r) -> Z2 c r a -> Z2 c r a
 at = zipToCell
 
@@ -50,11 +42,11 @@ cell = (viewCell .)
 cells :: [Z2 c r a -> Z2 c r a] -> Z2 c r a -> [a]
 cells fs = map viewCell . (fs <*>) . pure
 
-genericSheet :: ([Z1 c d] -> Z2 c r d -> Z2 c r d)
+genericSheet :: ([Z1 c d] -> Z1 r (Z1 c d) -> Z1 r (Z1 c d))
              -> ([d]      -> Z1 c d   -> Z1 c d)
              -> d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
 genericSheet colInsert rowInsert def inject (c,r) =
-   flip colInsert (zipperOf r (zipperOf c def)) .
+   Z2 . flip colInsert (zipperOf r (zipperOf c def)) .
    fmap (flip rowInsert $ zipperOf c def) .
    (fmap . fmap $ inject)
 
@@ -67,18 +59,18 @@ numberLine :: Z1 Integer Integer
 numberLine = zipper 0 (map negate [1..]) 0 [1..]
 
 numberLine2D :: Z2 Integer Integer Integer
-numberLine2D = zipper 0 (tail (iterate (fmap pred) numberLine))
-                        numberLine
-                        (tail (iterate (fmap succ) numberLine))
+numberLine2D = Z2 $ zipper 0 (tail (iterate (fmap pred) numberLine))
+                             numberLine
+                             (tail (iterate (fmap succ) numberLine))
 
 fibLike :: Z2 Integer Integer Integer
-fibLike = evaluate2D $ sheetOf 0 (0,0) $
+fibLike = wfix $ sheetOf 0 (0,0) $
            ([1, 1]           ++ fibRow) :
     repeat ([1, 1 + cell above] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 pascal :: Z2 Integer Integer Integer
-pascal = evaluate2D $ sheetOf 0 (0,0) $
+pascal = wfix $ sheetOf 0 (0,0) $
   repeat 1 : repeat (1 : pascalRow)
   where pascalRow = repeat $ cell above + cell left
 
