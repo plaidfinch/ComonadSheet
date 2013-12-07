@@ -34,10 +34,8 @@ below, down :: Enum r => Z2 c r a -> Z2 c r a
 below = wrapZ2 $ zipR
 down  = below
 
-left :: Enum c => Z2 c r a -> Z2 c r a
-left = wrapZ2 $ fmap zipL
-
-right :: Enum c => Z2 c r a -> Z2 c r a
+left, right :: Enum c => Z2 c r a -> Z2 c r a
+left  = wrapZ2 $ fmap zipL
 right = wrapZ2 $ fmap zipR
 
 zipToCol :: (Ord c, Enum c) => c -> Z2 c r a -> Z2 c r a
