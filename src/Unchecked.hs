@@ -7,6 +7,9 @@ import Control.Applicative
 import Control.Comonad
 import Data.Function
 
+evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b
+evaluate fs = fix $ (fs <*>) . duplicate
+
 at :: (Ord c, Enum c, Ord r, Enum r) => (c,r) -> Z2 c r a -> Z2 c r a
 at = zipToCell
 
@@ -64,13 +67,13 @@ numberLine2D = Z2 $ zipper 0 (tail (iterate (fmap pred) numberLine))
                              (tail (iterate (fmap succ) numberLine))
 
 fibLike :: Z2 Integer Integer Integer
-fibLike = wfix $ sheetOf 0 (0,0) $
+fibLike = evaluate $ sheetOf 0 (0,0) $
            ([1, 1]           ++ fibRow) :
     repeat ([1, 1 + cell above] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 pascal :: Z2 Integer Integer Integer
-pascal = wfix $ sheetOf 0 (0,0) $
+pascal = evaluate $ sheetOf 0 (0,0) $
   repeat 1 : repeat (1 : pascalRow)
   where pascalRow = repeat $ cell above + cell left
 

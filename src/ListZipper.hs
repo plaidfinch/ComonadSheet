@@ -96,8 +96,10 @@ insertR x (Z1 i lefts cursor rights) = Z1 i lefts x (cursor : rights)
 insertL x (Z1 i lefts cursor rights) = Z1 i (cursor : lefts) x rights
 
 insertListR, insertListL :: [a] -> Z1 i a -> Z1 i a
-insertListR list (Z1 i lefts cursor rights) = Z1 i lefts (head list) (tail list ++ cursor : rights)
-insertListL list (Z1 i lefts cursor rights) = Z1 i (tail list ++ cursor : lefts) (head list) rights
+insertListR list (Z1 i lefts cursor rights) =
+   Z1 i lefts (head list) (tail list ++ cursor : rights)
+insertListL list (Z1 i lefts cursor rights) =
+   Z1 i (tail list ++ cursor : lefts) (head list) rights
 
 deleteL, deleteR :: Z1 i a -> Z1 i a
 deleteL (Z1 i (left : lefts) cursor rights)  = Z1 i lefts left rights
