@@ -63,7 +63,7 @@ appCell (StaticCell _ f) = f
 appCell (DynamicCell  f) = f
 
 instance (Show c, Show r) => Show (CellExpr c r a b) where
-   show (StaticCell refs _) = "StaticCell " ++ (show . Set.toList $ refs) ++ " _"
+   show (StaticCell refs _) = "StaticCell (" ++ (show refs) ++ ") _"
    show (DynamicCell _)     = "DynamicCell _"
 
 instance Functor (CellExpr c r a) where
