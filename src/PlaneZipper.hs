@@ -11,7 +11,7 @@ import Control.Comonad
 -- | 2-dimensional zippers are nested list zippers
 newtype Z2 c r a = Z2 { fromZ2 :: Z1 r (Z1 c a) }
 
-wrapZ2 :: (Z1 r (Z1 c a) -> Z1 s (Z1 d b)) -> Z2 c r a -> Z2 d s b
+wrapZ2 :: (Z1 r (Z1 c a) -> Z1 r' (Z1 c' a')) -> Z2 c r a -> Z2 c' r' a'
 wrapZ2 = (Z2 .) . (. fromZ2)
 
 instance Functor (Z2 c r) where
