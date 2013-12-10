@@ -12,18 +12,19 @@ import Control.Comonad
 newtype Z2 c r a = Z2 { fromZ2 :: Z1 r (Z1 c a) }
 
 wrapZ2 :: (Z1 r (Z1 c a) -> Z1 s (Z1 d b)) -> Z2 c r a -> Z2 d s b
-wrapZ2 f = Z2 . f . fromZ2
+wrapZ2 = (Z2 .) . (. fromZ2)
 
 instance Functor (Z2 c r) where
    fmap = wrapZ2 . fmap . fmap
 
 instance (Ord c, Ord r, Enum c, Enum r) => Applicative (Z2 c r) where
-   fs <*> xs = Z2 $ (fmap (<*>) . fromZ2 $ fs) <*> (fromZ2 xs)
-   pure = Z2 . zipperOf (toEnum 0) . zipperOf (toEnum 0)
+   fs <*> xs = Z2 $ fmap (<*>) (fromZ2 fs) <*> (fromZ2 xs)
+   pure      = Z2 . (pure . pure)
 
 instance (Ord c, Ord r, Enum c, Enum r) => Comonad (Z2 c r) where
-   extract = viewCell
-   duplicate = wrapZ2 $ fmap duplicateVert . duplicate
+   extract   = viewCell
+   duplicate =
+      wrapZ2 $ fmap duplicateVert . duplicate
       where duplicateVert = zipIterate left right <$> index . view <*> Z2
 
 above, up :: Enum r => Z2 c r a -> Z2 c r a
