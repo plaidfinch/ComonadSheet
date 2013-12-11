@@ -16,7 +16,7 @@ import Data.List
 import Data.Function
 import Control.Comonad
 
-import Class
+import Generic
 
 -- 1-D zippers...
 

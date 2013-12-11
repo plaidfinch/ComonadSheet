@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections, MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
-module Class where
+module Generic where
 
 import Data.Monoid
 
@@ -111,13 +111,13 @@ genericDeref zl zr idx ref =
 
 class AbsoluteRef ref tuple | ref -> tuple where
    at :: tuple -> ref
-
 instance AbsoluteRef (Ref c) c where
    at = Abs 0
-
 instance AbsoluteRef (Ref c,Ref r) (c,r) where
    at (c,r) = (Abs 0 c,Abs 0 r)
-
 instance AbsoluteRef (Ref c, Ref r,Ref l) (c,r,l) where
    at (c,r,l) = (Abs 0 c,Abs 0 r,Abs 0 l)
+
+goto :: (AnyRef ref zipper, AbsoluteRef ref tuple) => tuple -> zipper -> zipper
+goto = go . at
 

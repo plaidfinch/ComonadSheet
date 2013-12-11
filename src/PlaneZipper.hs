@@ -2,7 +2,7 @@
 
 module PlaneZipper where
 
-import Class
+import Generic
 import ListZipper
 import NumericInstances
 

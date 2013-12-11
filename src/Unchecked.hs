@@ -2,7 +2,7 @@ module Unchecked where
 
 import ListZipper
 import PlaneZipper
-import Class
+import Generic
 
 import Control.Applicative
 import Control.Comonad
@@ -50,7 +50,7 @@ pascalLists = map pascalList [0..]
          map viewCell .
          takeWhile ((>= 0) . row) .
          iterate (go $ above <> right) .
-         go (at (0,n)) $ pascal
+         goto (0,n) $ pascal
 
 numberLine :: Z1 Integer Integer
 numberLine = zipper 0 (map negate [1..]) 0 [1..]
