@@ -89,7 +89,7 @@ instance Ref3 (Ref c,Ref r,Ref l) l where
    inwardBy = (mempty,mempty,) . Rel
    atLevel  = (mempty,mempty,) . Abs 0
 
-class Monoid ref => AnyRef ref zipper | zipper -> ref where
+class (Monoid ref, Ord ref) => AnyRef ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
 
 genericZipBy :: (z -> z) -> (z -> z) -> Int -> z -> z

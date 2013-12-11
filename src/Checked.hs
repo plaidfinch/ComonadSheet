@@ -34,7 +34,7 @@ instance Functor (CellExpr z r) where
    fmap f (StaticCell refs a) = StaticCell refs (f . a)
    fmap f (DynamicCell a)     = DynamicCell     (f . a)
 
-instance (AnyRef r z, Ord r) => Applicative (CellExpr z r) where
+instance (AnyRef r z) => Applicative (CellExpr z r) where
    pure                              = StaticCell Set.empty . const
    StaticCell r a <*> StaticCell s b = StaticCell (r <> s) (a <*> b)
    StaticCell _ a <*> DynamicCell  b = DynamicCell         (a <*> b)
