@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE GADTs, KindSignatures, TupleSections #-}
 
 module Checked 
    ( CellExpr(DynamicCell)
@@ -18,26 +18,23 @@ import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-type CellRef c r = (Ref c,Ref r)
+data CellExpr z r b where
+   StaticCell  :: AnyRef r z => Set r -> (z -> b) -> CellExpr z r b
+   DynamicCell :: (z -> b) -> CellExpr z r b
 
-data CellExpr c r a b =
-     StaticCell { getRefs  :: Set (CellRef c r)
-                , appSCell :: Z2 c r a -> b }
-  | DynamicCell { appDCell :: Z2 c r a -> b }
-
-appCell :: CellExpr c r a b -> Z2 c r a -> b
+appCell :: CellExpr z r b -> z -> b
 appCell (StaticCell _ f) = f
 appCell (DynamicCell  f) = f
 
-instance (Show c, Show r) => Show (CellExpr c r a b) where
+instance (Show r) => Show (CellExpr z r b) where
    show (StaticCell refs _) = "StaticCell (" ++ (show refs) ++ ") _"
    show (DynamicCell _)     = "DynamicCell _"
 
-instance Functor (CellExpr c r a) where
+instance Functor (CellExpr z r) where
    fmap f (StaticCell refs a) = StaticCell refs (f . a)
    fmap f (DynamicCell a)     = DynamicCell     (f . a)
 
-instance (Ord c, Ord r) => Applicative (CellExpr c r a) where
+instance (AnyRef r z, Ord r) => Applicative (CellExpr z r) where
    pure                              = StaticCell Set.empty . const
    StaticCell r a <*> StaticCell s b = StaticCell (r <> s) (a <*> b)
    StaticCell _ a <*> DynamicCell  b = DynamicCell         (a <*> b)
@@ -47,14 +44,14 @@ instance (Ord c, Ord r) => Applicative (CellExpr c r a) where
 indexDeref :: (Ord x, Enum x) => Ref x -> x -> x
 indexDeref = genericDeref pred succ id
 
-cell :: (Ord r, Enum r, Ord c, Enum c) => CellRef c r -> CellExpr c r a a
+cell :: (AnyRef ref z, AnyZipper z i a) => ref -> CellExpr z ref a
 cell = StaticCell <$> Set.singleton <*> U.cell
 
-cells :: (Ord r, Enum r, Ord c, Enum c) => [CellRef c r] -> CellExpr c r a [a]
+cells :: (AnyRef ref z, AnyZipper z i a, Ord ref) => [ref] -> CellExpr z ref [a]
 cells = StaticCell <$> Set.fromList <*> sequence . map (appCell . cell)
 
-dcell :: (Ord r, Enum r, Ord c, Enum c) => (Z2 c r a -> a) -> CellExpr c r a a
+dcell :: (AnyRef ref z) => (z -> a) -> CellExpr z ref a
 dcell = DynamicCell
 
-dcells :: (Ord r, Enum r, Ord c, Enum c) => (Z2 c r a -> [a]) -> CellExpr c r a [a]
+dcells :: (AnyRef ref z) => (z -> [a]) -> CellExpr z ref [a]
 dcells = DynamicCell
