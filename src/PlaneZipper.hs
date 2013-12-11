@@ -1,5 +1,8 @@
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TupleSections #-}
+
 module PlaneZipper where
 
+import Class
 import ListZipper
 import NumericInstances
 
@@ -23,32 +26,23 @@ instance (Ord c, Ord r, Enum c, Enum r) => Applicative (Z2 c r) where
 
 instance (Ord c, Ord r, Enum c, Enum r) => Comonad (Z2 c r) where
    extract   = viewCell
-   duplicate =
-      wrapZ2 $ fmap duplicateVert . duplicate
-      where duplicateVert = zipIterate left right <$> index . view <*> Z2
+   duplicate = wrapZ2 $
+      fmap duplicateHorizontal . duplicate
+      where duplicateHorizontal = zipIterate zipL zipR <$> index . view <*> Z2
 
-above, up :: Enum r => Z2 c r a -> Z2 c r a
-above = wrapZ2 $ zipL
-up    = above
+instance (Ord c, Ord r, Enum c, Enum r) => Zipper1 (Z2 c r a) where
+   zipL = wrapZ2 $ fmap zipL
+   zipR = wrapZ2 $ fmap zipR
 
-below, down :: Enum r => Z2 c r a -> Z2 c r a
-below = wrapZ2 $ zipR
-down  = below
+instance (Ord c, Ord r, Enum c, Enum r) => Zipper2 (Z2 c r a) where
+   zipU = wrapZ2 zipL
+   zipD = wrapZ2 zipR
 
-left, right :: Enum c => Z2 c r a -> Z2 c r a
-left  = wrapZ2 $ fmap zipL
-right = wrapZ2 $ fmap zipR
-
-zipToCol :: (Ord c, Enum c) => c -> Z2 c r a -> Z2 c r a
-zipToCol c z | c < fst (coords z) = zipToCol c $! left  z
-zipToCol c z | c > fst (coords z) = zipToCol c $! right z
-zipToCol c z | otherwise          = z
-
-zipToRow :: (Ord r, Enum r) => r -> Z2 c r a -> Z2 c r a
-zipToRow = wrapZ2 . zipTo
-
-zipToCell :: (Ord c, Ord r, Enum c, Enum r) => (c,r) -> Z2 c r a -> Z2 c r a
-zipToCell (c,r) = zipToCol c . zipToRow r
+instance (Ord c, Enum c, Ord r, Enum r) => AnyRef (Ref c,Ref r) (Z2 c r a) where
+   go (colRef,rowRef) = horizontal . vertical
+      where
+         horizontal = genericDeref zipL zipR col colRef
+         vertical   = genericDeref zipU zipD row rowRef
 
 viewCell :: Z2 c r a -> a
 viewCell = view . view . fromZ2
@@ -60,12 +54,9 @@ rectangle :: (Integral c, Integral r) => (c,r) -> (c,r) -> Z2 c r a -> [[a]]
 rectangle (c,r) (c',r') = fmap (genericTake width  . viewR)
                              . (genericTake height . viewR)
                              . fromZ2
-                             . zipToCell (c - 1,r - 1)
+                             . go (at (c - 1,r - 1))
    where width  = toInteger $ abs (c - c')
          height = toInteger $ abs (r - r')
-
-coords :: Z2 c r a -> (c,r)
-coords = (col &&& row)
 
 col :: Z2 c r a -> c
 col = index . view . fromZ2

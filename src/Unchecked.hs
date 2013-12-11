@@ -2,45 +2,19 @@ module Unchecked where
 
 import ListZipper
 import PlaneZipper
+import Class
 
 import Control.Applicative
 import Control.Comonad
+import Control.Arrow hiding (left,right)
+import Data.Monoid
 import Data.Function
 
 evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b
 evaluate fs = fix $ (fs <*>) . duplicate
 
-at :: (Ord c, Enum c, Ord r, Enum r) => (c,r) -> Z2 c r a -> Z2 c r a
-at = zipToCell
-
-atRow :: (Ord r, Enum r) => r -> Z2 c r a -> Z2 c r a
-atRow = zipToRow
-
-atCol :: (Ord c, Enum c) => c -> Z2 c r a -> Z2 c r a
-atCol = zipToCol
-
-aboveBy :: (Ord r, Enum r) => Int -> Z2 c r a -> Z2 c r a
-aboveBy r | r > 0     = aboveBy (pred r) . above
-aboveBy r | r == 0    = id
-aboveBy r | otherwise = belowBy (- r)
-
-belowBy :: (Ord r, Enum r) => Int -> Z2 c r a -> Z2 c r a
-belowBy r | r > 0     = belowBy (pred r) . below
-belowBy r | r == 0    = id
-belowBy r | otherwise = aboveBy (- r)
-
-leftBy :: (Ord c, Enum c) => Int -> Z2 c r a -> Z2 c r a
-leftBy r | r > 0     = leftBy (pred r) . left
-leftBy r | r == 0    = id
-leftBy r | otherwise = rightBy (- r)
-
-rightBy :: (Ord c, Enum c) => Int -> Z2 c r a -> Z2 c r a
-rightBy r | r > 0     = rightBy (pred r) . right
-rightBy r | r == 0    = id
-rightBy r | otherwise = leftBy (- r)
-
-cell :: (Z2 c r a -> Z2 c r a) -> Z2 c r a -> a
-cell = (viewCell .)
+cell :: (Ord c, Ord r, Enum c, Enum r) => (Ref c,Ref r) -> Z2 c r a -> a
+cell = (viewCell .) . go
 
 cells :: [Z2 c r a -> Z2 c r a] -> Z2 c r a -> [a]
 cells fs = map viewCell . (fs <*>) . pure
@@ -58,17 +32,9 @@ sheetOf def = genericSheet insertListR insertListR (const def) id
 
 -- Some example zippers for testing...
 
-numberLine :: Z1 Integer Integer
-numberLine = zipper 0 (map negate [1..]) 0 [1..]
-
-numberLine2D :: Z2 Integer Integer Integer
-numberLine2D = Z2 $ zipper 0 (tail (iterate (fmap pred) numberLine))
-                             numberLine
-                             (tail (iterate (fmap succ) numberLine))
-
 fibLike :: Z2 Integer Integer Integer
 fibLike = evaluate $ sheetOf 0 (0,0) $
-           ([1, 1]           ++ fibRow) :
+           ([1, 1]              ++ fibRow) :
     repeat ([1, 1 + cell above] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
@@ -83,5 +49,24 @@ pascalLists = map pascalList [0..]
       pascalList n =
          map viewCell .
          takeWhile ((>= 0) . row) .
-         iterate (above . right) .
-         at (0,n) $ pascal
+         iterate (go $ above <> right) .
+         go (at (0,n)) $ pascal
+
+numberLine :: Z1 Integer Integer
+numberLine = zipper 0 (map negate [1..]) 0 [1..]
+
+numberLine2D :: Z2 Integer Integer Integer
+numberLine2D = Z2 $ zipper 0 (tail (iterate (fmap pred) numberLine))
+                             numberLine
+                             (tail (iterate (fmap succ) numberLine))
+
+cartesian :: Z2 Integer Integer (Integer,Integer)
+cartesian = Z2 $ zipper 0 (tail (iterate (fmap (second pred)) (fmap (,0) numberLine)))
+                          (fmap (,0) numberLine)
+                          (tail (iterate (fmap (second succ)) (fmap (,0) numberLine)))
+
+cartesian' :: Z2 Integer Integer (Integer,Integer)
+cartesian' = evaluate $ Z2 $ zipper 0
+   [(zipperOf 0 (second pred <$> cell below))]
+   (zipper 0 [(first pred <$> cell right)] (const (0,0)) [(first succ <$> cell left)])
+   [(zipperOf 0 (second succ <$> cell above))]
