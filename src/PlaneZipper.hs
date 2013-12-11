@@ -55,7 +55,7 @@ rectangle :: (Integral c, Integral r) => (c,r) -> (c,r) -> Z2 c r a -> [[a]]
 rectangle (c,r) (c',r') = fmap (genericTake width  . viewR)
                              . (genericTake height . viewR)
                              . fromZ2
-                             . go (at (c - 1,r - 1))
+                             . goto (c - 1,r - 1)
    where width  = toInteger $ abs (c - c')
          height = toInteger $ abs (r - r')
 

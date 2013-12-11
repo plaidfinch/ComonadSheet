@@ -43,51 +43,51 @@ class Ref2 ref row | ref -> row where
    aboveBy = belowBy . negate
    atRow   :: row -> ref
 
-class Ref3 ref level | ref -> level where
+class Ref3 ref lev | ref -> lev where
    inwardBy  :: Int -> ref
    inwardBy = outwardBy . negate
    outwardBy :: Int -> ref
    outwardBy = inwardBy . negate
-   atLevel   :: level -> ref
+   atlev   :: lev -> ref
 
 here :: AnyRef ref zipper => ref
 here = mempty
 
-above, below :: Ref2 ref r => ref
+above, below :: Ref2 ref row => ref
 above = aboveBy 1
 below = belowBy 1
 
-right, left :: Ref1 ref c => ref
+right, left :: Ref1 ref col => ref
 right = rightBy 1
 left  = leftBy  1
 
-inward, outward :: Ref3 ref l => ref
+inward, outward :: Ref3 ref lev => ref
 inward  = inwardBy 1
 outward = outwardBy 1
 
-instance Ref1 (Ref c) c where
+instance Ref1 (Ref col) col where
    rightBy = Rel
    atCol   = Abs 0
 
-instance Ref1 (Ref c,Ref r) c where
+instance Ref1 (Ref col,Ref row) col where
    rightBy = (,mempty) . Rel
    atCol   = (,mempty) . Abs 0
 
-instance Ref2 (Ref c,Ref r) r where
+instance Ref2 (Ref col,Ref row) row where
    belowBy = (mempty,) . Rel
    atRow   = (mempty,) . Abs 0
 
-instance Ref1 (Ref c,Ref r,Ref l) c where
+instance Ref1 (Ref col,Ref row,Ref lev) col where
    rightBy = (,mempty,mempty) . Rel
    atCol   = (,mempty,mempty) . Abs 0
 
-instance Ref2 (Ref c,Ref r,Ref l) r where
+instance Ref2 (Ref col,Ref row,Ref lev) row where
    belowBy = (mempty,,mempty) . Rel
    atRow   = (mempty,,mempty) . Abs 0
 
-instance Ref3 (Ref c,Ref r,Ref l) l where
+instance Ref3 (Ref col,Ref row,Ref lev) lev where
    inwardBy = (mempty,mempty,) . Rel
-   atLevel  = (mempty,mempty,) . Abs 0
+   atlev  = (mempty,mempty,) . Abs 0
 
 class (Monoid ref, Ord ref) => AnyRef ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
@@ -112,11 +112,11 @@ genericDeref zl zr idx ref =
 
 class AbsoluteRef ref tuple | ref -> tuple where
    at :: tuple -> ref
-instance AbsoluteRef (Ref c) c where
+instance AbsoluteRef (Ref col) col where
    at = Abs 0
-instance AbsoluteRef (Ref c,Ref r) (c,r) where
+instance AbsoluteRef (Ref col,Ref row) (col,row) where
    at (c,r) = (Abs 0 c,Abs 0 r)
-instance AbsoluteRef (Ref c, Ref r,Ref l) (c,r,l) where
+instance AbsoluteRef (Ref col, Ref row,Ref lev) (col,row,lev) where
    at (c,r,l) = (Abs 0 c,Abs 0 r,Abs 0 l)
 
 goto :: (AnyRef ref zipper, AbsoluteRef ref tuple) => tuple -> zipper -> zipper

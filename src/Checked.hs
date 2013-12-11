@@ -47,11 +47,11 @@ indexDeref = genericDeref pred succ id
 cell :: (AnyRef ref z, AnyZipper z i a) => ref -> CellExpr z ref a
 cell = StaticCell <$> Set.singleton <*> U.cell
 
-cells :: (AnyRef ref z, AnyZipper z i a, Ord ref) => [ref] -> CellExpr z ref [a]
+cells :: (AnyRef ref z, AnyZipper z i a) => [ref] -> CellExpr z ref [a]
 cells = StaticCell <$> Set.fromList <*> sequence . map (appCell . cell)
 
-dcell :: (AnyRef ref z) => (z -> a) -> CellExpr z ref a
+dcell :: (z -> a) -> CellExpr z ref a
 dcell = DynamicCell
 
-dcells :: (AnyRef ref z) => (z -> [a]) -> CellExpr z ref [a]
+dcells :: (z -> [a]) -> CellExpr z ref [a]
 dcells = DynamicCell

@@ -19,27 +19,28 @@ cell = (view .) . go
 cells :: (AnyRef r z, AnyZipper z i a) => [r] -> z -> [a]
 cells refs zipper = map (flip cell zipper) refs
 
-genericSheet :: ([Z1 c d] -> Z1 r (Z1 c d) -> Z1 r (Z1 c d))
+genericSheet :: (Ord r, Enum r, Ord c, Enum c) =>
+             ([Z1 c d] -> Z1 r (Z1 c d) -> Z1 r (Z1 c d))
              -> ([d]      -> Z1 c d   -> Z1 c d)
-             -> d -> (a -> d) -> (c,r) -> [[a]] -> Z2 c r d
-genericSheet colInsert rowInsert def inject (c,r) =
-   Z2 . flip colInsert (zipperOf r (zipperOf c def)) .
-   fmap (flip rowInsert $ zipperOf c def) .
+             -> d -> (a -> d) -> [[a]] -> Z2 c r d
+genericSheet colInsert rowInsert def inject =
+   Z2 .  flip colInsert (fromZ2 (pure def)) .
+   fmap (flip rowInsert (pure def)) .
    (fmap . fmap $ inject)
 
-sheetOf :: a -> (c,r) -> [[Z2 c r a -> a]] -> Z2 c r (Z2 c r a -> a)
+sheetOf :: (Ord r, Enum r, Ord c, Enum c) => a -> [[Z2 c r a -> a]] -> Z2 c r (Z2 c r a -> a)
 sheetOf def = genericSheet insertListR insertListR (const def) id
 
 -- Some example zippers for testing...
 
 fibLike :: Z2 Integer Integer Integer
-fibLike = evaluate $ sheetOf 0 (0,0) $
+fibLike = evaluate $ sheetOf 0 $
            ([1, 1]              ++ fibRow) :
     repeat ([1, 1 + cell above] ++ fibRow)
     where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 pascal :: Z2 Integer Integer Integer
-pascal = evaluate $ sheetOf 0 (0,0) $
+pascal = evaluate $ sheetOf 0 $
   repeat 1 : repeat (1 : pascalRow)
   where pascalRow = repeat $ cell above + cell left
 
