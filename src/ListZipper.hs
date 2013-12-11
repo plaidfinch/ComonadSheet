@@ -9,13 +9,10 @@ module ListZipper
    , insertListR , insertListL
    ) where
 
-import Control.Applicative
-import Control.Arrow hiding (left,right)
-import Data.List
-import Data.Function
-import Control.Comonad
-
 import Generic
+
+import Control.Applicative
+import Control.Comonad
 
 -- 1-D zippers...
 

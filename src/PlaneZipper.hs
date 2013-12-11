@@ -7,9 +7,9 @@ import ListZipper
 import NumericInstances
 
 import Control.Applicative
-import Control.Arrow hiding (left,right)
-import Data.List
 import Control.Comonad
+import Control.Arrow ( (&&&) )
+import Data.List
 
 -- | 2-dimensional zippers are nested list zippers
 newtype Z2 c r a = Z2 { fromZ2 :: Z1 r (Z1 c a) }

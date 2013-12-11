@@ -14,7 +14,6 @@ import PlaneZipper (Z2)
 import qualified PlaneZipper as Z2
 
 import Control.Applicative
-import Control.Arrow hiding (left,right)
 import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set

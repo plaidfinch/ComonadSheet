@@ -1,12 +1,12 @@
 module Unchecked where
 
+import Generic
 import ListZipper
 import PlaneZipper
-import Generic
 
 import Control.Applicative
 import Control.Comonad
-import Control.Arrow hiding (left,right)
+import Control.Arrow (first,second)
 import Data.Monoid
 import Data.Function
 
