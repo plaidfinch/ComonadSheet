@@ -4,9 +4,6 @@ module Generic where
 
 import Data.Monoid
 
---import ListZipper
---import Checked
-
 data Ref x = Abs Int x | Rel Int deriving (Show, Eq, Ord)
 
 instance Monoid (Ref x) where
@@ -52,6 +49,9 @@ class Ref3 ref level | ref -> level where
    outwardBy = inwardBy . negate
    atLevel   :: level -> ref
 
+here :: AnyRef ref zipper => ref
+here = mempty
+
 above, below :: Ref2 ref r => ref
 above = aboveBy 1
 below = belowBy 1
@@ -88,7 +88,7 @@ instance Ref2 (Ref c,Ref r,Ref l) r where
    belowBy = (mempty,,mempty) . Rel
    atRow   = (mempty,,mempty) . Abs 0
 
-class AnyRef ref zipper | zipper -> ref where
+class Monoid ref => AnyRef ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
 
 genericZipBy :: (z -> z) -> (z -> z) -> Int -> z -> z

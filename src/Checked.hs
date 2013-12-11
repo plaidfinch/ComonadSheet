@@ -1,13 +1,14 @@
 {-# LANGUAGE TupleSections #-}
 
 module Checked 
-   ( Ref(..) , CellRef , CellExpr(DynamicCell)
+   ( CellExpr(DynamicCell)
    , at , atRow , atCol
    , aboveBy , above , belowBy , below
    , leftBy , left , rightBy , right
    , cell , cells , dcell , dcells
    ) where
 
+import Generic
 import qualified Unchecked as U
 import PlaneZipper (Z2)
 import qualified PlaneZipper as Z2
@@ -18,40 +19,7 @@ import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-data Ref x = Abs Int x | Rel Int deriving (Show, Eq, Ord)
-
-instance Monoid (Ref x) where
-   mempty                    = Rel 0
-   Abs x y `mappend` Rel z   = Abs (x + z) y
-   Rel x   `mappend` Abs y z = Abs (x + y) z
-   Rel x   `mappend` Rel y   = Rel (x + y)
-   Abs y z `mappend` Abs _ _ = Abs y z
-
 type CellRef c r = (Ref c,Ref r)
-
-at :: (c,r) -> CellRef c r
-at = (Abs 0 *** Abs 0)
-
-atRow :: r -> CellRef c r
-atRow = (mempty,) . Abs 0
-
-atCol :: c -> CellRef c r
-atCol = (,mempty) . Abs 0
-
-aboveBy, belowBy, leftBy, rightBy :: Int -> CellRef c r
-aboveBy = (mempty,) . Rel . negate
-belowBy = (mempty,) . Rel
-leftBy  = (,mempty) . Rel . negate
-rightBy = (,mempty) . Rel
-
-above, below, left, right :: CellRef c r
-above = aboveBy 1
-below = belowBy 1
-left  = leftBy  1
-right = rightBy 1
-
-here :: CellRef c r
-here = mempty
 
 data CellExpr c r a b =
      StaticCell { getRefs  :: Set (CellRef c r)
@@ -77,27 +45,11 @@ instance (Ord c, Ord r) => Applicative (CellExpr c r a) where
    DynamicCell  a <*> StaticCell _ b = DynamicCell         (a <*> b)
    DynamicCell  a <*> DynamicCell  b = DynamicCell         (a <*> b)
 
-genericDeref :: (x -> a -> a) -> (Int -> a -> a) -> Ref x -> a -> a
-genericDeref _        relative (Rel i)   = relative i
-genericDeref absolute relative (Abs i x) = relative i . absolute x
-
-derefRow :: (Ord r, Enum r) => Ref r -> Z2 c r a -> Z2 c r a
-derefRow = genericDeref U.atRow U.belowBy
-
-derefCol :: (Ord c, Enum c) => Ref c -> Z2 c r a -> Z2 c r a
-derefCol = genericDeref U.atCol U.rightBy
-
-derefCoord :: (Ord r, Enum r, Ord c, Enum c) => CellRef c r -> Z2 c r a -> Z2 c r a
-derefCoord (c,r) = derefCol c . derefRow r
-
-indexDeref :: Enum x => Ref x -> x -> x
-indexDeref = genericDeref const relative
-   where
-      relative n z | n > 0     = iterate succ z !! n
-      relative n z | otherwise = iterate pred z !! (negate n)
+indexDeref :: (Ord x, Enum x) => Ref x -> x -> x
+indexDeref = genericDeref pred succ id
 
 cell :: (Ord r, Enum r, Ord c, Enum c) => CellRef c r -> CellExpr c r a a
-cell = StaticCell <$> Set.singleton <*> U.cell . derefCoord
+cell = StaticCell <$> Set.singleton <*> U.cell
 
 cells :: (Ord r, Enum r, Ord c, Enum c) => [CellRef c r] -> CellExpr c r a [a]
 cells = StaticCell <$> Set.fromList <*> sequence . map (appCell . cell)
