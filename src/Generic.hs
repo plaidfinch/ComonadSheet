@@ -77,10 +77,6 @@ instance Ref2 (Ref c,Ref r) r where
    belowBy = (mempty,) . Rel
    atRow   = (mempty,) . Abs 0
 
-instance Ref3 (Ref c,Ref r,Ref l) l where
-   inwardBy = (mempty,mempty,) . Rel
-   atLevel  = (mempty,mempty,) . Abs 0
-
 instance Ref1 (Ref c,Ref r,Ref l) c where
    rightBy = (,mempty,mempty) . Rel
    atCol   = (,mempty,mempty) . Abs 0
@@ -88,6 +84,10 @@ instance Ref1 (Ref c,Ref r,Ref l) c where
 instance Ref2 (Ref c,Ref r,Ref l) r where
    belowBy = (mempty,,mempty) . Rel
    atRow   = (mempty,,mempty) . Abs 0
+
+instance Ref3 (Ref c,Ref r,Ref l) l where
+   inwardBy = (mempty,mempty,) . Rel
+   atLevel  = (mempty,mempty,) . Abs 0
 
 class Monoid ref => AnyRef ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
