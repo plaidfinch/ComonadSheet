@@ -13,11 +13,11 @@ import Data.Function
 evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b
 evaluate fs = fix $ (fs <*>) . duplicate
 
-cell :: (Ord c, Ord r, Enum c, Enum r) => (Ref c,Ref r) -> Z2 c r a -> a
-cell = (viewCell .) . go
+cell :: (AnyRef r z, AnyZipper z i a) => r -> z -> a
+cell = (view .) . go
 
-cells :: [Z2 c r a -> Z2 c r a] -> Z2 c r a -> [a]
-cells fs = map viewCell . (fs <*>) . pure
+cells :: (AnyRef r z, AnyZipper z i a) => [r] -> z -> [a]
+cells refs zipper = map (flip cell zipper) refs
 
 genericSheet :: ([Z1 c d] -> Z1 r (Z1 c d) -> Z1 r (Z1 c d))
              -> ([d]      -> Z1 c d   -> Z1 c d)
@@ -47,7 +47,7 @@ pascalLists :: [[Integer]]
 pascalLists = map pascalList [0..]
    where
       pascalList n =
-         map viewCell .
+         map view .
          takeWhile ((>= 0) . row) .
          iterate (go $ above <> right) .
          goto (0,n) $ pascal

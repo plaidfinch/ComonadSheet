@@ -22,10 +22,10 @@ instance Functor (Z2 c r) where
 
 instance (Ord c, Ord r, Enum c, Enum r) => Applicative (Z2 c r) where
    fs <*> xs = Z2 $ fmap (<*>) (fromZ2 fs) <*> (fromZ2 xs)
-   pure      = Z2 . (pure . pure)
+   pure      = Z2 . pure . pure
 
 instance (Ord c, Ord r, Enum c, Enum r) => Comonad (Z2 c r) where
-   extract   = viewCell
+   extract   = view
    duplicate = wrapZ2 $
       fmap duplicateHorizontal . duplicate
       where duplicateHorizontal = zipIterate zipL zipR <$> index . view <*> Z2
@@ -44,8 +44,9 @@ instance (Ord c, Enum c, Ord r, Enum r) => AnyRef (Ref c,Ref r) (Z2 c r a) where
          horizontal = genericDeref zipL zipR col colRef
          vertical   = genericDeref zipU zipD row rowRef
 
-viewCell :: Z2 c r a -> a
-viewCell = view . view . fromZ2
+instance AnyZipper (Z2 c r a) (c,r) a where
+   index = (col &&& row)
+   view  = view . view . fromZ2
 
 window2D :: Int -> Int -> Int -> Int -> Z2 c r a -> [[a]]
 window2D u d l r = window u d . fmap (window l r) . fromZ2
@@ -68,7 +69,7 @@ writeCell :: a -> Z2 c r a -> Z2 c r a
 writeCell a = wrapZ2 $ modify (write a)
 
 modifyCell :: (a -> a) -> Z2 c r a -> Z2 c r a
-modifyCell f = writeCell <$> f . viewCell <*> id
+modifyCell f = writeCell <$> f . view <*> id
 
 modifyRow :: (Z1 c a -> Z1 c a) -> Z2 c r a -> Z2 c r a
 modifyRow = wrapZ2 . modify

@@ -13,8 +13,9 @@ instance Monoid (Ref x) where
    Rel x   `mappend` Rel y   = Rel (x + y)
    Abs y z `mappend` Abs _ _ = Abs y z
 
-class AnyZipper z i where
+class AnyZipper z i a | z -> i a where
    index :: z -> i
+   view  :: z -> a
 
 class Zipper1 z where
    zipL :: z -> z
@@ -99,7 +100,7 @@ genericZipBy zl zr i | otherwise = id
 genericZipTo :: (Ord i) => (z -> z) -> (z -> z) -> (z -> i) -> i -> z -> z
 genericZipTo zl zr idx i z | i < idx z = genericZipTo zl zr idx i . zl $ z
 genericZipTo zl zr idx i z | i > idx z = genericZipTo zl zr idx i . zr $ z
-genericZipTo zl zr idx i z | otherwise   = z
+genericZipTo zl zr idx i z | otherwise = z
 
 genericDeref :: (Ord i) => (z -> z) -> (z -> z) -> (z -> i) -> Ref i -> z -> z
 genericDeref zl zr idx ref =

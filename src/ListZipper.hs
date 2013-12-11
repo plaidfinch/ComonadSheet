@@ -3,8 +3,7 @@
 module ListZipper
    ( Z1
    , zipper , zipperOf , zipIterate
-   , zipL , zipR
-   , viewL , viewR , view , index , window
+   , viewL , viewR , view , window
    , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
@@ -42,8 +41,9 @@ instance (Ord i, Enum i) => Comonad (Z1 i) where
    extract   = view
    duplicate = zipIterate zipL zipR <$> index <*> id
 
-instance AnyZipper (Z1 i a) i where
+instance AnyZipper (Z1 i a) i a where
    index (Z1 i _ _ _) = i
+   view  (Z1 _ _ c _) = c
 
 instance (Enum i, Ord i) => Zipper1 (Z1 i a) where
    zipL (Z1 i (left : lefts) cursor rights) =
@@ -74,9 +74,6 @@ viewL (Z1 _ lefts _ _) = lefts
 
 viewR :: Z1 i a -> [a]
 viewR (Z1 _ _ _ rights) = rights
-
-view :: Z1 i a -> a
-view (Z1 _ _ cursor _) = cursor
 
 write :: a -> Z1 i a -> Z1 i a
 write cursor (Z1 i lefts _ rights) = Z1 i lefts cursor rights
