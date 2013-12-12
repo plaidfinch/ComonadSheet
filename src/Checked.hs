@@ -42,7 +42,7 @@ cell :: (Ord ref, AnyRef ref z, AnyZipper z i a) => ref -> CellExpr z ref a
 cell = StaticCell <$> Set.singleton <*> U.cell
 
 cells :: (Ord ref, AnyRef ref z, AnyZipper z i a) => [ref] -> CellExpr z ref [a]
-cells = StaticCell <$> Set.fromList <*> sequence . map (appCell . cell)
+cells = StaticCell <$> Set.fromList <*> U.cells
 
 dcell :: (z -> a) -> CellExpr z ref a
 dcell = DynamicCell
