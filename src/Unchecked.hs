@@ -4,10 +4,7 @@ import Generic
 import ListZipper
 import PlaneZipper
 
-import Control.Applicative
-import Control.Comonad
 import Control.Arrow (first,second)
-import Data.Monoid
 import Data.Function
 
 evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b

@@ -1,7 +1,7 @@
 {-# LANGUAGE TupleSections, MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
 module Generic
-   ( Ref(..) , module Data.Monoid
+   ( Ref(..) , module Data.Monoid, module Control.Applicative, module Control.Comonad
    , AnyZipper , Zipper1 , Zipper2 , Zipper3
    , AnyRef , AbsoluteRef , Ref1 , Ref2 , Ref3
    , index , view , zipL , zipR , zipU , zipD , zipI , zipO
@@ -11,6 +11,8 @@ module Generic
    ) where
 
 import Data.Monoid
+import Control.Applicative
+import Control.Comonad
 
 data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
 

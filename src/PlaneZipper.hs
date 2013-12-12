@@ -4,10 +4,7 @@ module PlaneZipper where
 
 import Generic
 import ListZipper
-import NumericInstances
 
-import Control.Applicative
-import Control.Comonad
 import Control.Arrow ( (&&&) )
 import Data.List
 

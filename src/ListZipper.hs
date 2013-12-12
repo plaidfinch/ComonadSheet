@@ -11,9 +11,6 @@ module ListZipper
 
 import Generic
 
-import Control.Applicative
-import Control.Comonad
-
 -- 1-D zippers...
 
 -- | One-dimensional list zipper

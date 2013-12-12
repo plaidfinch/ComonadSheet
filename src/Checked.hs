@@ -13,8 +13,6 @@ import qualified Unchecked as U
 import PlaneZipper (Z2)
 import qualified PlaneZipper as Z2
 
-import Control.Applicative
-import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set
 

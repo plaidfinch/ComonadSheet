@@ -4,9 +4,9 @@ import Generic
 import ListZipper
 import PlaneZipper
 import Unchecked
+import NumericInstances
 
 import Control.Arrow (first, second)
-import Control.Applicative
 
 -- Some example zippers for testing...
 
