@@ -27,7 +27,7 @@ pascalLists = map pascalList [0..]
       pascalList n =
          map view .
          takeWhile ((>= 0) . row) .
-         iterate (go $ above <> right) .
+         iterate (go $ above & right) .
          goto (0,n) $ pascal
 
 numberLine :: Z1 Integer Integer

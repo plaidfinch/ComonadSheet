@@ -35,7 +35,7 @@ instance (Ord c, Ord r, Enum c, Enum r) => Zipper2 (Z2 c r a) where
    zipU = wrapZ2 zipL
    zipD = wrapZ2 zipR
 
-instance (Ord c, Enum c, Ord r, Enum r) => AnyRef (Ref c,Ref r) (Z2 c r a) where
+instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) where
    go (colRef,rowRef) = horizontal . vertical
       where
          horizontal = genericDeref zipL zipR col colRef

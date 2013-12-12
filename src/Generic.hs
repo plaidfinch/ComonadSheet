@@ -1,12 +1,13 @@
 {-# LANGUAGE TupleSections, MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
 module Generic
-   ( Ref(..) , module Data.Monoid, module Control.Applicative, module Control.Comonad
+   ( Ref(..)
+   , module Control.Applicative, module Control.Comonad
    , AnyZipper , Zipper1 , Zipper2 , Zipper3
-   , AnyRef , AbsoluteRef , Ref1 , Ref2 , Ref3
+   , RefOf , AnyRef , Ref1 , Ref2 , Ref3
    , index , view , zipL , zipR , zipU , zipD , zipI , zipO
    , rightBy , leftBy , atCol , belowBy , aboveBy , atRow , inwardBy , outwardBy , atlev
-   , go , at , here , above , below , left , right , inward , outward , goto
+   , (&) , go , at , here , above , below , left , right , inward , outward , goto
    , genericZipBy , genericZipTo , genericDeref
    ) where
 
@@ -16,28 +17,31 @@ import Control.Comonad
 
 data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
 
-instance Enum x => Monoid (Ref x) where
-   mempty                = Rel 0
-   Abs x `mappend` Rel y = Abs $ toEnum (fromEnum x + y)
-   Rel x `mappend` Abs y = Abs $ toEnum (x + fromEnum y)
-   Rel x `mappend` Rel y = Rel (x + y)
-   Abs x `mappend` Abs _ = Abs x
+class AnyRef ref tuple | ref -> tuple where
+   at   :: tuple -> ref
+   here :: ref
+   (&)  :: ref -> ref -> ref
 
-class AnyZipper z i a | z -> i a where
-   index :: z -> i
-   view  :: z -> a
+instance Enum col => AnyRef (Ref col) col where
+   here          = Rel 0
+   at            = Abs
+   Abs x & Rel y = Abs $ toEnum (fromEnum x + y)
+   Rel x & Abs y = Abs $ toEnum (x + fromEnum y)
+   Rel x & Rel y = Rel (x + y)
+   Abs _ & Abs y = Abs y
 
-class Zipper1 z where
-   zipL :: z -> z
-   zipR :: z -> z
+instance (Enum col, Enum row) => AnyRef (Ref col,Ref row) (col,row) where
+   here            = (here,here)
+   at (c,r)        = (at c,at r)
+   (c,r) & (c',r') = (c & c',r & r')
 
-class Zipper2 z where
-   zipU :: z -> z
-   zipD :: z -> z
+instance (Enum col, Enum row, Enum lev) => AnyRef (Ref col, Ref row,Ref lev) (col,row,lev) where
+   here                 = (here,here,here)
+   at (c,r,l)           = (at c,at r,at l)
+   (c,r,l) & (c',r',l') = (c & c',r & r',l & l')
 
-class Zipper3 z where
-   zipI :: z -> z
-   zipO :: z -> z
+goto :: (RefOf ref zipper, AnyRef ref tuple) => tuple -> zipper -> zipper
+goto = go . at
 
 class Ref1 ref col | ref -> col where
    rightBy :: Int -> ref
@@ -60,9 +64,6 @@ class Ref3 ref lev | ref -> lev where
    outwardBy = inwardBy . negate
    atlev   :: lev -> ref
 
-here :: (Monoid ref, AnyRef ref zipper) => ref
-here = mempty
-
 above, below :: Ref2 ref row => ref
 above = aboveBy 1
 below = belowBy 1
@@ -72,7 +73,7 @@ right = rightBy 1
 left  = leftBy  1
 
 inward, outward :: Ref3 ref lev => ref
-inward  = inwardBy 1
+inward  = inwardBy  1
 outward = outwardBy 1
 
 instance Enum col => Ref1 (Ref col) col where
@@ -80,26 +81,26 @@ instance Enum col => Ref1 (Ref col) col where
    atCol   = Abs
 
 instance (Enum row, Enum col) => Ref1 (Ref col,Ref row) col where
-   rightBy = (,mempty) . Rel
-   atCol   = (,mempty) . Abs
+   rightBy = (,here) . Rel
+   atCol   = (,here) . Abs
 
 instance (Enum row, Enum col) => Ref2 (Ref col,Ref row) row where
-   belowBy = (mempty,) . Rel
-   atRow   = (mempty,) . Abs
+   belowBy = (here,) . Rel
+   atRow   = (here,) . Abs
 
 instance (Enum row, Enum col, Enum lev) => Ref1 (Ref col,Ref row,Ref lev) col where
-   rightBy = (,mempty,mempty) . Rel
-   atCol   = (,mempty,mempty) . Abs
+   rightBy = (,here,here) . Rel
+   atCol   = (,here,here) . Abs
 
 instance (Enum row, Enum col, Enum lev) => Ref2 (Ref col,Ref row,Ref lev) row where
-   belowBy = (mempty,,mempty) . Rel
-   atRow   = (mempty,,mempty) . Abs
+   belowBy = (here,,here) . Rel
+   atRow   = (here,,here) . Abs
 
 instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev where
-   inwardBy = (mempty,mempty,) . Rel
-   atlev    = (mempty,mempty,) . Abs
+   inwardBy = (here,here,) . Rel
+   atlev    = (here,here,) . Abs
 
-class AnyRef ref zipper | zipper -> ref where
+class RefOf ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
 
 genericZipBy :: (z -> z) -> (z -> z) -> Int -> z -> z
@@ -120,15 +121,18 @@ genericDeref zl zr idx ref =
    where relative = genericZipBy zl zr
          absolute = genericZipTo zl zr idx
 
-class AbsoluteRef ref tuple | ref -> tuple where
-   at :: tuple -> ref
-instance AbsoluteRef (Ref col) col where
-   at = Abs
-instance AbsoluteRef (Ref col,Ref row) (col,row) where
-   at (c,r) = (Abs c,Abs r)
-instance AbsoluteRef (Ref col, Ref row,Ref lev) (col,row,lev) where
-   at (c,r,l) = (Abs c,Abs r,Abs l)
+class AnyZipper z i a | z -> i a where
+   index :: z -> i
+   view  :: z -> a
 
-goto :: (AnyRef ref zipper, AbsoluteRef ref tuple) => tuple -> zipper -> zipper
-goto = go . at
+class Zipper1 z where
+   zipL :: z -> z
+   zipR :: z -> z
 
+class Zipper2 z where
+   zipU :: z -> z
+   zipD :: z -> z
+
+class Zipper3 z where
+   zipI :: z -> z
+   zipO :: z -> z
