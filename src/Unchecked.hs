@@ -17,8 +17,8 @@ cells :: (AnyRef r z, AnyZipper z i a) => [r] -> z -> [a]
 cells refs zipper = map (flip cell zipper) refs
 
 genericSheet :: (Ord r, Enum r, Ord c, Enum c) =>
-             ([Z1 c d] -> Z1 r (Z1 c d) -> Z1 r (Z1 c d))
-             -> ([d]      -> Z1 c d   -> Z1 c d)
+                ([Z1 c d] -> Z1 r (Z1 c d) -> Z1 r (Z1 c d))
+             -> ([d]      -> Z1 c d        -> Z1 c d)
              -> d -> (a -> d) -> [[a]] -> Z2 c r d
 genericSheet colInsert rowInsert def inject =
    Z2 .  flip colInsert (fromZ2 (pure def)) .

@@ -60,7 +60,7 @@ class Ref3 ref lev | ref -> lev where
    outwardBy = inwardBy . negate
    atlev   :: lev -> ref
 
-here :: AnyRef ref zipper => ref
+here :: (Monoid ref, AnyRef ref zipper) => ref
 here = mempty
 
 above, below :: Ref2 ref row => ref
@@ -99,7 +99,7 @@ instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev wh
    inwardBy = (mempty,mempty,) . Rel
    atlev    = (mempty,mempty,) . Abs
 
-class (Monoid ref, Ord ref) => AnyRef ref zipper | zipper -> ref where
+class AnyRef ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
 
 genericZipBy :: (z -> z) -> (z -> z) -> Int -> z -> z
