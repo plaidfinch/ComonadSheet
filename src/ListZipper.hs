@@ -1,9 +1,9 @@
-{-# LANGUAGE BangPatterns, FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE BangPatterns, FlexibleInstances, MultiParamTypeClasses, MultiWayIf #-}
 
 module ListZipper
    ( Z1
    , zipper , zipperOf , zipIterate
-   , viewL , viewR , view , window
+   , viewL , viewR , view , segment
    , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
@@ -81,10 +81,14 @@ switch (Z1 i lefts cursor rights) = Z1 i rights cursor lefts
 modify :: (a -> a) -> Z1 i a -> Z1 i a
 modify f = write <$> f . view <*> id
 
-window :: Int -> Int -> Z1 i a -> [a]
-window leftCount rightCount =
-   (++) <$> reverse . take leftCount . viewL
-        <*> ((:) <$> view <*> take rightCount . viewR)
+segment :: (Enum i, Ord i) => Ref i -> Ref i -> Z1 i a -> [a]
+segment ref1 ref2 z =
+   if | dist > 0  -> take    dist  . viewR $ go left loc1
+      | dist < 0  -> take (- dist) . viewR $ go left loc2
+      | otherwise -> []
+   where loc1 = go ref1 z
+         loc2 = go ref2 z
+         dist = (fromEnum $ index loc2) - (fromEnum $ index loc1)
 
 insertR, insertL :: a -> Z1 i a -> Z1 i a
 insertR x (Z1 i lefts cursor rights) = Z1 i lefts x (cursor : rights)

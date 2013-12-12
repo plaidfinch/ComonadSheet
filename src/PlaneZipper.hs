@@ -48,16 +48,8 @@ instance AnyZipper (Z2 c r a) (c,r) a where
    index = (col &&& row)
    view  = view . view . fromZ2
 
-window2D :: Int -> Int -> Int -> Int -> Z2 c r a -> [[a]]
-window2D u d l r = window u d . fmap (window l r) . fromZ2
-
-rectangle :: (Integral c, Integral r) => (c,r) -> (c,r) -> Z2 c r a -> [[a]]
-rectangle (c,r) (c',r') = fmap (genericTake width  . viewR)
-                             . (genericTake height . viewR)
-                             . fromZ2
-                             . goto (c - 1,r - 1)
-   where width  = toInteger $ abs (c - c')
-         height = toInteger $ abs (r - r')
+rectangle :: (Integral c, Integral r) => (Ref c,Ref r) -> (Ref c,Ref r) -> Z2 c r a -> [[a]]
+rectangle (c,r) (c',r') = fmap (segment c c') . segment r r' . fromZ2
 
 col :: Z2 c r a -> c
 col = index . view . fromZ2

@@ -1,6 +1,14 @@
 {-# LANGUAGE TupleSections, MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
-module Generic where
+module Generic
+   ( Ref(..) , module Data.Monoid
+   , AnyZipper , Zipper1 , Zipper2 , Zipper3
+   , AnyRef , AbsoluteRef , Ref1 , Ref2 , Ref3
+   , index , view , zipL , zipR , zipU , zipD , zipI , zipO
+   , rightBy , leftBy , atCol , belowBy , aboveBy , atRow , inwardBy , outwardBy , atlev
+   , go , at , here , above , below , left , right , inward , outward , goto
+   , genericZipBy , genericZipTo , genericDeref
+   ) where
 
 import Data.Monoid
 
