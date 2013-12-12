@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, KindSignatures, TupleSections #-}
+{-# LANGUAGE TupleSections #-}
 
 module Checked 
    ( CellExpr(DynamicCell)
@@ -13,9 +13,8 @@ import qualified PlaneZipper as Z2
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-data CellExpr z r b where
-   StaticCell  :: AnyRef r z => Set r -> (z -> b) -> CellExpr z r b
-   DynamicCell :: (z -> b) -> CellExpr z r b
+data CellExpr z ref b = StaticCell  { getRefs :: Set ref, appSCell :: z -> b }
+                      | DynamicCell {                     appDCell :: z -> b }
 
 appCell :: CellExpr z r b -> z -> b
 appCell (StaticCell _ f) = f
