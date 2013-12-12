@@ -2,9 +2,6 @@
 
 module Checked 
    ( CellExpr(DynamicCell)
-   , at , atRow , atCol
-   , aboveBy , above , belowBy , below
-   , leftBy , left , rightBy , right
    , cell , cells , dcell , dcells
    ) where
 
