@@ -4,14 +4,14 @@ module Generic where
 
 import Data.Monoid
 
-data Ref x = Abs Int x | Rel Int deriving (Show, Eq, Ord)
+data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
 
-instance Monoid (Ref x) where
-   mempty                    = Rel 0
-   Abs x y `mappend` Rel z   = Abs (x + z) y
-   Rel x   `mappend` Abs y z = Abs (x + y) z
-   Rel x   `mappend` Rel y   = Rel (x + y)
-   Abs y z `mappend` Abs _ _ = Abs y z
+instance Enum x => Monoid (Ref x) where
+   mempty                = Rel 0
+   Abs x `mappend` Rel y = Abs $ toEnum (fromEnum x + y)
+   Rel x `mappend` Abs y = Abs $ toEnum (x + fromEnum y)
+   Rel x `mappend` Rel y = Rel (x + y)
+   Abs x `mappend` Abs _ = Abs x
 
 class AnyZipper z i a | z -> i a where
    index :: z -> i
@@ -65,29 +65,29 @@ inward, outward :: Ref3 ref lev => ref
 inward  = inwardBy 1
 outward = outwardBy 1
 
-instance Ref1 (Ref col) col where
+instance Enum col => Ref1 (Ref col) col where
    rightBy = Rel
-   atCol   = Abs 0
+   atCol   = Abs
 
-instance Ref1 (Ref col,Ref row) col where
+instance (Enum row, Enum col) => Ref1 (Ref col,Ref row) col where
    rightBy = (,mempty) . Rel
-   atCol   = (,mempty) . Abs 0
+   atCol   = (,mempty) . Abs
 
-instance Ref2 (Ref col,Ref row) row where
+instance (Enum row, Enum col) => Ref2 (Ref col,Ref row) row where
    belowBy = (mempty,) . Rel
-   atRow   = (mempty,) . Abs 0
+   atRow   = (mempty,) . Abs
 
-instance Ref1 (Ref col,Ref row,Ref lev) col where
+instance (Enum row, Enum col, Enum lev) => Ref1 (Ref col,Ref row,Ref lev) col where
    rightBy = (,mempty,mempty) . Rel
-   atCol   = (,mempty,mempty) . Abs 0
+   atCol   = (,mempty,mempty) . Abs
 
-instance Ref2 (Ref col,Ref row,Ref lev) row where
+instance (Enum row, Enum col, Enum lev) => Ref2 (Ref col,Ref row,Ref lev) row where
    belowBy = (mempty,,mempty) . Rel
-   atRow   = (mempty,,mempty) . Abs 0
+   atRow   = (mempty,,mempty) . Abs
 
-instance Ref3 (Ref col,Ref row,Ref lev) lev where
+instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev where
    inwardBy = (mempty,mempty,) . Rel
-   atlev  = (mempty,mempty,) . Abs 0
+   atlev    = (mempty,mempty,) . Abs
 
 class (Monoid ref, Ord ref) => AnyRef ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
@@ -105,19 +105,19 @@ genericZipTo zl zr idx i z | otherwise = z
 genericDeref :: (Ord i) => (z -> z) -> (z -> z) -> (z -> i) -> Ref i -> z -> z
 genericDeref zl zr idx ref =
    case ref of
-      Rel i   -> relative i
-      Abs i x -> relative i . absolute x
+      Rel i -> relative i
+      Abs x -> absolute x
    where relative = genericZipBy zl zr
          absolute = genericZipTo zl zr idx
 
 class AbsoluteRef ref tuple | ref -> tuple where
    at :: tuple -> ref
 instance AbsoluteRef (Ref col) col where
-   at = Abs 0
+   at = Abs
 instance AbsoluteRef (Ref col,Ref row) (col,row) where
-   at (c,r) = (Abs 0 c,Abs 0 r)
+   at (c,r) = (Abs c,Abs r)
 instance AbsoluteRef (Ref col, Ref row,Ref lev) (col,row,lev) where
-   at (c,r,l) = (Abs 0 c,Abs 0 r,Abs 0 l)
+   at (c,r,l) = (Abs c,Abs r,Abs l)
 
 goto :: (AnyRef ref zipper, AbsoluteRef ref tuple) => tuple -> zipper -> zipper
 goto = go . at
