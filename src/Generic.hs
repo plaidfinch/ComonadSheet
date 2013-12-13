@@ -139,7 +139,7 @@ instance (Enum row, Enum col, Enum lev, Enum spc) => Ref3 (Ref col,Ref row,Ref l
    atLevel   = (here,here,,here) . Abs
 
 instance (Enum row, Enum col, Enum lev, Enum spc) => Ref4 (Ref col,Ref row,Ref lev,Ref spc) spc where
-   kataBy   = (here,here,here,) . Rel
+   kataBy  = (here,here,here,) . Rel
    atSpace = (here,here,here,) . Abs
 
 class RefOf ref zipper | zipper -> ref where
