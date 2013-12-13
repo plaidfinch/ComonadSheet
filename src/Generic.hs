@@ -3,17 +3,14 @@
 module Generic
    ( module Control.Applicative, module Control.Comonad
 
-   , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
-
    , genericZipBy , genericZipTo , genericDeref
 
-   , Ref1    , Ref2    , Ref3    , Ref4
-   , Zipper1 , Zipper2 , Zipper3 , Zipper4
+   , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
 
-   , atCol            , atRow             , atLevel              , atSpace
-   , right   , left   , below   , above   , outward   , inward   , kata   , ana
-   , zipR    , zipL   , zipD    , zipU    , zipO      , zipI     , zipK   , zipA
-   , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , kataBy , anaBy
+   , Ref1(..)    , Ref2(..)    , Ref3(..)    , Ref4(..)
+   , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
+
+   , right , left , below , above , outward , inward , kata , ana
    ) where
 
 import Data.Monoid
