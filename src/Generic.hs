@@ -13,7 +13,6 @@ module Generic
    , right , left , below , above , outward , inward , kata , ana
    ) where
 
-import Data.Monoid
 import Control.Applicative
 import Control.Comonad
 
