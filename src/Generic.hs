@@ -5,8 +5,9 @@ module Generic
    , module Control.Applicative, module Control.Comonad
    , AnyZipper , Zipper1 , Zipper2 , Zipper3
    , RefOf , AnyRef , Ref1 , Ref2 , Ref3
-   , index , view , zipL , zipR , zipU , zipD , zipI , zipO
-   , rightBy , leftBy , atCol , belowBy , aboveBy , atRow , inwardBy , outwardBy , atlev
+   , index , view , zipL , zipR , zipU , zipD , zipI , zipO , zipA , zipK
+   , rightBy , leftBy , belowBy , aboveBy , inwardBy , outwardBy , anaBy , kataBy
+   , atCol , atRow , atLevel , atSpace
    , (&) , go , at , here , above , below , left , right , inward , outward , goto
    , genericZipBy , genericZipTo , genericDeref
    ) where
@@ -16,6 +17,8 @@ import Control.Applicative
 import Control.Comonad
 
 data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
+
+infixl 6 &
 
 class AnyRef ref tuple | ref -> tuple where
    at   :: tuple -> ref
@@ -35,10 +38,15 @@ instance (Enum col, Enum row) => AnyRef (Ref col,Ref row) (col,row) where
    at (c,r)        = (at c,at r)
    (c,r) & (c',r') = (c & c',r & r')
 
-instance (Enum col, Enum row, Enum lev) => AnyRef (Ref col, Ref row,Ref lev) (col,row,lev) where
+instance (Enum col, Enum row, Enum level) => AnyRef (Ref col, Ref row,Ref level) (col,row,level) where
    here                 = (here,here,here)
    at (c,r,l)           = (at c,at r,at l)
    (c,r,l) & (c',r',l') = (c & c',r & r',l & l')
+
+instance (Enum col, Enum row, Enum level, Enum space) => AnyRef (Ref col, Ref row,Ref level,Ref space) (col,row,level,space) where
+   here                      = (here,here,here,here)
+   at (c,r,l,s)              = (at c,at r,at l,at s)
+   (c,r,l,s) & (c',r',l',s') = (c & c',r & r',l & l',s & s')
 
 goto :: (RefOf ref zipper, AnyRef ref tuple) => tuple -> zipper -> zipper
 goto = go . at
@@ -57,12 +65,19 @@ class Ref2 ref row | ref -> row where
    aboveBy = belowBy . negate
    atRow   :: row -> ref
 
-class Ref3 ref lev | ref -> lev where
+class Ref3 ref level | ref -> level where
    inwardBy  :: Int -> ref
    inwardBy = outwardBy . negate
    outwardBy :: Int -> ref
    outwardBy = inwardBy . negate
-   atlev   :: lev -> ref
+   atLevel   :: level -> ref
+
+class Ref4 ref level | ref -> level where
+   anaBy  :: Int -> ref
+   anaBy = kataBy . negate
+   kataBy :: Int -> ref
+   kataBy = anaBy . negate
+   atSpace :: level -> ref
 
 above, below :: Ref2 ref row => ref
 above = aboveBy 1
@@ -72,9 +87,13 @@ right, left :: Ref1 ref col => ref
 right = rightBy 1
 left  = leftBy  1
 
-inward, outward :: Ref3 ref lev => ref
+inward, outward :: Ref3 ref level => ref
 inward  = inwardBy  1
 outward = outwardBy 1
+
+ana, kata :: Ref4 ref space => ref
+ana  = anaBy  1
+kata = kataBy 1
 
 instance Enum col => Ref1 (Ref col) col where
    rightBy = Rel
@@ -88,17 +107,33 @@ instance (Enum row, Enum col) => Ref2 (Ref col,Ref row) row where
    belowBy = (here,) . Rel
    atRow   = (here,) . Abs
 
-instance (Enum row, Enum col, Enum lev) => Ref1 (Ref col,Ref row,Ref lev) col where
+instance (Enum row, Enum col, Enum level) => Ref1 (Ref col,Ref row,Ref level) col where
    rightBy = (,here,here) . Rel
    atCol   = (,here,here) . Abs
 
-instance (Enum row, Enum col, Enum lev) => Ref2 (Ref col,Ref row,Ref lev) row where
+instance (Enum row, Enum col, Enum level) => Ref2 (Ref col,Ref row,Ref level) row where
    belowBy = (here,,here) . Rel
    atRow   = (here,,here) . Abs
 
-instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev where
+instance (Enum row, Enum col, Enum level) => Ref3 (Ref col,Ref row,Ref level) level where
    inwardBy = (here,here,) . Rel
-   atlev    = (here,here,) . Abs
+   atLevel  = (here,here,) . Abs
+
+instance (Enum row, Enum col, Enum level, Enum space) => Ref1 (Ref col,Ref row,Ref level,Ref space) col where
+   rightBy = (,here,here,here) . Rel
+   atCol   = (,here,here,here) . Abs
+
+instance (Enum row, Enum col, Enum level, Enum space) => Ref2 (Ref col,Ref row,Ref level,Ref space) row where
+   belowBy = (here,,here,here) . Rel
+   atRow   = (here,,here,here) . Abs
+
+instance (Enum row, Enum col, Enum level, Enum space) => Ref3 (Ref col,Ref row,Ref level,Ref space) level where
+   inwardBy = (here,here,,here) . Rel
+   atLevel  = (here,here,,here) . Abs
+
+instance (Enum row, Enum col, Enum level, Enum space) => Ref4 (Ref col,Ref row,Ref level,Ref space) space where
+   anaBy   = (here,here,here,) . Rel
+   atSpace = (here,here,here,) . Abs
 
 class RefOf ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
@@ -136,3 +171,7 @@ class Zipper2 z where
 class Zipper3 z where
    zipI :: z -> z
    zipO :: z -> z
+
+class Zipper4 z where
+   zipA :: z -> z
+   zipK :: z -> z
