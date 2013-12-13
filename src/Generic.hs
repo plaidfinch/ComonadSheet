@@ -1,16 +1,22 @@
 {-# LANGUAGE TupleSections, MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
 module Generic
-   ( Ref(..)
-   , module Control.Applicative, module Control.Comonad
-   , AnyZipper , Zipper1 , Zipper2 , Zipper3 , Zipper4
-   , RefOf , AnyRef , Ref1 , Ref2 , Ref3 , Ref4
-   , index , view , zipL , zipR , zipU , zipD , zipI , zipO , zipA , zipK
-   , rightBy , leftBy , belowBy , aboveBy , inwardBy , outwardBy , anaBy , kataBy
-   , atCol , atRow , atLevel , atSpace
+   ( module Control.Applicative, module Control.Comonad
+
+   , AnyZipper
+   , Ref(..) , RefOf , AnyRef
+
+   , index , view
    , (&) , go , at , here , goto
-   , above , below , left , right , inward , outward , ana , kata
    , genericZipBy , genericZipTo , genericDeref
+
+   , Ref1    , Ref2    , Ref3    , Ref4
+   , Zipper1 , Zipper2 , Zipper3 , Zipper4
+
+   , atCol            , atRow             , atLevel              , atSpace
+   , right   , left   , below   , above   , outward   , inward   , ana   , kata
+   , zipR    , zipL   , zipD    , zipU    , zipO      , zipI     , zipA  , zipK
+   , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , anaBy , kataBy
    ) where
 
 import Data.Monoid
