@@ -3,27 +3,24 @@
 module Generic
    ( module Control.Applicative, module Control.Comonad
 
+   , AnyZipper(..) , Ref(..) , RefOf(..)
+
    , genericZipBy , genericZipTo , genericDeref
 
-   , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
-
-   , Ref1(..)    , Ref2(..)    , Ref3(..)    , Ref4(..)
    , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
 
-   , right , left , below , above , outward , inward , kata , ana
+   , atCol            , atRow             , atLevel              , atSpace
+   , right   , left   , below   , above   , outward   , inward   , kata   , ana
+   , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , kataBy , anaBy
    ) where
 
+import Data.Monoid
 import Control.Applicative
 import Control.Comonad
 
 data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
 
 infixl 6 &
-
-class AnyRef ref tuple | ref -> tuple where
-   at   :: tuple -> ref
-   here :: ref
-   (&)  :: ref -> ref -> ref
 
 class RefOf ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
@@ -48,6 +45,14 @@ class Zipper4 z where
    zipA :: z -> z
    zipK :: z -> z
 
+class AnyRef ref tuple | ref -> tuple where
+   at   :: tuple -> ref
+   here :: ref
+   (&)  :: ref -> ref -> ref
+
+goto :: (RefOf ref zipper, AnyRef ref tuple) => tuple -> zipper -> zipper
+goto = go . at
+
 instance Enum col => AnyRef (Ref col) col where
    here          = Rel 0
    at            = Abs
@@ -70,9 +75,6 @@ instance (Enum col, Enum row, Enum lev, Enum spc) => AnyRef (Ref col, Ref row,Re
    here                      = (here,here,here,here)
    at (c,r,l,s)              = (at c,at r,at l,at s)
    (c,r,l,s) & (c',r',l',s') = (c & c',r & r',l & l',s & s')
-
-goto :: (RefOf ref zipper, AnyRef ref tuple) => tuple -> zipper -> zipper
-goto = go . at
 
 class Ref1 ref col | ref -> col where
    rightBy :: Int -> ref
@@ -139,8 +141,8 @@ instance (Enum row, Enum col, Enum lev) => Ref2 (Ref col,Ref row,Ref lev) row wh
    atRow   = (here,,here) . Abs
 
 instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev where
-   inwardBy = (here,here,) . Rel
-   atLevel  = (here,here,) . Abs
+   outwardBy = (here,here,) . Rel
+   atLevel   = (here,here,) . Abs
 
 instance (Enum row, Enum col, Enum lev, Enum spc) => Ref1 (Ref col,Ref row,Ref lev,Ref spc) col where
    rightBy = (,here,here,here) . Rel
