@@ -3,11 +3,8 @@
 module Generic
    ( module Control.Applicative, module Control.Comonad
 
-   , AnyZipper
-   , Ref(..) , RefOf , AnyRef
+   , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
 
-   , index , view
-   , (&) , go , at , here , goto
    , genericZipBy , genericZipTo , genericDeref
 
    , Ref1    , Ref2    , Ref3    , Ref4
