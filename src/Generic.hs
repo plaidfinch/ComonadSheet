@@ -32,6 +32,29 @@ class AnyRef ref tuple | ref -> tuple where
    here :: ref
    (&)  :: ref -> ref -> ref
 
+class RefOf ref zipper | zipper -> ref where
+   go :: ref -> zipper -> zipper
+
+class AnyZipper z i a | z -> i a where
+   index :: z -> i
+   view  :: z -> a
+
+class Zipper1 z where
+   zipL :: z -> z
+   zipR :: z -> z
+
+class Zipper2 z where
+   zipU :: z -> z
+   zipD :: z -> z
+
+class Zipper3 z where
+   zipI :: z -> z
+   zipO :: z -> z
+
+class Zipper4 z where
+   zipA :: z -> z
+   zipK :: z -> z
+
 instance Enum col => AnyRef (Ref col) col where
    here          = Rel 0
    at            = Abs
@@ -142,9 +165,6 @@ instance (Enum row, Enum col, Enum lev, Enum spc) => Ref4 (Ref col,Ref row,Ref l
    kataBy  = (here,here,here,) . Rel
    atSpace = (here,here,here,) . Abs
 
-class RefOf ref zipper | zipper -> ref where
-   go :: ref -> zipper -> zipper
-
 genericZipBy :: (z -> z) -> (z -> z) -> Int -> z -> z
 genericZipBy zl zr i | i < 0     = genericZipBy zl zr (succ i) . zl
 genericZipBy zl zr i | i > 0     = genericZipBy zl zr (pred i) . zr
@@ -162,23 +182,3 @@ genericDeref zl zr idx ref =
       Abs x -> absolute x
    where relative = genericZipBy zl zr
          absolute = genericZipTo zl zr idx
-
-class AnyZipper z i a | z -> i a where
-   index :: z -> i
-   view  :: z -> a
-
-class Zipper1 z where
-   zipL :: z -> z
-   zipR :: z -> z
-
-class Zipper2 z where
-   zipU :: z -> z
-   zipD :: z -> z
-
-class Zipper3 z where
-   zipI :: z -> z
-   zipO :: z -> z
-
-class Zipper4 z where
-   zipA :: z -> z
-   zipK :: z -> z
