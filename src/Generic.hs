@@ -14,9 +14,9 @@ module Generic
    , Zipper1 , Zipper2 , Zipper3 , Zipper4
 
    , atCol            , atRow             , atLevel              , atSpace
-   , right   , left   , below   , above   , outward   , inward   , ana   , kata
-   , zipR    , zipL   , zipD    , zipU    , zipO      , zipI     , zipA  , zipK
-   , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , anaBy , kataBy
+   , right   , left   , below   , above   , outward   , inward   , kata   , ana
+   , zipR    , zipL   , zipD    , zipU    , zipO      , zipI     , zipK   , zipA
+   , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , kataBy , anaBy
    ) where
 
 import Data.Monoid
