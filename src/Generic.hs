@@ -3,12 +3,13 @@
 module Generic
    ( Ref(..)
    , module Control.Applicative, module Control.Comonad
-   , AnyZipper , Zipper1 , Zipper2 , Zipper3
-   , RefOf , AnyRef , Ref1 , Ref2 , Ref3
+   , AnyZipper , Zipper1 , Zipper2 , Zipper3 , Zipper4
+   , RefOf , AnyRef , Ref1 , Ref2 , Ref3 , Ref4
    , index , view , zipL , zipR , zipU , zipD , zipI , zipO , zipA , zipK
    , rightBy , leftBy , belowBy , aboveBy , inwardBy , outwardBy , anaBy , kataBy
    , atCol , atRow , atLevel , atSpace
-   , (&) , go , at , here , above , below , left , right , inward , outward , goto
+   , (&) , go , at , here , goto
+   , above , below , left , right , inward , outward , ana , kata
    , genericZipBy , genericZipTo , genericDeref
    ) where
 

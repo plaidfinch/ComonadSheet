@@ -10,6 +10,7 @@ import qualified Unchecked as U
 import PlaneZipper (Z2)
 import qualified PlaneZipper as Z2
 
+import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -28,7 +29,7 @@ instance Functor (CellExpr z r) where
    fmap f (StaticCell refs a) = StaticCell refs (f . a)
    fmap f (DynamicCell a)     = DynamicCell     (f . a)
 
-instance (Ord ref, AnyRef ref z) => Applicative (CellExpr z ref) where
+instance (Ord ref, RefOf ref z) => Applicative (CellExpr z ref) where
    pure                              = StaticCell Set.empty . const
    StaticCell r a <*> StaticCell s b = StaticCell (r <> s) (a <*> b)
    StaticCell _ a <*> DynamicCell  b = DynamicCell         (a <*> b)
@@ -38,10 +39,10 @@ instance (Ord ref, AnyRef ref z) => Applicative (CellExpr z ref) where
 indexDeref :: (Ord x, Enum x) => Ref x -> x -> x
 indexDeref = genericDeref pred succ id
 
-cell :: (Ord ref, AnyRef ref z, AnyZipper z i a) => ref -> CellExpr z ref a
+cell :: (Ord ref, RefOf ref z, AnyZipper z i a) => ref -> CellExpr z ref a
 cell = StaticCell <$> Set.singleton <*> U.cell
 
-cells :: (Ord ref, AnyRef ref z, AnyZipper z i a) => [ref] -> CellExpr z ref [a]
+cells :: (Ord ref, RefOf ref z, AnyZipper z i a) => [ref] -> CellExpr z ref [a]
 cells = StaticCell <$> Set.fromList <*> U.cells
 
 dcell :: (z -> a) -> CellExpr z ref a
