@@ -14,18 +14,18 @@ import Data.Monoid
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-data CellExpr z ref b = StaticCell  { getRefs :: Set ref, appSCell :: z -> b }
-                      | DynamicCell {                     appDCell :: z -> b }
+data CellExpr z ref a = StaticCell  { getRefs :: Set ref, appSCell :: z -> a }
+                      | DynamicCell {                     appDCell :: z -> a }
 
-appCell :: CellExpr z r b -> z -> b
+appCell :: CellExpr z ref a -> z -> a
 appCell (StaticCell _ f) = f
 appCell (DynamicCell  f) = f
 
-instance (Show r) => Show (CellExpr z r b) where
+instance (Show ref) => Show (CellExpr z ref a) where
    show (StaticCell refs _) = "StaticCell (" ++ (show refs) ++ ") _"
    show (DynamicCell _)     = "DynamicCell _"
 
-instance Functor (CellExpr z r) where
+instance Functor (CellExpr z ref) where
    fmap f (StaticCell refs a) = StaticCell refs (f . a)
    fmap f (DynamicCell a)     = DynamicCell     (f . a)
 
