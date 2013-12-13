@@ -13,7 +13,7 @@ module Generic
    , Ref1    , Ref2    , Ref3    , Ref4
    , Zipper1 , Zipper2 , Zipper3 , Zipper4
 
-   , atCol            , atRow             , atlev              , atspc
+   , atCol            , atRow             , atLevel              , atSpace
    , right   , left   , below   , above   , outward   , inward   , ana   , kata
    , zipR    , zipL   , zipD    , zipU    , zipO      , zipI     , zipA  , zipK
    , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , anaBy , kataBy
@@ -77,14 +77,14 @@ class Ref3 ref lev | ref -> lev where
    inwardBy = outwardBy . negate
    outwardBy :: Int -> ref
    outwardBy = inwardBy . negate
-   atlev   :: lev -> ref
+   atLevel   :: lev -> ref
 
 class Ref4 ref lev | ref -> lev where
    anaBy  :: Int -> ref
    anaBy = kataBy . negate
    kataBy :: Int -> ref
    kataBy = anaBy . negate
-   atspc :: lev -> ref
+   atSpace :: lev -> ref
 
 above, below :: Ref2 ref row => ref
 above = aboveBy 1
@@ -124,7 +124,7 @@ instance (Enum row, Enum col, Enum lev) => Ref2 (Ref col,Ref row,Ref lev) row wh
 
 instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev where
    inwardBy = (here,here,) . Rel
-   atlev  = (here,here,) . Abs
+   atLevel  = (here,here,) . Abs
 
 instance (Enum row, Enum col, Enum lev, Enum spc) => Ref1 (Ref col,Ref row,Ref lev,Ref spc) col where
    rightBy = (,here,here,here) . Rel
@@ -136,11 +136,11 @@ instance (Enum row, Enum col, Enum lev, Enum spc) => Ref2 (Ref col,Ref row,Ref l
 
 instance (Enum row, Enum col, Enum lev, Enum spc) => Ref3 (Ref col,Ref row,Ref lev,Ref spc) lev where
    inwardBy = (here,here,,here) . Rel
-   atlev  = (here,here,,here) . Abs
+   atLevel  = (here,here,,here) . Abs
 
 instance (Enum row, Enum col, Enum lev, Enum spc) => Ref4 (Ref col,Ref row,Ref lev,Ref spc) spc where
    anaBy   = (here,here,here,) . Rel
-   atspc = (here,here,here,) . Abs
+   atSpace = (here,here,here,) . Abs
 
 class RefOf ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
