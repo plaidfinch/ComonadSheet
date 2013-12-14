@@ -7,8 +7,8 @@ import PlaneZipper
 import Control.Arrow (first,second)
 import Data.Function
 
-evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b
-evaluate fs = fix $ (fs <*>) . duplicate
+evaluate :: Comonad w => w (w b -> b) -> w b
+evaluate = extend wfix
 
 cell :: (RefOf r z, AnyZipper z i a) => r -> z -> a
 cell = (view .) . go
