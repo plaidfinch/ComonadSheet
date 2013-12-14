@@ -5,6 +5,7 @@ module Generic
 
    , AnyZipper(..) , Ref(..) , RefOf(..)
 
+   , (&) , at , here , goto
    , genericZipBy , genericZipTo , genericDeref
 
    , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
@@ -19,8 +20,6 @@ import Control.Applicative
 import Control.Comonad
 
 data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
-
-infixl 6 &
 
 class RefOf ref zipper | zipper -> ref where
    go :: ref -> zipper -> zipper
@@ -44,6 +43,8 @@ class Zipper3 z where
 class Zipper4 z where
    zipA :: z -> z
    zipK :: z -> z
+
+infixl 6 &
 
 class AnyRef ref tuple | ref -> tuple where
    at   :: tuple -> ref
