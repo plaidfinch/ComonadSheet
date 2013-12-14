@@ -9,7 +9,7 @@ import Data.Function
 
 evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b
 evaluate fs = fix $ (fs <*>) . duplicate
---evaluate = wfix extend -- more elegant, but breaks sharing, resulting in exponential performance penalty
+--evaluate = extend wfix -- more elegant, but breaks sharing, resulting in exponential performance penalty
 
 cell :: (RefOf r z, AnyZipper z i a) => r -> z -> a
 cell = (view .) . go
