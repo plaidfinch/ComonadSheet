@@ -7,7 +7,7 @@ import PlaneZipper
 import Control.Arrow (first,second)
 import Data.Function
 
-evaluate :: Comonad w => w (w b -> b) -> w b
+evaluate :: Comonad w => w (w a -> a) -> w a
 evaluate = extend wfix
 
 cell :: (RefOf r z, AnyZipper z i a) => r -> z -> a
