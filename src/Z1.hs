@@ -55,8 +55,8 @@ instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) [a] where
    go = genericDeref zipL zipR index
    slice ref1 ref2 z =
       if dist >= 0
-         then take    dist  . viewR $ go left loc1
-         else take (- dist) . viewL $ loc1
+         then take     (dist + 1) . viewR $ go left loc1
+         else take ((- dist) - 1) . viewL $ loc1
       where loc1 = go ref1 z
             loc2 = go ref2 z
             dist = fromEnum (index loc2) - fromEnum (index loc1)
