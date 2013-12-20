@@ -3,7 +3,7 @@
 module Z1
    ( Z1
    , zipper , zipperOf , zipIterate
-   , viewL , viewR , view , segment
+   , viewL , viewR , view
    , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
@@ -11,9 +11,6 @@ module Z1
 
 import Generic
 
--- 1-D zippers...
-
--- | One-dimensional list zipper
 data Z1 i a = Z1 !i [a] a [a]
 
 instance Functor (Z1 i) where
@@ -33,8 +30,8 @@ instance (Enum i, Ord i) => Applicative (Z1 i) where
 
 instance (Ord i, Enum i) => Comonad (Z1 i) where
    extract   = view
-   duplicate = duplicateHorizontal
-      where duplicateHorizontal = zipIterate zipL zipR <$> col <*> id
+   duplicate = widthWise
+      where widthWise = zipIterate zipL zipR <$> col <*> id
 
 instance AnyZipper (Z1 i a) i a where
    index (Z1 i _ _ _) = i
@@ -51,8 +48,15 @@ instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
 
    col = index
 
-instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) where
+instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) [a] where
    go = genericDeref zipL zipR index
+   slice ref1 ref2 z =
+      if | dist > 0  -> take    dist  . viewR $ go left loc1
+         | dist < 0  -> take (- dist) . viewR $ go left loc2
+         | otherwise -> []
+      where loc1 = go ref1 z
+            loc2 = go ref2 z
+            dist = (fromEnum $ index loc2) - (fromEnum $ index loc1)
 
 zipper :: i -> [a] -> a -> [a] -> Z1 i a
 zipper i lefts cursor rights = Z1 i (cycle lefts) cursor (cycle rights)
@@ -80,15 +84,6 @@ switch (Z1 i lefts cursor rights) = Z1 i rights cursor lefts
 
 modify :: (a -> a) -> Z1 i a -> Z1 i a
 modify f = write <$> f . view <*> id
-
-segment :: (Enum i, Ord i) => Ref i -> Ref i -> Z1 i a -> [a]
-segment ref1 ref2 z =
-   if | dist > 0  -> take    dist  . viewR $ go left loc1
-      | dist < 0  -> take (- dist) . viewR $ go left loc2
-      | otherwise -> []
-   where loc1 = go ref1 z
-         loc2 = go ref2 z
-         dist = (fromEnum $ index loc2) - (fromEnum $ index loc1)
 
 insertR, insertL :: a -> Z1 i a -> Z1 i a
 insertR x (Z1 i lefts cursor rights) = Z1 i lefts x (cursor : rights)

@@ -23,10 +23,10 @@ instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Applicative (Z3 c r l)
 
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Comonad (Z3 c r l) where
    extract   = view
-   duplicate = Z3 . fmap Z2 . duplicateHorizontal . duplicateVertical . duplicateDepthWise
-      where duplicateHorizontal = fmap . fmap $ zipIterate zipL zipR <$> col   <*> id
-            duplicateVertical   =        fmap $ zipIterate zipU zipD <$> row   <*> id
-            duplicateDepthWise  =               zipIterate zipI zipO <$> level <*> id
+   duplicate = Z3 . fmap Z2 . widthWise . heightWise . depthWise
+      where widthWise  = fmap . fmap $ zipIterate zipL zipR <$> col   <*> id
+            heightWise =        fmap $ zipIterate zipU zipD <$> row   <*> id
+            depthWise  =               zipIterate zipI zipO <$> level <*> id
 
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Zipper1 (Z3 c r l a) c where
    zipL = wrapZ3 $ fmap zipL
@@ -43,16 +43,14 @@ instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Zipper3 (Z3 c r l a) l
    zipO  = wrapZ3 zipR
    level = index . layersFromZ3
 
-instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => RefOf (Ref c,Ref r,Ref l) (Z3 c r l a) where
-   go (colRef,rowRef,levelRef) = horizontal . vertical . depthWise
+instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => RefOf (Ref c,Ref r,Ref l) (Z3 c r l a) [[[a]]] where
+   slice (c,r,l) (c',r',l') = slice l l' . fmap (slice (c,r) (c',r')) . fromZ3
+   go (colRef,rowRef,levelRef) = widthWise . heightWise . depthWise
       where
-         horizontal = genericDeref zipL zipR col   colRef
-         vertical   = genericDeref zipU zipD row   rowRef
+         widthWise  = genericDeref zipL zipR col   colRef
+         heightWise = genericDeref zipU zipD row   rowRef
          depthWise  = genericDeref zipI zipO level levelRef
 
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => AnyZipper (Z3 c r l a) (c,r,l) a where
    index = (,,) <$> col <*> row <*> level
    view  = view . view . fromZ3
-
-prism :: (Integral c, Integral r, Integral l) => (Ref c,Ref r,Ref l) -> (Ref c,Ref r,Ref l) -> Z3 c r l a -> [[[a]]]
-prism (c,r,l) (c',r',l') = segment l l' . fmap (rectangle (c,r) (c',r')) . fromZ3

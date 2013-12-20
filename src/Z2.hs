@@ -5,9 +5,6 @@ module Z2 where
 import Generic
 import Z1
 
-import Data.List
-
--- | 2-dimensional zippers are nested list zippers
 newtype Z2 c r a = Z2 { fromZ2 :: Z1 r (Z1 c a) }
 
 wrapZ2 :: (Z1 r (Z1 c a) -> Z1 r' (Z1 c' a')) -> Z2 c r a -> Z2 c' r' a'
@@ -22,9 +19,9 @@ instance (Ord c, Ord r, Enum c, Enum r) => Applicative (Z2 c r) where
 
 instance (Ord c, Ord r, Enum c, Enum r) => Comonad (Z2 c r) where
    extract   = view
-   duplicate = Z2 . duplicateHorizontal . duplicateVertical
-      where duplicateHorizontal = fmap $ zipIterate zipL zipR <$> col <*> id
-            duplicateVertical   =        zipIterate zipU zipD <$> row <*> id
+   duplicate = Z2 . widthWise . heightWise
+      where widthWise  = fmap $ zipIterate zipL zipR <$> col <*> id
+            heightWise =        zipIterate zipU zipD <$> row <*> id
 
 instance (Ord c, Ord r, Enum c, Enum r) => Zipper1 (Z2 c r a) c where
    zipL = wrapZ2 $ fmap zipL
@@ -36,7 +33,8 @@ instance (Ord c, Ord r, Enum c, Enum r) => Zipper2 (Z2 c r a) r where
    zipD = wrapZ2 zipR
    row  = index . fromZ2
 
-instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) where
+instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) [[a]] where
+   slice (c,r) (c',r') = slice r r' . fmap (slice c c') . fromZ2
    go (colRef,rowRef) = horizontal . vertical
       where
          horizontal = genericDeref zipL zipR col colRef
@@ -45,9 +43,6 @@ instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) where
 instance (Ord c, Enum c, Ord r, Enum r) => AnyZipper (Z2 c r a) (c,r) a where
    index = (,) <$> col <*> row
    view  = view . view . fromZ2
-
-rectangle :: (Integral c, Integral r) => (Ref c,Ref r) -> (Ref c,Ref r) -> Z2 c r a -> [[a]]
-rectangle (c,r) (c',r') = segment r r' . fmap (segment c c') . fromZ2
 
 writeCell :: a -> Z2 c r a -> Z2 c r a
 writeCell a = wrapZ2 $ modify (write a)

@@ -11,10 +11,10 @@ evaluate :: (Applicative f, Comonad f) => f (f b -> b) -> f b
 evaluate fs = fix $ (fs <*>) . duplicate
 --evaluate = extend wfix -- more elegant, but breaks sharing, resulting in exponential performance penalty
 
-cell :: (RefOf r z, AnyZipper z i a) => r -> z -> a
+cell :: (RefOf r z l, AnyZipper z i a) => r -> z -> a
 cell = (view .) . go
 
-cells :: (RefOf r z, AnyZipper z i a) => [r] -> z -> [a]
+cells :: (RefOf r z l, AnyZipper z i a) => [r] -> z -> [a]
 cells refs zipper = map (flip cell zipper) refs
 
 genericSheet :: (Ord r, Enum r, Ord c, Enum c) =>

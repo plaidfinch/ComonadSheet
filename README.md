@@ -27,7 +27,7 @@ pascalLists = map pascalList [0..]
 ```
 
 ```Haskell
-> rectangle (0,0) (10,10) pascal
+> slice (at (0,0)) (at (10,10)) pascal
 [[1,  1,  1,   1,   1,    1,    1,     1,     1,     1], 
  [1,  2,  3,   4,   5,    6,    7,     8,     9,    10], 
  [1,  3,  6,  10,  15,   21,   28,    36,    45,    55], 
@@ -70,7 +70,7 @@ fibLike = evaluate $ sheetOf 0 (0,0) $
 ```
 
 ```Haskell
-> rectangle (0,0) (10,10) fibLike
+> slice (at (0,0)) (at (10,10)) fibLike
 [[1,  1,  2,  3,  5,  8, 13,  21,  34,  55], 
  [1,  2,  3,  5,  8, 13, 21,  34,  55,  89], 
  [1,  3,  4,  7, 11, 18, 29,  47,  76, 123], 

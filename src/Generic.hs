@@ -21,8 +21,9 @@ import Control.Comonad
 
 data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
 
-class RefOf ref zipper | zipper -> ref where
-   go :: ref -> zipper -> zipper
+class RefOf ref zipper list | zipper -> ref list where
+   go    :: ref -> zipper -> zipper
+   slice :: ref -> ref -> zipper -> list
 
 class AnyZipper z i a | z -> i a where
    index :: z -> i
@@ -55,7 +56,7 @@ class AnyRef ref i | ref -> i where
    here :: ref
    (&)  :: ref -> ref -> ref
 
-goto :: (RefOf ref zipper, AnyRef ref i) => i -> zipper -> zipper
+goto :: (RefOf ref zipper list, AnyRef ref i) => i -> zipper -> zipper
 goto = go . at
 
 instance Enum col => AnyRef (Ref col) col where
