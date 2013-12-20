@@ -15,7 +15,6 @@ module Generic
    , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , kataBy , anaBy
    ) where
 
-import Data.Monoid
 import Control.Applicative
 import Control.Comonad
 
