@@ -53,3 +53,6 @@ instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => RefOf (Ref c,Ref r,Ref
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => AnyZipper (Z3 c r l a) (c,r,l) a where
    index = (,,) <$> col <*> row <*> level
    view  = view . view . fromZ3
+
+prism :: (Integral c, Integral r, Integral l) => (Ref c,Ref r,Ref l) -> (Ref c,Ref r,Ref l) -> Z3 c r l a -> [[[a]]]
+prism (c,r,l) (c',r',l') = segment l l' . fmap (rectangle (c,r) (c',r')) . fromZ3

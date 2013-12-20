@@ -33,7 +33,8 @@ instance (Enum i, Ord i) => Applicative (Z1 i) where
 
 instance (Ord i, Enum i) => Comonad (Z1 i) where
    extract   = view
-   duplicate = zipIterate zipL zipR <$> index <*> id
+   duplicate = duplicateHorizontal
+      where duplicateHorizontal = zipIterate zipL zipR <$> col <*> id
 
 instance AnyZipper (Z1 i a) i a where
    index (Z1 i _ _ _) = i

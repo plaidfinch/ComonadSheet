@@ -47,7 +47,7 @@ instance (Ord c, Enum c, Ord r, Enum r) => AnyZipper (Z2 c r a) (c,r) a where
    view  = view . view . fromZ2
 
 rectangle :: (Integral c, Integral r) => (Ref c,Ref r) -> (Ref c,Ref r) -> Z2 c r a -> [[a]]
-rectangle (c,r) (c',r') = fmap (segment c c') . segment r r' . fromZ2
+rectangle (c,r) (c',r') = segment r r' . fmap (segment c c') . fromZ2
 
 writeCell :: a -> Z2 c r a -> Z2 c r a
 writeCell a = wrapZ2 $ modify (write a)
