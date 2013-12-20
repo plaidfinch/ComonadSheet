@@ -28,21 +28,25 @@ class AnyZipper z i a | z -> i a where
    index :: z -> i
    view  :: z -> a
 
-class Zipper1 z where
+class Zipper1 z c | z -> c where
    zipL :: z -> z
    zipR :: z -> z
+   col  :: z -> c
 
-class Zipper2 z where
+class Zipper2 z r | z -> r where
    zipU :: z -> z
    zipD :: z -> z
+   row  :: z -> r
 
-class Zipper3 z where
-   zipI :: z -> z
-   zipO :: z -> z
+class Zipper3 z l | z -> l where
+   zipI  :: z -> z
+   zipO  :: z -> z
+   level :: z -> l
 
-class Zipper4 z where
-   zipA :: z -> z
-   zipK :: z -> z
+class Zipper4 z s | z -> s where
+   zipA  :: z -> z
+   zipK  :: z -> z
+   space :: z -> s
 
 infixl 6 &
 

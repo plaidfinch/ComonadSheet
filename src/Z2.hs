@@ -5,7 +5,6 @@ module Z2 where
 import Generic
 import Z1
 
-import Control.Arrow ( (&&&) )
 import Data.List
 
 -- | 2-dimensional zippers are nested list zippers
@@ -23,17 +22,18 @@ instance (Ord c, Ord r, Enum c, Enum r) => Applicative (Z2 c r) where
 
 instance (Ord c, Ord r, Enum c, Enum r) => Comonad (Z2 c r) where
    extract   = view
-   duplicate = wrapZ2 $
-      fmap duplicateHorizontal . duplicate
-      where duplicateHorizontal = zipIterate zipL zipR <$> index . view <*> Z2
+   duplicate = wrapZ2 $ duplicateHorizontal . duplicate
+      where duplicateHorizontal = fmap $ zipIterate zipL zipR <$> index . view <*> Z2
 
-instance (Ord c, Ord r, Enum c, Enum r) => Zipper1 (Z2 c r a) where
+instance (Ord c, Ord r, Enum c, Enum r) => Zipper1 (Z2 c r a) c where
    zipL = wrapZ2 $ fmap zipL
    zipR = wrapZ2 $ fmap zipR
+   col  = index . view . fromZ2
 
-instance (Ord c, Ord r, Enum c, Enum r) => Zipper2 (Z2 c r a) where
+instance (Ord c, Ord r, Enum c, Enum r) => Zipper2 (Z2 c r a) r where
    zipU = wrapZ2 zipL
    zipD = wrapZ2 zipR
+   row  = index . fromZ2
 
 instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) where
    go (colRef,rowRef) = horizontal . vertical
@@ -41,23 +41,17 @@ instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) where
          horizontal = genericDeref zipL zipR col colRef
          vertical   = genericDeref zipU zipD row rowRef
 
-instance AnyZipper (Z2 c r a) (c,r) a where
-   index = (col &&& row)
+instance (Ord c, Enum c, Ord r, Enum r) => AnyZipper (Z2 c r a) (c,r) a where
+   index = (,) <$> col <*> row
    view  = view . view . fromZ2
 
 rectangle :: (Integral c, Integral r) => (Ref c,Ref r) -> (Ref c,Ref r) -> Z2 c r a -> [[a]]
 rectangle (c,r) (c',r') = fmap (segment c c') . segment r r' . fromZ2
 
-col :: Z2 c r a -> c
-col = index . view . fromZ2
-
-row :: Z2 c r a -> r
-row = index . fromZ2
-
 writeCell :: a -> Z2 c r a -> Z2 c r a
 writeCell a = wrapZ2 $ modify (write a)
 
-modifyCell :: (a -> a) -> Z2 c r a -> Z2 c r a
+modifyCell :: (Ord c, Enum c, Ord r, Enum r) => (a -> a) -> Z2 c r a -> Z2 c r a
 modifyCell f = writeCell <$> f . view <*> id
 
 modifyRow :: (Z1 c a -> Z1 c a) -> Z2 c r a -> Z2 c r a

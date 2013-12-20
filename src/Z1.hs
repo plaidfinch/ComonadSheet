@@ -39,7 +39,7 @@ instance AnyZipper (Z1 i a) i a where
    index (Z1 i _ _ _) = i
    view  (Z1 _ _ c _) = c
 
-instance (Enum i, Ord i) => Zipper1 (Z1 i a) where
+instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
    zipL (Z1 i (left : lefts) cursor rights) =
       Z1 (pred i) lefts left (cursor : rights)
    zipL _ = error "zipL of non-infinite zipper; the impossible has occurred"
