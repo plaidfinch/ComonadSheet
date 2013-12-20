@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns, FlexibleInstances, MultiParamTypeClasses, MultiWayIf #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, MultiWayIf #-}
 
 module Z1
    ( module Generic , Z1

@@ -72,8 +72,8 @@ insertRowU = wrapZ2 . insertL
 insertRowD = wrapZ2 . insertR
 
 deleteRowD, deleteRowU :: Z2 c r a -> Z2 c r a
-deleteRowD = wrapZ2 $ deleteR
-deleteRowU = wrapZ2 $ deleteL
+deleteRowD = wrapZ2 deleteR
+deleteRowU = wrapZ2 deleteL
 
 insertColL, insertColR :: (Ord r, Enum r) => Z1 r a -> Z2 c r a -> Z2 c r a
 insertColL c plane = Z2 $ insertL <$> c <*> fromZ2 plane
