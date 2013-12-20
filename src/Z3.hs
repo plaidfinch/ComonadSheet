@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TupleSections #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 module Z3 where
 
