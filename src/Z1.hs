@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, MultiWayIf #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 
 module Z1
    ( module Generic , Z1
@@ -54,12 +54,12 @@ instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
 instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) [a] where
    go = genericDeref zipL zipR index
    slice ref1 ref2 z =
-      if | dist > 0  -> take    dist  . viewR $ go left loc1
-         | dist < 0  -> take (- dist) . viewR $ go left loc2
-         | otherwise -> []
+      if dist >= 0
+         then take    dist  . viewR $ go left loc1
+         else take (- dist) . viewL $ loc1
       where loc1 = go ref1 z
             loc2 = go ref2 z
-            dist = (fromEnum $ index loc2) - (fromEnum $ index loc1)
+            dist = fromEnum (index loc2) - fromEnum (index loc1)
 
 zipper :: i -> [a] -> a -> [a] -> Z1 i a
 zipper i lefts cursor rights = Z1 i (cycle lefts) cursor (cycle rights)
