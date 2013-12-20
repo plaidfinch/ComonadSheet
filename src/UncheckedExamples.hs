@@ -45,6 +45,6 @@ cartesian = Z2 $ zipper 0 (tail (iterate (fmap (second pred)) (fmap (,0) numberL
 
 cartesian' :: Z2 Integer Integer (Integer,Integer)
 cartesian' = evaluate $ Z2 $ zipper 0
-   [(zipperOf 0 (second pred <$> cell below))]
-   (zipper 0 [(first pred <$> cell right)] (const (0,0)) [(first succ <$> cell left)])
-   [(zipperOf 0 (second succ <$> cell above))]
+   [zipperOf 0 (second pred <$> cell below)]
+   (zipper 0 [first pred <$> cell right] (const (0,0)) [first succ <$> cell left])
+   [zipperOf 0 (second succ <$> cell above)]
