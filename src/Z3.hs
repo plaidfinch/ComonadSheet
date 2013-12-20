@@ -21,6 +21,9 @@ instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Applicative (Z3 c r l)
    fs <*> xs = Z3 $ fmap (<*>) (fromZ3 fs) <*> (fromZ3 xs)
    pure      = Z3 . pure . pure
 
+instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => ComonadApply (Z3 c r l) where
+   (<@>) = (<*>)
+
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Comonad (Z3 c r l) where
    extract   = view
    duplicate = Z3 . fmap Z2 . widthWise . heightWise . depthWise

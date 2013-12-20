@@ -28,6 +28,9 @@ instance (Enum i, Ord i) => Applicative (Z1 i) where
    -- In the case of bounded types, the (toEnum 0) might be a problem; use zipperOf to specify a custom starting index for the zipper
    pure = zipperOf (toEnum 0)
 
+instance (Enum i, Ord i) => ComonadApply (Z1 i) where
+   (<@>) = (<*>)
+
 instance (Ord i, Enum i) => Comonad (Z1 i) where
    extract   = view
    duplicate = widthWise
