@@ -3,9 +3,9 @@
 module Generic
    ( module Control.Applicative, module Control.Comonad
 
-   , AnyZipper(..) , Ref(..) , RefOf(..)
+   , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
 
-   , (&) , at , here , goto
+   , goto
    , genericZipBy , genericZipTo , genericDeref
 
    , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
@@ -46,12 +46,12 @@ class Zipper4 z where
 
 infixl 6 &
 
-class AnyRef ref tuple | ref -> tuple where
-   at   :: tuple -> ref
+class AnyRef ref i | ref -> i where
+   at   :: i -> ref
    here :: ref
    (&)  :: ref -> ref -> ref
 
-goto :: (RefOf ref zipper, AnyRef ref tuple) => tuple -> zipper -> zipper
+goto :: (RefOf ref zipper, AnyRef ref i) => i -> zipper -> zipper
 goto = go . at
 
 instance Enum col => AnyRef (Ref col) col where
