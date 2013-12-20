@@ -1,9 +1,9 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TupleSections #-}
 
-module PlaneZipper where
+module Z2 where
 
 import Generic
-import ListZipper
+import Z1
 
 import Control.Arrow ( (&&&) )
 import Data.List

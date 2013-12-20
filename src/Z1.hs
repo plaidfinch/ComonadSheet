@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns, FlexibleInstances, MultiParamTypeClasses, MultiWayIf #-}
 
-module ListZipper
+module Z1
    ( Z1
    , zipper , zipperOf , zipIterate
    , viewL , viewR , view , segment

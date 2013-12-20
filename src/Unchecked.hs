@@ -1,8 +1,8 @@
 module Unchecked where
 
 import Generic
-import ListZipper
-import PlaneZipper
+import Z1
+import Z2
 
 import Control.Arrow (first,second)
 import Data.Function

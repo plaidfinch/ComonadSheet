@@ -7,8 +7,8 @@ module Checked
 
 import Generic
 import qualified Unchecked as U
-import PlaneZipper (Z2)
-import qualified PlaneZipper as Z2
+import Z2 (Z2)
+import qualified Z2 as Z2
 
 import Data.Monoid
 import Data.Set (Set)
