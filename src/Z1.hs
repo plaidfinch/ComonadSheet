@@ -1,9 +1,9 @@
 {-# LANGUAGE BangPatterns, FlexibleInstances, MultiParamTypeClasses, MultiWayIf #-}
 
 module Z1
-   ( Z1
+   ( module Generic , Z1
    , zipper , zipperOf , zipIterate
-   , viewL , viewR , view
+   , viewL , viewR
    , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL

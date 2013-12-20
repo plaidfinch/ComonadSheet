@@ -9,10 +9,9 @@ module Generic
    , genericZipBy , genericZipTo , genericDeref
 
    , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
+   , Ref1(..)    , Ref2(..)    , Ref3(..)    , Ref4(..)
 
-   , atCol            , atRow             , atLevel              , atSpace
-   , right   , left   , below   , above   , outward   , inward   , kata   , ana
-   , rightBy , leftBy , belowBy , aboveBy , outwardBy , inwardBy , kataBy , anaBy
+   , right , left , below , above , outward , inward , kata , ana
    ) where
 
 import Control.Applicative

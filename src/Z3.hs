@@ -1,6 +1,8 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
-module Z3 where
+module Z3
+   ( module Generic , Z3(..)
+   ) where
 
 import Generic
 import Z1
