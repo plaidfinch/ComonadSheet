@@ -23,9 +23,9 @@ instance (Ord c, Ord r, Enum c, Enum r) => Applicative (Z2 c r) where
 
 instance (Ord c, Ord r, Enum c, Enum r) => Comonad (Z2 c r) where
    extract   = view
-   duplicate = wrapZ2 $
-      fmap duplicateHorizontal . duplicate
-      where duplicateHorizontal = zipIterate zipL zipR <$> index . view <*> Z2
+   duplicate = fmap Z2 . Z2 . fmap duplicateHorizontal . duplicateVertical . fromZ2
+      where duplicateHorizontal = zipIterate zipL zipR <$> index . view <*> id
+            duplicateVertical   = zipIterate zipL zipR <$> index        <*> id
 
 instance (Ord c, Ord r, Enum c, Enum r) => Zipper1 (Z2 c r a) where
    zipL = wrapZ2 $ fmap zipL
