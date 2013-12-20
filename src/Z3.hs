@@ -23,8 +23,10 @@ instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Applicative (Z3 c r l)
 
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Comonad (Z3 c r l) where
    extract   = view
-   --duplicate = wrapZ3 $ duplicateHorizontal . duplicate
-      --where duplicateHorizontal = fmap $ zipIterate zipL zipR <$> col <*> Z3
+   duplicate = Z3 . fmap Z2 . duplicateHorizontal . duplicateVertical . duplicateDepthWise
+      where duplicateHorizontal = fmap . fmap $ zipIterate zipL zipR <$> col   <*> id
+            duplicateVertical   =        fmap $ zipIterate zipU zipD <$> row   <*> id
+            duplicateDepthWise  =               zipIterate zipI zipO <$> level <*> id
 
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => Zipper1 (Z3 c r l a) c where
    zipL = wrapZ3 $ fmap zipL

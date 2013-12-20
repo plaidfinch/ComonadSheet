@@ -48,6 +48,8 @@ instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
       Z1 (succ i) (cursor : lefts) right rights
    zipR _ = error "zipR of non-infinite zipper; the impossible has occurred"
 
+   col = index
+
 instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) where
    go = genericDeref zipL zipR index
 
