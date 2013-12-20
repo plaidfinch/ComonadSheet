@@ -17,6 +17,9 @@ wrapZ4 = (Z4 .) . (. fromZ4)
 layersFromZ4 :: Z4 c r l s a -> Z1 s (Z1 l (Z1 r (Z1 c a)))
 layersFromZ4 = (fmap . fmap) fromZ2 . fmap fromZ3 . fromZ4
 
+layersToZ4 :: Z1 s (Z1 l (Z1 r (Z1 c a))) -> Z4 c r l s a
+layersToZ4 = Z4 . fmap Z3 . (fmap . fmap) Z2
+
 instance Functor (Z4 c r l s) where
    fmap = wrapZ4 . fmap . fmap
 
@@ -29,7 +32,7 @@ instance (Ord c, Ord r, Ord l, Ord s, Enum c, Enum r, Enum l, Enum s) => Comonad
 
 instance (Ord c, Ord r, Ord l, Ord s, Enum c, Enum r, Enum l, Enum s) => Comonad (Z4 c r l s) where
    extract   = view
-   duplicate = Z4 . fmap Z3 . (fmap . fmap) Z2 . widthWise . heightWise . depthWise . splissWise
+   duplicate = layersToZ4 . widthWise . heightWise . depthWise . splissWise
       where widthWise  = fmap . fmap . fmap $ zipIterate zipL zipR <$> col   <*> id
             heightWise =        fmap . fmap $ zipIterate zipU zipD <$> row   <*> id
             depthWise  =               fmap $ zipIterate zipI zipO <$> level <*> id
