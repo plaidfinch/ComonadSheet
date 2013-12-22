@@ -12,7 +12,7 @@ An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwa
 
 ```Haskell
 pascal :: Z2 Int Int Integer
-pascal = evaluate $ sheetOf (0,0) 0 $
+pascal = evaluate $ sheet (0,0) 0 $
   repeat 1 : repeat (1 : pascalRow)
   where pascalRow = repeat $ cell above + cell left
 ```
@@ -71,7 +71,7 @@ We may define a three-dimensional space enumerating all the Fibonacci-like seque
 
 ```Haskell
 fibLike :: Z3 Int Int Int Integer
-fibLike = evaluate $ sheetOf (0,0,0) 0 $
+fibLike = evaluate $ sheet (0,0,0) 0 $
    fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
    where fibSheetFrom a b = (([a, b]                       ++ fibRow) : repeat
                              ([cell above, 1 + cell above] ++ fibRow))

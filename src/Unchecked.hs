@@ -19,5 +19,5 @@ cell = (view .) . go
 cells :: (RefOf r z l, AnyZipper z i a) => [r] -> z -> [a]
 cells refs zipper = map (`cell` zipper) refs
 
-sheetOf :: (Applicative z, AnyZipper (z a) i a, RefOf ref (z a) list) => i -> a -> list -> z a
-sheetOf origin background list = insert list . reindex origin $ pure background
+sheet :: (Applicative z, AnyZipper (z a) i a, RefOf ref (z a) list) => i -> a -> list -> z a
+sheet origin background list = insert list . reindex origin $ pure background
