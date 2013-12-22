@@ -12,14 +12,14 @@ import Control.Arrow (first, second)
 
 -- Some example zippers for testing...
 
-fibLike :: Z3 Integer Integer Integer Integer
+fibLike :: Z3 Int Int Int Integer
 fibLike = evaluate $ sheetOf (0,0,0) 0 $
    fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
    where fibSheetFrom a b = (([a, b]                       ++ fibRow) : repeat
                              ([cell above, 1 + cell above] ++ fibRow))
          fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
-pascal :: Z2 Integer Integer Integer
+pascal :: Z2 Int Int Integer
 pascal = evaluate $ sheetOf (0,0) 0 $
   repeat 1 : repeat (1 : pascalRow)
   where pascalRow = repeat $ cell above + cell left
