@@ -49,12 +49,11 @@ instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) [[a]] 
 instance (Ord c, Enum c, Ord r, Enum r) => AnyZipper (Z2 c r a) (c,r) a where
    index = (,) <$> col <*> row
    view  = view . view . fromZ2
-
-writeCell :: a -> Z2 c r a -> Z2 c r a
-writeCell a = wrapZ2 $ modify (write a)
+   write = wrapZ2 . modify . write
+   reindex (c,r) = wrapZ2 (fmap (reindex c) . reindex r)
 
 modifyCell :: (Ord c, Enum c, Ord r, Enum r) => (a -> a) -> Z2 c r a -> Z2 c r a
-modifyCell f = writeCell <$> f . view <*> id
+modifyCell f = write <$> f . view <*> id
 
 modifyRow :: (Z1 c a -> Z1 c a) -> Z2 c r a -> Z2 c r a
 modifyRow = wrapZ2 . modify

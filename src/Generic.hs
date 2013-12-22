@@ -5,7 +5,7 @@ module Generic
 
    , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
 
-   , goto
+   , goto , modify
    , genericZipBy , genericZipTo , genericDeref
 
    , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
@@ -27,6 +27,11 @@ class RefOf ref zipper list | zipper -> ref list where
 class AnyZipper z i a | z -> i a where
    index :: z -> i
    view  :: z -> a
+   write   :: a -> z -> z
+   reindex :: i -> z -> z
+
+modify :: AnyZipper z i a => (a -> a) -> z -> z
+modify f = write <$> f . view <*> id
 
 class Zipper1 z c | z -> c where
    zipL :: z -> z

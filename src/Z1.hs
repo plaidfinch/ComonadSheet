@@ -3,7 +3,7 @@
 module Z1
    ( module Generic , Z1
    , zipper , zipperOf , zipIterate
-   , write , modify , switch
+   , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
    ) where
@@ -38,6 +38,8 @@ instance (Ord i, Enum i) => Comonad (Z1 i) where
 instance AnyZipper (Z1 i a) i a where
    index (Z1 i _ _ _) = i
    view  (Z1 _ _ c _) = c
+   write   c (Z1 i l _ r) = Z1 i l c r
+   reindex i (Z1 _ l c r) = Z1 i l c r
 
 instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
    zipL (Z1 i (left : lefts) cursor rights) =
@@ -79,14 +81,8 @@ viewL (Z1 _ lefts _ _) = lefts
 viewR :: Z1 i a -> [a]
 viewR (Z1 _ _ _ rights) = rights
 
-write :: a -> Z1 i a -> Z1 i a
-write cursor (Z1 i lefts _ rights) = Z1 i lefts cursor rights
-
 switch :: Z1 i a -> Z1 i a
 switch (Z1 i lefts cursor rights) = Z1 i rights cursor lefts
-
-modify :: (a -> a) -> Z1 i a -> Z1 i a
-modify f = write <$> f . view <*> id
 
 insertR, insertL :: a -> Z1 i a -> Z1 i a
 insertR x (Z1 i lefts cursor rights) = Z1 i lefts x (cursor : rights)

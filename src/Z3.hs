@@ -63,3 +63,5 @@ instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => RefOf (Ref c,Ref r,Ref
 instance (Ord c, Ord r, Ord l, Enum c, Enum r, Enum l) => AnyZipper (Z3 c r l a) (c,r,l) a where
    index = (,,) <$> col <*> row <*> level
    view  = view . view . fromZ3
+   write = wrapZ3 . modify . write
+   reindex (c,r,l) = wrapZ3 (fmap (reindex (c,r)) . reindex l)
