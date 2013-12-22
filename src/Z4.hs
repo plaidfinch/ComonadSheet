@@ -60,7 +60,7 @@ instance (Ord c, Ord r, Ord l, Ord s, Enum c, Enum r, Enum l, Enum s) => Zipper4
 
 instance (Ord c, Ord r, Ord l, Ord s, Enum c, Enum r, Enum l, Enum s) => RefOf (Ref c,Ref r,Ref l,Ref s) (Z4 c r l s a) [[[[a]]]] where
    slice (c,r,l,s) (c',r',l',s') = slice s s' . fmap (slice (c,r,l) (c',r',l')) . fromZ4
-   splice list zipper = Z4 $ splice <$> (splice list (pure [])) <*> fromZ4 zipper
+   insert list zipper = Z4 $ insert <$> (insert list (pure [])) <*> fromZ4 zipper
    go (colRef,rowRef,levelRef,spaceRef) = widthWise . heightWise . depthWise . splissWise
       where
          widthWise  = genericDeref zipL zipR col   colRef
