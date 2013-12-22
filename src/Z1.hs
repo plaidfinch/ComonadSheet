@@ -3,7 +3,6 @@
 module Z1
    ( module Generic , Z1
    , zipper , zipperOf , zipIterate
-   , viewL , viewR
    , write , modify , switch
    , insertL , insertR , deleteL , deleteR
    , insertListR , insertListL
@@ -53,6 +52,7 @@ instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
 
 instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) [a] where
    go = genericDeref zipL zipR index
+   splice = insertListR
    slice ref1 ref2 z =
       if dist >= 0
          then take     (dist + 1) . viewR $ go left  loc1
