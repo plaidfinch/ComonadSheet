@@ -88,23 +88,23 @@ Examining a slice of this space, we find the following:
   [1,4,5, 9,14],
   [1,5,6,11,17]],
  [[2,1,3, 4, 7],
-  [2,2,4, 6,10],
+  [2,2,4, 6,10], -- double the Fibonacci sequence
   [2,3,5, 8,13],
   [2,4,6,10,16],
   [2,5,7,12,19]],
  [[3,1,4, 5, 9], -- a curious coincidence with the opening digits of pi
   [3,2,5, 7,12],
-  [3,3,6, 9,15],
+  [3,3,6, 9,15], -- triple the Fibonacci sequence
   [3,4,7,11,18],
   [3,5,8,13,21]],
  [[4,1,5, 6,11],
   [4,2,6, 8,14],
   [4,3,7,10,17],
-  [4,4,8,12,20],
+  [4,4,8,12,20], -- quadruple the Fibonacci sequence
   [4,5,9,14,23]],
  [[5,1,6,  7,13],
   [5,2,7,  9,16],
   [5,3,8, 11,19],
   [5,4,9, 13,22],
-  [5,5,10,15,25]]]
+  [5,5,10,15,25]]] -- quintuple the Fibonacci sequence
 ```
