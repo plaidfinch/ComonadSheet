@@ -40,7 +40,7 @@ instance (Ord c, Ord r, Enum c, Enum r) => Zipper2 (Z2 c r a) r where
 
 instance (Ord c, Enum c, Ord r, Enum r) => RefOf (Ref c,Ref r) (Z2 c r a) [[a]] where
    slice (c,r) (c',r') = slice r r' . fmap (slice c c') . fromZ2
-   splice list zipper = Z2 $ splice <$> (splice list (pure [])) <*> fromZ2 zipper
+   insert list zipper = Z2 $ insert <$> (insert list (pure [])) <*> fromZ2 zipper
    go (colRef,rowRef) = horizontal . vertical
       where
          horizontal = genericDeref zipL zipR col colRef

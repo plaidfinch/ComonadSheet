@@ -22,7 +22,7 @@ data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
 class RefOf ref zipper list | zipper -> ref list where
    go     :: ref -> zipper -> zipper
    slice  :: ref -> ref -> zipper -> list
-   splice :: list -> zipper -> zipper
+   insert :: list -> zipper -> zipper
 
 class AnyZipper z i a | z -> i a where
    index :: z -> i
