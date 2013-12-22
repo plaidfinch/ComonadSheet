@@ -3,6 +3,8 @@ module UncheckedExamples where
 import Generic
 import Z1
 import Z2
+import Z3
+import Z4
 import Unchecked
 import NumericInstances
 
@@ -10,11 +12,12 @@ import Control.Arrow (first, second)
 
 -- Some example zippers for testing...
 
-fibLike :: Z2 Integer Integer Integer
-fibLike = evaluate $ sheetOf (0,0) 0 $
-           ([1, 1]              ++ fibRow) :
-    repeat ([1, 1 + cell above] ++ fibRow)
-    where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
+fibLike :: Z3 Integer Integer Integer Integer
+fibLike = evaluate $ sheetOf (0,0,0) 0 $
+   fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
+   where fibSheetFrom a b = (([a, b]                       ++ fibRow) : repeat
+                             ([cell above, 1 + cell above] ++ fibRow))
+         fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 pascal :: Z2 Integer Integer Integer
 pascal = evaluate $ sheetOf (0,0) 0 $

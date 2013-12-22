@@ -8,23 +8,16 @@ This work was inspired by reading [this article](http://blog.emillon.org/posts/2
 Examples
 --------
 
-An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwards diagonals, from which we can easily extract the rows of the triangle by a simple traversal:
+An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwards diagonals:
 
 ```Haskell
 pascal :: Z2 Integer Integer Integer
-pascal = evaluate $ sheetOf 0 (0,0) $
+pascal = evaluate $ sheetOf (0,0) 0 $
   repeat 1 : repeat (1 : pascalRow)
   where pascalRow = repeat $ cell above + cell left
-
-pascalLists :: [[Integer]]
-pascalLists = map pascalList [0..]
-   where
-      pascalList n =
-         map view .
-         takeWhile ((>= 0) . row) .
-         iterate (go $ above & right) .
-         goto (0,n) $ pascal
 ```
+
+This looks like:
 
 ```Haskell
 > slice (at (0,0)) (at (10,10)) pascal
@@ -39,6 +32,21 @@ pascalLists = map pascalList [0..]
  [1,  9, 45, 165, 495, 1287, 3003,  6435, 12870, 24310], 
  [1, 10, 55, 220, 715, 2002, 5005, 11440, 24310, 48620]]
 ```
+
+We can also traverse it to find the rows of Pascal's triangle, which are the diagonals of this spreadsheet:
+
+```Haskell
+pascalLists :: [[Integer]]
+pascalLists = map pascalList [0..]
+   where
+      pascalList n =
+         map view .
+         takeWhile ((>= 0) . row) .
+         iterate (go $ above & right) .
+         goto (0,n) $ pascal
+```
+
+This results in:
 
 ```Haskell
 > take 15 pascalLists
@@ -59,26 +67,46 @@ pascalLists = map pascalList [0..]
  [1, 14, 91, 364, 1001, 2002, 3003, 3432, 3003, 2002, 1001, 364, 91, 14, 1]]
 ```
 
-An infinite spreadsheet listing Fibonacci-like sequences which have a successively higher second initial parameter:
+We may define a three-dimensional space enumerating all the Fibonacci-like sequences starting from positive seed numbers a and b, and subsequent terms equal to the sum of the two previous terms. (The normal Fibonacci sequence can be recovered with seeds a = 1, b = 1.)
 
 ```Haskell
-fibLike :: Z2 Integer Integer Integer
-fibLike = evaluate $ sheetOf 0 (0,0) $
-           ([1, 1]              ++ fibRow) :
-    repeat ([1, 1 + cell above] ++ fibRow)
-    where fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
+fibLike :: Z3 Integer Integer Integer Integer
+fibLike = evaluate $ sheetOf (0,0,0) 0 $
+   fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
+   where fibSheetFrom a b = (([a, b]                       ++ fibRow) : repeat
+                             ([cell above, 1 + cell above] ++ fibRow))
+         fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 ```
 
 ```Haskell
-> slice (at (0,0)) (at (10,10)) fibLike
-[[1,  1,  2,  3,  5,  8, 13,  21,  34,  55], 
- [1,  2,  3,  5,  8, 13, 21,  34,  55,  89], 
- [1,  3,  4,  7, 11, 18, 29,  47,  76, 123], 
- [1,  4,  5,  9, 14, 23, 37,  60,  97, 157], 
- [1,  5,  6, 11, 17, 28, 45,  73, 118, 191], 
- [1,  6,  7, 13, 20, 33, 53,  86, 139, 225], 
- [1,  7,  8, 15, 23, 38, 61,  99, 160, 259], 
- [1,  8,  9, 17, 26, 43, 69, 112, 181, 293], 
- [1,  9, 10, 19, 29, 48, 77, 125, 202, 327], 
- [1, 10, 11, 21, 32, 53, 85, 138, 223, 361]]
+> slice (at (0,0,0)) (at (4,4,4)) fibLike
+[[[1,1,2, 3, 5],
+  [1,2,3, 5, 8],
+  [1,3,4, 7,11],
+  [1,4,5, 9,14],
+  [1,5,6,11,17]],
+
+ [[2,1,3, 4, 7],
+  [2,2,4, 6,10],
+  [2,3,5, 8,13],
+  [2,4,6,10,16],
+  [2,5,7,12,19]],
+
+ [[3,1,4, 5, 9],
+  [3,2,5, 7,12],
+  [3,3,6, 9,15],
+  [3,4,7,11,18],
+  [3,5,8,13,21]],
+
+ [[4,1,5, 6,11],
+  [4,2,6, 8,14],
+  [4,3,7,10,17],
+  [4,4,8,12,20],
+  [4,5,9,14,23]],
+
+ [[5,1,6,  7,13],
+  [5,2,7,  9,16],
+  [5,3,8, 11,19],
+  [5,4,9, 13,22],
+  [5,5,10,15,25]]]
 ```
