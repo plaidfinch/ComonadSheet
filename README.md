@@ -8,6 +8,8 @@ This work was inspired by reading [this article](http://blog.emillon.org/posts/2
 Examples
 --------
 
+### Pascal's Triangle
+
 An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwards diagonals:
 
 ```Haskell
@@ -67,6 +69,8 @@ This results in:
  [1, 14, 91, 364, 1001, 2002, 3003, 3432, 3003, 2002, 1001, 364, 91, 14, 1]]
 ```
 
+### Fibonacci-like Sequences
+
 We may define a three-dimensional space enumerating all the Fibonacci-like sequences starting from positive seed numbers a and b, and subsequent terms equal to the sum of the two previous terms. (The normal Fibonacci sequence can be recovered with seeds a = 1, b = 1.)
 
 ```Haskell
@@ -98,6 +102,8 @@ Examining a slice of this space, we find the following:
   [3,4,7,11,18],
   [3,5,8,13,21]]]
 ```
+
+### Conway's Game of Life
 
 Of course, as this is a comonadic library, we're obligated to implement the canonical nontrivial comonadic computation: Conway's Game of Life.
 
