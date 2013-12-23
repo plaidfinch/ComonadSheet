@@ -51,3 +51,32 @@ cartesian' = evaluate $ Z2 $ zipper 0
    [zipperOf 0 (second pred <$> cell below)]
    (zipper 0 [first pred <$> cell right] (const (0,0)) [first succ <$> cell left])
    [zipperOf 0 (second succ <$> cell above)]
+
+data ConwayCell = X | O deriving (Eq,Ord,Enum,Show)
+type ConwayUniverse = Z3 Int Int Int ConwayCell
+
+conway :: [[ConwayCell]] -> ConwayUniverse
+conway seed = evaluate $ insert [map (map const) seed] blankConway
+   where blankConway = Z3 $ insert (repeat $ pure rule) (fromZ3 $ pure (const X))
+            where rule z = case neighborCount z of
+                     2 -> cell inward z
+                     3 -> O
+                     _ -> X
+                  neighborCount = length . filter (== O) <$> cells (map (inward &) bordering)
+                  bordering = filter (/= here) $ (&) <$> [left,here,right] <*> [above,here,below]
+
+printConway :: (Int,Int) -> (Int,Int) -> Int -> ConwayUniverse -> IO ()
+printConway (c,r) (c',r') generations universe = do
+   separator
+   mapM_ (\gen -> printGen gen >> separator) $
+      slice (at (c,r,0)) (at (c',r',generations)) universe
+   where
+      separator = putStrLn $ replicate (1 + abs $ c - c') '-'
+      printGen = mapM_ $ putStrLn . map showCell
+      showCell X = ' '
+      showCell O = '*'
+
+lonelyGlider :: ConwayUniverse
+lonelyGlider = conway $ [[X,X,O],
+                   [O,X,O],
+                   [X,O,O]]

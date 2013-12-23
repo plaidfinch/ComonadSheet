@@ -81,7 +81,7 @@ fibLike = evaluate $ sheet (0,0,0) 0 $
 Examining a slice of this space, we find the following:
 
 ```Haskell
-> slice (at (0,0,0)) (at (4,4,4)) fibLike
+> slice (at (0,0,0)) (at (4,4,3)) fibLike
 [[[1,1,2, 3, 5], -- the original Fibonacci sequence
   [1,2,3, 5, 8],
   [1,3,4, 7,11],
@@ -96,15 +96,84 @@ Examining a slice of this space, we find the following:
   [3,2,5, 7,12],
   [3,3,6, 9,15], -- triple the Fibonacci sequence
   [3,4,7,11,18],
-  [3,5,8,13,21]],
- [[4,1,5, 6,11],
-  [4,2,6, 8,14],
-  [4,3,7,10,17],
-  [4,4,8,12,20], -- quadruple the Fibonacci sequence
-  [4,5,9,14,23]],
- [[5,1,6,  7,13],
-  [5,2,7,  9,16],
-  [5,3,8, 11,19],
-  [5,4,9, 13,22],
-  [5,5,10,15,25]]] -- quintuple the Fibonacci sequence
+  [3,5,8,13,21]]]
+```
+
+Of course, as this is a comonadic library, we're obligated to implement the canonical nontrivial comonadic computation: Conway's Game of Life.
+
+For convenience, we define a few types:
+
+```Haskell
+data ConwayCell = X | O deriving (Eq,Ord,Enum,Show)
+type ConwayUniverse = Z3 Int Int Int ConwayCell
+```
+
+Then we can define a function which takes a starting configuration (seed) for the Game of Life, and inserts it into the infinite universe of Game-of-Life cells.
+
+```Haskell
+conway :: [[ConwayCell]] -> ConwayUniverse
+conway seed = evaluate $ insert [map (map const) seed] blankConway
+   where blankConway = Z3 $ insert (repeat $ pure rule) (fromZ3 $ pure (const X))
+            where rule z = case neighborCount z of
+                     2 -> cell inward z
+                     3 -> O
+                     _ -> X
+                  neighborCount = length . filter (== O) <$> cells (map (inward &) bordering)
+                  bordering = filter (/= here) $ (&) <$> [left,here,right] <*> [above,here,below]
+```
+
+For aesthetics, we can define a printer function for generations of the game of life. Note that the printer function is as long as the definition of the real computation!
+
+```Haskell
+printConway :: (Int,Int) -> (Int,Int) -> Int -> ConwayUniverse -> IO ()
+printConway (c,r) (c',r') generations universe = do
+   separator
+   mapM_ (\gen -> printGen gen >> separator) $
+      slice (at (c,r,0)) (at (c',r',generations)) universe
+   where
+      separator = putStrLn $ replicate (1 + abs $ c - c') '-'
+      printGen = mapM_ $ putStrLn . map showCell
+      showCell X = ' '
+      showCell O = '*'
+```
+
+Here's how we define a universe containing only a single glider:
+
+```
+lonelyGlider :: ConwayUniverse
+lonelyGlider = conway $ [[X,X,O],
+                   [O,X,O],
+                   [X,O,O]]
+```
+
+And it works!
+
+```Haskell
+> printConway (0,0) (3,3) 4 lonelyGlider
+----
+  * 
+* * 
+ ** 
+    
+----
+ *  
+  **
+ ** 
+    
+----
+  * 
+   *
+ ***
+    
+----
+    
+ * *
+  **
+  * 
+----
+    
+   *
+ * *
+  **
+----
 ```
