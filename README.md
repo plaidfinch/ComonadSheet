@@ -149,9 +149,10 @@ Here's how we define a universe containing only a single glider:
 
 ```
 lonelyGlider :: ConwayUniverse
-lonelyGlider = conway $ [[X,X,O],
-                   [O,X,O],
-                   [X,O,O]]
+lonelyGlider = conway $ 
+   [[X,X,O],
+    [O,X,O],
+    [X,O,O]]
 ```
 
 And it works!
@@ -185,3 +186,54 @@ And it works!
   **
 ----
 ```
+
+Here's a Lightweight Spaceship:
+
+```Haskell
+lonelySpaceship :: ConwayUniverse
+lonelySpaceship = conway $ 
+   [[X,X,X,X,X],
+    [X,O,O,O,O],
+    [O,X,X,X,O],
+    [X,X,X,X,O],
+    [O,X,X,O,X],
+    [X,X,X,X,X]]
+```
+
+When we run it...
+
+```Haskell
+> printConway (0,0) (7,4) 4 lonelySpaceship
+--------
+        
+ ****   
+*   *   
+    *   
+*  *    
+--------
+  **    
+ ****   
+ ** **  
+   **   
+        
+--------
+ *  *   
+     *  
+ *   *  
+  ****  
+        
+--------
+        
+    **  
+  ** ** 
+  ****  
+   **   
+--------
+        
+   **** 
+  *   * 
+      * 
+  *  *  
+--------
+```
+

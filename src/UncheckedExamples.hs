@@ -77,6 +77,16 @@ printConway (c,r) (c',r') generations universe = do
       showCell O = '*'
 
 lonelyGlider :: ConwayUniverse
-lonelyGlider = conway $ [[X,X,O],
-                   [O,X,O],
-                   [X,O,O]]
+lonelyGlider = conway $
+   [[X,X,O],
+    [O,X,O],
+    [X,O,O]]
+
+lonelySpaceship :: ConwayUniverse
+lonelySpaceship = conway $ 
+   [[X,X,X,X,X],
+    [X,O,O,O,O],
+    [O,X,X,X,O],
+    [X,X,X,X,O],
+    [O,X,X,O,X],
+    [X,X,X,X,X]]
