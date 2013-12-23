@@ -110,6 +110,8 @@ type ConwayUniverse = Z3 Int Int Int ConwayCell
 
 Then we can define a function which takes a starting configuration (seed) for the Game of Life, and inserts it into the infinite universe of Game-of-Life cells.
 
+Here, we represent the evolution of an instance of the game of life as a three-dimensional space where two axes are space, and the third is time.
+
 ```Haskell
 conway :: [[ConwayCell]] -> ConwayUniverse
 conway seed = evaluate $ insert [map (map const) seed] blankConway
