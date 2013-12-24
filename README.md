@@ -147,7 +147,7 @@ printConway (c,r) (c',r') generations universe = do
 
 Here's how we define a universe containing only a single glider:
 
-```
+```Haskell
 lonelyGlider :: ConwayUniverse
 lonelyGlider = conway [[X,X,O],
                        [O,X,O],
