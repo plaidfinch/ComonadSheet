@@ -125,7 +125,7 @@ In the Conway space, all cells before time zero are always dead cells, and all c
 ```Haskell
 conway :: [[ConwayCell]] -> ConwayUniverse
 conway seed = evaluate $ insert [map (map const) seed] blankConway
-   where blankConway = Z3 $ insert (repeat $ pure rule) (fromZ3 $ pure (const X))
+   where blankConway = wrapZ3 (insert . repeat $ pure rule) $ pure (const X)
             where rule z = case neighborCount z of
                               2 -> cell inward z
                               3 -> O

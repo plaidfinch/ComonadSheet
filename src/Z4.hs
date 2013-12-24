@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 module Z4
-   ( module Generic , Z4(..)
+   ( module Generic , Z4(..) , wrapZ4
    ) where
 
 import Generic
