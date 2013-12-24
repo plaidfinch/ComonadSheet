@@ -62,8 +62,9 @@ conway seed = evaluate $ insert [map (map const) seed] blankConway
                      2 -> cell inward z
                      3 -> O
                      _ -> X
-                  neighborCount = length . filter (== O) <$> cells (map (inward &) bordering)
-                  bordering = filter (/= here) $ (&) <$> [left,here,right] <*> [above,here,below]
+                  neighborCount = length . filter (== O) <$> cells bordering
+                  bordering = map (inward &) . filter (/= here) $
+                              (&) <$> [left,here,right] <*> [above,here,below]
 
 printConway :: (Int,Int) -> (Int,Int) -> Int -> ConwayUniverse -> IO ()
 printConway (c,r) (c',r') generations universe = do

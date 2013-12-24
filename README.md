@@ -128,8 +128,9 @@ conway seed = evaluate $ insert [map (map const) seed] blankConway
                      2 -> cell inward z
                      3 -> O
                      _ -> X
-                  neighborCount = length . filter (== O) <$> cells (map (inward &) bordering)
-                  bordering = filter (/= here) $ (&) <$> [left,here,right] <*> [above,here,below]
+                  neighborCount = length . filter (== O) <$> cells bordering
+                  bordering = map (inward &) . filter (/= here) $
+                              (&) <$> [left,here,right] <*> [above,here,below]
 ```
 
 For aesthetics, we can define a printer function for generations of the game of life. Note that the printer function is as long as the definition of the real computation!
