@@ -120,7 +120,7 @@ Then we can define a function which takes a starting configuration (seed) for th
 
 Here, we represent the evolution of an instance of the game of life as a three-dimensional space where two axes are space, and the third is time.
 
-In the Conway space, all cells before time 0 are always dead cells, and all cells starting at time 0 are equal to the Life rule applied to their neighboring cells in the previous time frame. To instantiate a timeline for a seed pattern, it is inserted into time frame zero of the blank Conway space.
+In the Conway space, all cells before time zero are always dead cells, and all cells starting at time zero are equal to the Life rule applied to their neighboring cells in the previous time frame. To instantiate a timeline for a seed pattern, it is inserted as a series of constant cells into time frame zero of the blank Conway space. Then, the Conway space is evaluated, resulting in an infinite 3D space showing the evolution of the pattern.
 
 ```Haskell
 conway :: [[ConwayCell]] -> ConwayUniverse
