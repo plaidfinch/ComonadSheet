@@ -127,9 +127,9 @@ conway :: [[ConwayCell]] -> ConwayUniverse
 conway seed = evaluate $ insert [map (map const) seed] blankConway
    where blankConway = Z3 $ insert (repeat $ pure rule) (fromZ3 $ pure (const X))
             where rule z = case neighborCount z of
-                     2 -> cell inward z
-                     3 -> O
-                     _ -> X
+                              2 -> cell inward z
+                              3 -> O
+                              _ -> X
                   neighborCount = length . filter (== O) <$> cells bordering
                   bordering = map (inward &) . filter (/= here) $
                               (&) <$> [left,here,right] <*> [above,here,below]
