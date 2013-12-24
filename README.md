@@ -73,6 +73,8 @@ This results in:
 
 We may define a three-dimensional space enumerating all the Fibonacci-like sequences starting from positive seed numbers a and b, and subsequent terms equal to the sum of the two previous terms. (The normal Fibonacci sequence can be recovered with seeds a = 1, b = 1.)
 
+This example is thanks to an enlightening conversation with Eden Zik.
+
 ```Haskell
 fibLike :: Z3 Int Int Int Integer
 fibLike = evaluate $ sheet (0,0,0) 0 $
