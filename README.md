@@ -112,7 +112,7 @@ Of course, as this is a comonadic library, we're obligated to implement the cano
 For convenience, we define a few types:
 
 ```Haskell
-data ConwayCell = X | O deriving (Eq,Ord,Enum,Show)
+data ConwayCell = X | O deriving (Eq,Show)
 type ConwayUniverse = Z3 Int Int Int ConwayCell
 ```
 

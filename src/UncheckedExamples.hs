@@ -52,7 +52,7 @@ cartesian' = evaluate $ Z2 $ zipper 0
    (zipper 0 [first pred <$> cell right] (const (0,0)) [first succ <$> cell left])
    [zipperOf 0 (second succ <$> cell above)]
 
-data ConwayCell = X | O deriving (Eq,Ord,Enum,Show)
+data ConwayCell = X | O deriving (Eq,Show)
 type ConwayUniverse = Z3 Int Int Int ConwayCell
 
 conway :: [[ConwayCell]] -> ConwayUniverse
