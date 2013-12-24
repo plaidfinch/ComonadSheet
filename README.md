@@ -77,9 +77,9 @@ We may define a three-dimensional space enumerating all the Fibonacci-like seque
 fibLike :: Z3 Int Int Int Integer
 fibLike = evaluate $ sheet (0,0,0) 0 $
    fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
-   where fibSheetFrom a b = (([a, b]                       ++ fibRow) : repeat
-                             ([cell above, 1 + cell above] ++ fibRow))
-         fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
+   where fibSheetFrom a b = ([a, b]                       ++ fibRow) : repeat
+                            ([cell above, 1 + cell above] ++ fibRow)
+         fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2
 ```
 
 Examining a slice of this space, we find the following:
@@ -149,10 +149,9 @@ Here's how we define a universe containing only a single glider:
 
 ```
 lonelyGlider :: ConwayUniverse
-lonelyGlider = conway $ 
-   [[X,X,O],
-    [O,X,O],
-    [X,O,O]]
+lonelyGlider = conway [[X,X,O],
+                       [O,X,O],
+                       [X,O,O]]
 ```
 
 And it works!
@@ -191,13 +190,12 @@ Here's a Lightweight Spaceship:
 
 ```Haskell
 lonelySpaceship :: ConwayUniverse
-lonelySpaceship = conway $ 
-   [[X,X,X,X,X],
-    [X,O,O,O,O],
-    [O,X,X,X,O],
-    [X,X,X,X,O],
-    [O,X,X,O,X],
-    [X,X,X,X,X]]
+lonelySpaceship = conway [[X,X,X,X,X],
+                          [X,O,O,O,O],
+                          [O,X,X,X,O],
+                          [X,X,X,X,O],
+                          [O,X,X,O,X],
+                          [X,X,X,X,X]]
 ```
 
 When we run it...

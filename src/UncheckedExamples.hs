@@ -15,8 +15,8 @@ import Control.Arrow (first, second)
 fibLike :: Z3 Int Int Int Integer
 fibLike = evaluate $ sheet (0,0,0) 0 $
    fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
-   where fibSheetFrom a b = (([a, b]                       ++ fibRow) : repeat
-                             ([cell above, 1 + cell above] ++ fibRow))
+   where fibSheetFrom a b = ([a, b]                       ++ fibRow) : repeat
+                            ([cell above, 1 + cell above] ++ fibRow)
          fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 pascal :: Z2 Int Int Integer
@@ -77,16 +77,14 @@ printConway (c,r) (c',r') generations universe = do
       showCell O = '*'
 
 lonelyGlider :: ConwayUniverse
-lonelyGlider = conway $
-   [[X,X,O],
-    [O,X,O],
-    [X,O,O]]
+lonelyGlider = conway [[X,X,O],
+                       [O,X,O],
+                       [X,O,O]]
 
 lonelySpaceship :: ConwayUniverse
-lonelySpaceship = conway $ 
-   [[X,X,X,X,X],
-    [X,O,O,O,O],
-    [O,X,X,X,O],
-    [X,X,X,X,O],
-    [O,X,X,O,X],
-    [X,X,X,X,X]]
+lonelySpaceship = conway [[X,X,X,X,X],
+                          [X,O,O,O,O],
+                          [O,X,X,X,O],
+                          [X,X,X,X,O],
+                          [O,X,X,O,X],
+                          [X,X,X,X,X]]
