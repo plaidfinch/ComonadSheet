@@ -141,7 +141,7 @@ For aesthetics, we can define a printer function for generations of the game of 
 printConway :: (Int,Int) -> (Int,Int) -> Int -> ConwayUniverse -> IO ()
 printConway (c,r) (c',r') generations universe = do
    separator
-   mapM_ (\gen -> printGen gen >> separator) $
+   mapM_ ((>> separator) . printGen) $
       slice (at (c,r,0)) (at (c',r',generations)) universe
    where
       separator = putStrLn $ replicate (1 + abs $ c - c') '-'
