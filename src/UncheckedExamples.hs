@@ -58,11 +58,12 @@ type ConwayUniverse = Z3 Int Int Int ConwayCell
 conway :: [[ConwayCell]] -> ConwayUniverse
 conway seed = evaluate $ insert [map (map const) seed] blankConway
    where blankConway = wrapZ3 (insert . repeat $ pure rule) $ pure (const X)
-            where rule z = case neighborCount z of
+            where rule z = case neighbors z of
                               2 -> cell inward z
                               3 -> O
                               _ -> X
-                  neighborCount = length . filter (== O) <$> cells bordering
+                  neighbors = count (== O) <$> cells bordering
+                  count     = (length .) . filter
                   bordering = map (inward &) . filter (/= here) $
                               (&) <$> [left,here,right] <*> [above,here,below]
 
