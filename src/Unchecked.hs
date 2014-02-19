@@ -9,7 +9,7 @@ import Z4
 import Control.Arrow (first,second)
 import Data.Function
 
-evaluate :: ComonadApply f => f (f b -> b) -> f b
+evaluate :: ComonadApply w => w (w b -> b) -> w b
 evaluate fs = fix $ (fs <@>) . duplicate
 --evaluate = extend wfix -- more elegant, but breaks sharing, resulting in exponential performance penalty
 
