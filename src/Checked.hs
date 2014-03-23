@@ -4,7 +4,7 @@ module Checked where
 
 import Control.Applicative.Free
 import Control.Applicative hiding ( empty )
-import Data.Traversable ( traverse )
+import Data.Traversable ( Traversable , traverse )
 import Data.Set ( Set , empty , insert )
 
 -- | A 'CellRef' is a reference of type r from a container of things of type b, which results in something of type v. When dereferenced, a plain 'CellRef' will always give a result of type b, but used in a free applicative functor, v varies over the result type of the expression.
@@ -35,5 +35,5 @@ cell :: r -> CellExpr r b b
 cell = liftAp . Ref
 
 -- | Constructs a 'CellExpr' which evaluates to the list of things referenced by the references in the indices given.
-cells :: [r] -> CellExpr r b [b]
+cells :: Traversable f => f r -> CellExpr r b (f b)
 cells = traverse cell
