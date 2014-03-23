@@ -1,12 +1,7 @@
 module Unchecked where
 
 import Generic
-import Z1
-import Z2
-import Z3
-import Z4
 
-import Control.Arrow (first,second)
 import Data.Function
 
 evaluate :: ComonadApply w => w (w b -> b) -> w b
