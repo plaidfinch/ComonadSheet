@@ -9,7 +9,7 @@ import Data.Set (Set, empty, insert, fromList, union)
 
 -- | A 'CellRef' is a reference of type r from a container of things of type b, which results in something of type v. When dereferenced, a plain 'CellRef' will always give a result of type b, but used in a free applicative functor, v varies over the result type of the expression.
 data CellRef r b v where
-  Ref :: r -> CellRef r b b
+   Ref :: r -> CellRef r b b
 deriving instance (Show r) => Show (CellRef r b v)
 
 -- | A 'CellExpr' is the free applicative functor over 'CellRefs'. A 'CellExpr' is an expression using references of type r to a container of things of type b, whose result is something of type v.
