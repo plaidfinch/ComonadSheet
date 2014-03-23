@@ -1,54 +1,43 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE GADTs, RankNTypes #-}
 
-module Checked 
-   ( CellExpr(DynamicCell)
-   , cell , cells , dcell , dcells
-   ) where
+module Checked where
 
-import Generic
-import qualified Unchecked as U
-import Z1
-import Z2
-import Z3
-import Z4
+import Control.Applicative hiding (empty)
+import Control.Applicative.Free
+import Data.Traversable
+import Data.Set (Set, empty, insert, fromList, union)
 
-import Data.Monoid
-import Data.Set (Set)
-import qualified Data.Set as Set
+-- | A 'CellRef' is a reference of type r from a container of things of type b, which results in something of type v. When dereferenced, a plain 'CellRef' will always give a result of type b, but used in a free applicative functor, v varies over the result type of the expression.
+data CellRef r b v where
+  Ref :: r -> CellRef r b b
 
-data CellExpr z ref a = StaticCell  { getRefs :: Set ref, appSCell :: z -> a }
-                      | DynamicCell {                     appDCell :: z -> a }
+-- | A 'CellExpr' is the free applicative functor over 'CellRefs'. A 'CellExpr' is an expression using references of type r to a container of things of type b, whose result is something of type v.
+type CellExpr r b v = Ap (CellRef r b) v
 
-appCell :: CellExpr z ref a -> z -> a
-appCell (StaticCell _ f) = f
-appCell (DynamicCell  f) = f
+-- | Extracts the reference from a 'CellRef'.
+getRef :: CellRef r b v -> r
+getRef (Ref r) = r
 
-instance (Show ref) => Show (CellExpr z ref a) where
-   show (StaticCell refs _) = "StaticCell (" ++ show refs ++ ") _"
-   show (DynamicCell _)     = "DynamicCell _"
+-- | A 'Deref' is a synonym for a function which knows how, given an index, to take something out of a structure, but isn't allowed to think about the items in the structure themselves.
+type Deref f r = forall x. r -> f x -> x
 
-instance Functor (CellExpr z ref) where
-   fmap f (StaticCell refs a) = StaticCell refs (f . a)
-   fmap f (DynamicCell a)     = DynamicCell     (f . a)
+-- | Given an appropriate method of dereferencing and a 'CellRef', uses the 'CellRef' to extract something from a structure.
+deref :: Deref f r -> CellRef r b v -> f b -> v
+deref f (Ref r) = f r
 
-instance (Ord ref) => Applicative (CellExpr z ref) where
-   pure                              = StaticCell Set.empty . const
-   StaticCell r a <*> StaticCell s b = StaticCell (r <> s) (a <*> b)
-   StaticCell _ a <*> DynamicCell  b = DynamicCell         (a <*> b)
-   DynamicCell  a <*> StaticCell _ b = DynamicCell         (a <*> b)
-   DynamicCell  a <*> DynamicCell  b = DynamicCell         (a <*> b)
+-- | Returns the set of all references in a 'CellExpr'.
+references :: Ord r => CellExpr r b v -> Set r
+references (Pure _)       = empty
+references (Ap (Ref r) x) = insert r (references x)
 
-indexDeref :: (Ord x, Enum x) => Ref x -> x -> x
-indexDeref = genericDeref pred succ id
+-- | Given an appropriate method of dereferencing and a 'CellExpr', returns the function from a structure to a value which is represented by a 'CellExpr'.
+runCell :: Deref f r -> CellExpr r b v -> f b -> v
+runCell f = runAp (deref f)
 
-cell :: (Ord ref, RefOf ref z list, AnyZipper z i a) => ref -> CellExpr z ref a
-cell = StaticCell <$> Set.singleton <*> U.cell
+-- | Constructs a 'CellExpr' which evaluates to whatever is at index r.
+cell :: r -> CellExpr r b b
+cell = liftAp . Ref
 
-cells :: (Ord ref, RefOf ref z list, AnyZipper z i a) => [ref] -> CellExpr z ref [a]
-cells = StaticCell <$> Set.fromList <*> U.cells
-
-dcell :: (z -> a) -> CellExpr z ref a
-dcell = DynamicCell
-
-dcells :: (z -> [a]) -> CellExpr z ref [a]
-dcells = DynamicCell
+-- | Constructs a 'CellExpr' which evaluates to the list of things referenced by the references in the indices given.
+cells :: [r] -> CellExpr r b [b]
+cells = traverse cell
