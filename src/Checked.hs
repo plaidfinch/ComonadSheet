@@ -2,10 +2,10 @@
 
 module Checked where
 
-import Control.Applicative hiding (empty)
 import Control.Applicative.Free
-import Data.Traversable (traverse)
-import Data.Set (Set, empty, insert, fromList, union)
+import Control.Applicative hiding ( empty )
+import Data.Traversable ( traverse )
+import Data.Set ( Set , empty , insert )
 
 -- | A 'CellRef' is a reference of type r from a container of things of type b, which results in something of type v. When dereferenced, a plain 'CellRef' will always give a result of type b, but used in a free applicative functor, v varies over the result type of the expression.
 data CellRef r b v where
