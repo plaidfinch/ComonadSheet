@@ -24,10 +24,7 @@ references (Ap (Ref r) x) = insert r (references x)
 
 -- | Given an appropriate method of dereferencing and a 'CellExpr', returns the function from a structure to a value which is represented by a 'CellExpr'.
 runCell :: Deref f r -> CellExpr r b v -> f b -> v
-runCell f = runAp (deref f)
-   where
-      deref :: Deref f r -> CellRef r b v -> f b -> v
-      deref d (Ref r) = d r
+runCell f = runAp $ \(Ref r) -> f r
 
 -- | Constructs a 'CellExpr' which evaluates to whatever is at index r.
 cell :: r -> CellExpr r b b
