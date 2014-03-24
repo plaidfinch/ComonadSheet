@@ -3,7 +3,6 @@
 module Checked where
 
 import Control.Applicative.Free
-import Control.Applicative hiding ( empty )
 import Data.Traversable ( Traversable , traverse )
 import Data.Set ( Set , empty , insert )
 
@@ -28,7 +27,7 @@ runCell :: Deref f r -> CellExpr r b v -> f b -> v
 runCell f = runAp (deref f)
    where
       deref :: Deref f r -> CellRef r b v -> f b -> v
-      deref f (Ref r) = f r
+      deref d (Ref r) = d r
 
 -- | Constructs a 'CellExpr' which evaluates to whatever is at index r.
 cell :: r -> CellExpr r b b
