@@ -42,12 +42,12 @@ instance AnyZipper (Z1 i a) i a where
    reindex i (Z1 _ l c r) = Z1 i l c r
 
 instance (Enum i, Ord i) => Zipper1 (Z1 i a) i where
-   zipL (Z1 i (left : lefts) cursor rights) =
-      Z1 (pred i) lefts left (cursor : rights)
+   zipL (Z1 i (l : ls) cursor rs) =
+      Z1 (pred i) ls l (cursor : rs)
    zipL _ = error "zipL of non-infinite zipper; the impossible has occurred"
 
-   zipR (Z1 i lefts cursor (right : rights)) =
-      Z1 (succ i) (cursor : lefts) right rights
+   zipR (Z1 i ls cursor (r : rs)) =
+      Z1 (succ i) (cursor : ls) r rs
    zipR _ = error "zipR of non-infinite zipper; the impossible has occurred"
 
    col = index
@@ -64,7 +64,7 @@ instance (Ord c, Enum c) => RefOf (Ref c) (Z1 c a) [a] where
             dist = fromEnum (index loc2) - fromEnum (index loc1)
 
 zipper :: i -> [a] -> a -> [a] -> Z1 i a
-zipper i lefts cursor rights = Z1 i (cycle lefts) cursor (cycle rights)
+zipper i ls cursor rs = Z1 i (cycle ls) cursor (cycle rs)
 
 zipperOf :: i -> a -> Z1 i a
 zipperOf = zipIterate id id
@@ -76,28 +76,30 @@ zipIterate prev next i current =
         <*> (tail . iterate next) $ current
 
 viewL :: Z1 i a -> [a]
-viewL (Z1 _ lefts _ _) = lefts
+viewL (Z1 _ ls _ _) = ls
 
 viewR :: Z1 i a -> [a]
-viewR (Z1 _ _ _ rights) = rights
+viewR (Z1 _ _ _ rs) = rs
 
 switch :: Z1 i a -> Z1 i a
-switch (Z1 i lefts cursor rights) = Z1 i rights cursor lefts
+switch (Z1 i ls cursor rs) = Z1 i rs cursor ls
 
 insertR, insertL :: a -> Z1 i a -> Z1 i a
-insertR x (Z1 i lefts cursor rights) = Z1 i lefts x (cursor : rights)
-insertL x (Z1 i lefts cursor rights) = Z1 i (cursor : lefts) x rights
+insertR x (Z1 i ls cursor rs) = Z1 i ls x (cursor : rs)
+insertL x (Z1 i ls cursor rs) = Z1 i (cursor : ls) x rs
 
 insertListR, insertListL :: [a] -> Z1 i a -> Z1 i a
 
 insertListR [] z = z
-insertListR list (Z1 i lefts cursor rights) =
-   Z1 i lefts (head list) (tail list ++ cursor : rights)
+insertListR list (Z1 i ls cursor rs) =
+   Z1 i ls (head list) (tail list ++ cursor : rs)
 
 insertListL [] z = z
-insertListL list (Z1 i lefts cursor rights) =
-   Z1 i (tail list ++ cursor : lefts) (head list) rights
+insertListL list (Z1 i ls cursor rs) =
+   Z1 i (tail list ++ cursor : ls) (head list) rs
 
 deleteL, deleteR :: Z1 i a -> Z1 i a
-deleteL (Z1 i (left : lefts) cursor rights)  = Z1 i lefts left rights
-deleteR (Z1 i lefts cursor (right : rights)) = Z1 i lefts right rights
+deleteL (Z1 i (l : ls) cursor rs) = Z1 i ls l rs
+deleteL _                         = error "deleteL: empty zipper"
+deleteR (Z1 i ls cursor (r : rs)) = Z1 i ls r rs
+deleteR _                         = error "deleteR: empty zipper"
