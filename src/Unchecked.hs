@@ -4,7 +4,7 @@ import Generic
 
 import Data.Function
 
-evaluate :: ComonadApply w => w (w b -> b) -> w b
+evaluate :: ComonadApply w => w (w a -> a) -> w a
 evaluate fs = fix $ (fs <@>) . duplicate
 --evaluate = extend wfix -- more elegant, but breaks sharing, resulting in exponential performance penalty
 
