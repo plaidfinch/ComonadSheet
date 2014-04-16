@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFunctor , FlexibleInstances #-}
 
 module ComonadComposition where
 
@@ -25,7 +25,7 @@ instance Zipper1 Z where
   zipR (Z ls c (Cons r rs)) = Z (Cons c ls) r rs
   zipL (Z (Cons l ls) c rs) = Z ls l (Cons c rs)
 
-instance (Functor f, Zipper1 z) => Zipper1 (Compose f z) where
+instance (Functor f) => Zipper1 (Compose f Z) where
   zipL = composedly (fmap zipL)
   zipR = composedly (fmap zipR)
 
@@ -33,7 +33,7 @@ class Zipper2 z where
   zipU :: z a -> z a
   zipD :: z a -> z a
 
-instance (Zipper1 z) => Zipper2 (Compose z x) where
+instance (Zipper1 z) => Zipper2 (Compose z Z) where
   zipU = composedly zipL
   zipD = composedly zipR
 
@@ -41,7 +41,7 @@ class Zipper3 z where
   zipI :: z a -> z a
   zipO :: z a -> z a
 
-instance (Zipper2 z) => Zipper3 (Compose z x) where
+instance (Zipper2 z) => Zipper3 (Compose z Z) where
   zipI = composedly zipU
   zipO = composedly zipD
 
