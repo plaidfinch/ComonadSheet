@@ -45,18 +45,36 @@ instance (Zipper2 z) => Zipper3 (Compose z Z) where
   zipI = composedly zipU
   zipO = composedly zipD
 
+class Zipper4 z where
+  zipA :: z a -> z a
+  zipK :: z a -> z a
+
+instance (Zipper3 z) => Zipper4 (Compose z Z) where
+  zipA = composedly zipI
+  zipK = composedly zipO
+
+type Z2 = Compose Z Z
+type Z3 = Compose (Compose Z Z) Z
+type Z4 = Compose (Compose (Compose Z Z) Z) Z
+
 -- Some example zippers for testing...
 ints :: Z Int
 ints = zipIterate pred succ 0
 
-intPairs :: Compose Z Z (Int,Int)
+intPairs :: Z2 (Int,Int)
 intPairs = (,) <$> Compose (     pure ints)
                <*> Compose (fmap pure ints)
 
-intTriples :: Compose (Compose Z Z) Z (Int,Int,Int)
-intTriples = (,,) <$> (Compose . Compose) ((pure      .      pure) ints)
-                  <*> (Compose . Compose) ((pure      . fmap pure) ints)
+intTriples :: Z3 (Int,Int,Int)
+intTriples = (,,) <$> (Compose . Compose) ((     pure .      pure) ints)
+                  <*> (Compose . Compose) ((     pure . fmap pure) ints)
                   <*> (Compose . Compose) ((fmap pure . fmap pure) ints)
+
+intQuadruples :: Z4 (Int,Int,Int,Int)
+intQuadruples = (,,,) <$> (Compose . Compose . Compose) ((     pure .      pure .      pure) ints)
+                      <*> (Compose . Compose . Compose) ((     pure .      pure . fmap pure) ints)
+                      <*> (Compose . Compose . Compose) ((     pure . fmap pure . fmap pure) ints)
+                      <*> (Compose . Compose . Compose) ((fmap pure . fmap pure . fmap pure) ints)
 
 viewL, viewR :: Z a -> Stream a
 viewL (Z ls _ _) = ls
