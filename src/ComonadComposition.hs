@@ -54,8 +54,8 @@ instance (Zipper3 z) => Zipper4 (Compose z Z) where
   zipK = composedly zipO
 
 type Z2 = Compose Z Z
-type Z3 = Compose (Compose Z Z) Z
-type Z4 = Compose (Compose (Compose Z Z) Z) Z
+type Z3 = Compose Z2 Z
+type Z4 = Compose Z3 Z
 
 -- Some example zippers for testing...
 ints :: Z Int
