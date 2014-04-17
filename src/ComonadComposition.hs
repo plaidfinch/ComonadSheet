@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor , FlexibleInstances , FlexibleContexts , MultiParamTypeClasses , UndecidableInstances #-}
+{-# LANGUAGE DeriveFunctor , FlexibleInstances , FlexibleContexts , MultiParamTypeClasses , FunctionalDependencies , UndecidableInstances #-}
 
 module ComonadComposition where
 
@@ -9,6 +9,7 @@ import Data.Distributive
 import Data.Functor
 import Data.Functor.Identity
 import Data.Functor.Compose
+import Data.Monoid
 import Data.Stream
 
 import Control.Lens ( view , over )
@@ -171,23 +172,23 @@ instance (ComonadApply z, Indexes i z) => ComonadApply (Indexed i z) where
 class Indexes i z where
    indices :: i -> z i
 
-instance (Enum a) => Indexes a Z where
-   indices = zipIterate pred succ
+instance (Enum a) => Indexes (Identity a) Z where
+   indices = zipIterate (fmap pred) (fmap succ)
 
 instance (Enum a, Enum b) => Indexes (a,b) Z2 where
-   indices = cross <$> indices . view _1
-                   <*> indices . view _2
+   indices = cross <$> zipIterate pred succ . view _1
+                   <*> zipIterate pred succ . view _2
 
 instance (Enum a, Enum b, Enum c) => Indexes (a,b,c) Z3 where
-  indices = cross3 <$> indices . view _1
-                   <*> indices . view _2
-                   <*> indices . view _3
+  indices = cross3 <$> zipIterate pred succ . view _1
+                   <*> zipIterate pred succ . view _2
+                   <*> zipIterate pred succ . view _3
 
 instance (Enum a, Enum b, Enum c, Enum d) => Indexes (a,b,c,d) Z4 where
-  indices = cross4 <$> indices . view _1
-                   <*> indices . view _2
-                   <*> indices . view _3
-                   <*> indices . view _4
+  indices = cross4 <$> zipIterate pred succ . view _1
+                   <*> zipIterate pred succ . view _2
+                   <*> zipIterate pred succ . view _3
+                   <*> zipIterate pred succ . view _4
 
 instance (Zipper1 z, Enum x, Field1 i i x x) => Zipper1 (Indexed i z) where
    zipL = Indexed <$> over _1 pred . index

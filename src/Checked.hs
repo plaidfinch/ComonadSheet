@@ -14,8 +14,8 @@ deriving instance (Show r) => Show (CellRef r b v)
 -- | A 'CellExpr' is the free applicative functor over 'CellRefs'. A 'CellExpr' is an expression using references of type r to a container of things of type b, whose result is something of type v.
 type CellExpr r b v = Ap (CellRef r b) v
 
--- | A 'Deref' is a synonym for a function which knows how to take something out of a structure using an index, but is existentially prohibited from thinking about the item it extracts.
-type Deref r f = forall x. r -> f x -> x
+-- | An 'Extract' is a synonym for a function which knows how to take something out of a structure using an index, but is existentially prohibited from thinking about the item it extracts.
+type Extract r f = forall x. r -> f x -> x
 
 -- | Returns the set of all references in a 'CellExpr'.
 references :: Ord r => CellExpr r b v -> Set r
@@ -23,7 +23,7 @@ references (Pure _)       = empty
 references (Ap (Ref r) x) = insert r (references x)
 
 -- | Given an appropriate method of dereferencing and a 'CellExpr', returns the function from a structure to a value which is represented by a 'CellExpr'.
-runCell :: Deref r f -> CellExpr r b v -> f b -> v
+runCell :: Extract r f -> CellExpr r b v -> f b -> v
 runCell f = runAp $ \(Ref r) -> f r
 
 -- | Constructs a 'CellExpr' which evaluates to whatever is at index r.
