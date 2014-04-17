@@ -73,32 +73,32 @@ instance Distributive Tape where
 
 -- Now let's get multi-dimensional!
 
--- | A @Tape2@ is a 2-dimensional tape formed by the composition of two 1-dimensional tapes.
+-- | A @Tape2@ is a 2-dimensional tape formed by the composition of two 1D tapes.
 type Tape2 = Compose Tape  Tape
 -- | A @Tape3@ is a 3-dimensional tape formed by the composition of a 2D tape and a 1D tape.
 type Tape3 = Compose Tape2 Tape
 -- | A @Tape4@ is a 4-dimensional tape formed by the composition of a 3D tape and a 1D tape.
 type Tape4 = Compose Tape3 Tape
 
--- | Any tape of one dimension or higher can be zipped left or right.
+-- | Any tape of one dimension or higher can be zipped /left/ or /right/.
 class Dimension1 z where
-  -- | Moves left by one step (if it's indexed, this is the negative direction).
+  -- | Moves /left/ by one step (if it's indexed, this is the negative direction).
   zipL :: z a -> z a 
-  -- | Moves right by one step (if it's indexed, this is the positive direction).
+  -- | Moves /right/ by one step (if it's indexed, this is the positive direction).
   zipR :: z a -> z a 
 
--- | Any tape of two dimensions or higher can be zipped up or down.
+-- | Any tape of two dimensions or higher can be zipped /up/ or /down/.
 class Dimension2 z where
-  -- | Moves up by one step (if indexed, negative direction).
+  -- | Moves /up/ by one step (if indexed, negative direction).
   zipU :: z a -> z a 
-  -- | Moves down by one step (if indexed, positive direction).
+  -- | Moves /down/ by one step (if indexed, positive direction).
   zipD :: z a -> z a 
 
--- | Any tape of three dimensions or higher can be zipped in or out.
+-- | Any tape of three dimensions or higher can be zipped /in/ or /out/.
 class Dimension3 z where
-  -- | Moves in by one step (if indexed, negative direction).
+  -- | Moves /in/ by one step (if indexed, negative direction).
   zipI :: z a -> z a 
-  -- | Moves out by one step (if indexed, positive direction).
+  -- | Moves /out/ by one step (if indexed, positive direction).
   zipO :: z a -> z a 
 
 -- | Any tape of four dimensions or higher can be zipped /ana/ or /kata/ (following the nomenclature
