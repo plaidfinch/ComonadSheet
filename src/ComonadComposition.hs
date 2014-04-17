@@ -9,7 +9,6 @@ import Data.Distributive
 import Data.Functor
 import Data.Functor.Identity
 import Data.Functor.Compose
-import Data.Monoid
 import Data.Stream
 
 import Control.Lens ( view , over )
@@ -110,12 +109,15 @@ instance (Zipper3 z) => Zipper4 (Compose z Z) where
   zipA = composedly zipI
   zipK = composedly zipO
 
--- This is just like the Applicative instance given for Compose, but it has the additional Distributive constraint because that's necessary for the whole thing to be a comonad.
+-- This is just like the Applicative instance given for Compose, but it has the additional
+-- Distributive constraint because that's necessary for the whole thing to be a comonad.
 instance (ComonadApply f, ComonadApply g, Distributive g) => ComonadApply (Compose f g) where
    Compose f <@> Compose x =
       Compose ((<@>) <$> f <@> x)
 
--- Given a (Compose f g) where f and g are comonads, we can define one sensible Comonad instance for the whole. But! It requires that g be Distributive in addition, which enables us to permute the layerings of comonads to produce the proper result.
+-- Given a (Compose f g) where f and g are comonads, we can define one sensible Comonad instance
+-- for the whole. But! It requires that g be Distributive in addition, which enables us to permute
+-- the layerings of comonads to produce the proper result.
 instance (Comonad f, Comonad g, Distributive g) => Comonad (Compose f g) where
    extract   = extract . extract . getCompose
    duplicate = fmap Compose . Compose -- wrap it again: f (g (f (g a))) -> Compose f g (Compose f g a)
@@ -167,7 +169,10 @@ instance (ComonadApply z, Indexes i z) => Comonad (Indexed i z) where
 instance (ComonadApply z, Indexes i z) => ComonadApply (Indexed i z) where
    (Indexed _ fs) <@> (Indexed i xs) = Indexed i (fs <@> xs)
 
--- Notice that we don't have any instances of Applicative or Distributive for Indexed. This is because there's no sensible way to satisfy the interchange law of Applicative, and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i z)), as would be necessary to implement distribute (what would you do if f = Maybe, for instance?).
+-- Notice that we don't have any instances of Applicative or Distributive for Indexed.
+-- This is because, respectively, there's no sensible way to satisfy the interchange law of Applicative,
+-- and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i z)),
+-- as would be necessary to implement distribute (what would you do if f = Maybe, for instance?).
 
 class Indexes i z where
    indices :: i -> z i
