@@ -1,4 +1,8 @@
-{-# LANGUAGE DeriveFunctor , FlexibleInstances , FlexibleContexts , MultiParamTypeClasses , FunctionalDependencies , UndecidableInstances #-}
+{-# LANGUAGE DeriveFunctor
+           , FlexibleInstances
+           , FlexibleContexts
+           , MultiParamTypeClasses
+           , UndecidableInstances #-}
 
 module ComonadComposition where
 
