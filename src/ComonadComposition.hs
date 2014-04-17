@@ -18,7 +18,7 @@ import Data.Stream
 import Control.Lens ( view , over )
 import Control.Lens.Tuple
 
-import Prelude hiding ( iterate , tail , head )
+import Prelude hiding ( iterate , tail , head , repeat )
 
 -- Missing instances from Data.Stream:
 
