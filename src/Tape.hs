@@ -242,32 +242,36 @@ data Signed f a = Positive (f a)
 class InsertCompose l t where
    insertCompose :: l a -> t a -> t a
 
-instance InsertCompose [] Tape where
-   insertCompose [] t = t
-   insertCompose (x:xs) (Tape ls c rs) =
-      Tape ls x (S.prefix xs (Cons c rs))
-
-instance InsertCompose Stream Tape where
-   insertCompose (Cons x xs) (Tape ls _ _) = Tape ls x xs
+-- | Given the @Compose@ of two list-like things and the @Compose@ of two @Tape@-like things, we can
+--   insert the list-like things into the @Tape@-like things if we know how to insert each corresponding
+--   level with one another. Thus, other than this instance, all the other instances we need to define
+--   are base cases: how to insert a single list-like thing into a single @Tape@.
+instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) => InsertCompose (Compose l m) (Compose f g) where
+   insertCompose (Compose lm) (Compose fg) =
+      Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
 
 instance InsertCompose Tape Tape where
    insertCompose t _ = t
 
-instance InsertCompose (Signed []) Tape where
-   insertCompose (Positive []) t = t
-   insertCompose (Negative []) t = t
-   insertCompose (Positive (x:xs)) (Tape ls c rs) =
-      Tape ls x (S.prefix xs (Cons c rs))
-   insertCompose (Negative (x:xs)) (Tape ls c rs) =
-      Tape (S.prefix xs (Cons c ls)) x rs
+instance InsertCompose Stream Tape where
+   insertCompose (Cons x xs) (Tape ls _ _) = Tape ls x xs
 
 instance InsertCompose (Signed Stream) Tape where
    insertCompose (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
    insertCompose (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
-      
-instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) => InsertCompose (Compose l m) (Compose f g) where
-   insertCompose (Compose lm) (Compose fg) =
-      Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
+
+instance InsertCompose [] Tape where
+   insertCompose [] t = t
+   insertCompose (x : xs) (Tape ls c rs) =
+      Tape ls x (S.prefix xs (Cons c rs))
+
+instance InsertCompose (Signed []) Tape where
+   insertCompose (Positive []) t = t
+   insertCompose (Negative []) t = t
+   insertCompose (Positive (x : xs)) (Tape ls c rs) =
+      Tape ls x (S.prefix xs (Cons c rs))
+   insertCompose (Negative (x : xs)) (Tape ls c rs) =
+      Tape (S.prefix xs (Cons c ls)) x rs
 
 class Insert l t where
    insert :: l -> t -> t

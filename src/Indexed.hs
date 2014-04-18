@@ -13,8 +13,7 @@ import Control.Lens ( view , over )
 import Control.Lens.Tuple
 
 import Tape
-import Cartesian
-import Prelude hiding ( iterate )
+import Prelude hiding ( iterate , take )
 
 data Indexed i z a =
   Indexed { index     :: i
@@ -84,3 +83,15 @@ instance (Dimension4 z, Enum x, Field4 i i x x) => Dimension4 (Indexed i z) wher
                   <*> zipA . unindexed
    zipK = Indexed <$> over _4 succ . index
                   <*> zipK . unindexed
+
+instance (Take i (f a) l) => Take i (Indexed i f a) l where
+  take i (Indexed _ t) = take i t
+
+instance (Window i (f a) l) => Window i (Indexed i f a) l where
+  window i i' (Indexed _ t) = window i i' t
+
+instance (InsertCompose l t) => InsertCompose l (Indexed i t) where
+  insertCompose l (Indexed i t) = Indexed i (insertCompose l t)
+
+instance (Insert l (f a)) => Insert l (Indexed i f a) where
+  insert l (Indexed i t) = Indexed i (insert l t)
