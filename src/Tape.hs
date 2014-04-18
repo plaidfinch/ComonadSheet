@@ -1,6 +1,4 @@
 {-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE DeriveFunctor          #-}
 
 module Tape where
