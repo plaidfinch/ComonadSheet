@@ -197,3 +197,7 @@ cross4 a b c d = (,,,) <$> (Compose . Compose . Compose) (     pure .      pure 
 -- | The tape of integers, with zero centered.
 ints :: Tape Integer
 ints = enumerate 0
+
+-- | The tape of zeros in all directions
+zeros :: Tape Integer
+zeros = pure 0

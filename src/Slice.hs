@@ -85,29 +85,29 @@ instance InsertC (Signed []) Tape where
    insertC (Negative (x : xs)) (Tape ls c rs) =
       Tape (S.prefix xs (Cons c ls)) x rs
 
-insert1 :: (InsertC f Tape) => f a -> Tape a -> Tape a
+insert1 :: (InsertC f t) => f a -> t a -> t a
 insert1 = insertC
 
-insert2 :: (InsertC (Compose f g) Tape2) => f (g a) -> Tape2 a -> Tape2 a
+insert2 :: (InsertC (Compose f g) t) => f (g a) -> t a -> t a
 insert2 = insertC . Compose
 
-insert3 :: (InsertC (Compose (Compose f g) h) Tape3) => f (g (h a)) -> Tape3 a -> Tape3 a
+insert3 :: (InsertC (Compose (Compose f g) h) t) => f (g (h a)) -> t a -> t a
 insert3 = insertC . Compose . Compose
 
-insert4 :: (InsertC (Compose (Compose (Compose f g) h) i) Tape4) => f (g (h (i a))) -> Tape4 a -> Tape4 a
+insert4 :: (InsertC (Compose (Compose (Compose f g) h) i) t) => f (g (h (i a))) -> t a -> t a
 insert4 = insertC . Compose . Compose . Compose
 
 class Insert l t where
    insert :: l -> t -> t
 
-instance (InsertC f Tape) => Insert (f a) (Tape a)
+instance (InsertC f t) => Insert (f a) (t a)
    where insert = insert1
 
-instance (InsertC (Compose f g) Tape2) => Insert (f (g a)) (Tape2 a)
+instance (InsertC (Compose f g) t) => Insert (f (g a)) (t a)
    where insert = insert2
 
-instance (InsertC (Compose (Compose f g) h) Tape3) => Insert (f (g (h a))) (Tape3 a)
+instance (InsertC (Compose (Compose f g) h) t) => Insert (f (g (h a))) (t a)
    where insert = insert3
 
-instance (InsertC (Compose (Compose (Compose f g) h) i) Tape4) => Insert (f (g (h (i a)))) (Tape4 a)
+instance (InsertC (Compose (Compose (Compose f g) h) i) t) => Insert (f (g (h (i a)))) (t a)
    where insert = insert4

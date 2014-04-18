@@ -91,8 +91,5 @@ instance (Take i (f a) l) => Take i (Indexed i f a) l where
 instance (Window i (f a) l) => Window i (Indexed i f a) l where
   window i i' (Indexed _ t) = window i i' t
 
-instance (InsertCompose l t) => InsertCompose l (Indexed i t) where
-  insertCompose l (Indexed i t) = Indexed i (insertCompose l t)
-
-instance (Insert l (f a)) => Insert l (Indexed i f a) where
-  insert l (Indexed i t) = Indexed i (insert l t)
+instance (InsertC l t) => InsertC l (Indexed i t) where
+  insertC l (Indexed i t) = Indexed i (insertC l t)
