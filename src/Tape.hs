@@ -1,5 +1,10 @@
-{-# LANGUAGE DeriveFunctor     #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveFunctor          #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 module Tape where
 
@@ -10,9 +15,13 @@ import Data.Distributive
 import Data.Traversable
 import Data.Functor.Compose
 
+import Data.List.PointedList ( PointedList(..) )
+import qualified Data.List.PointedList as PL
+
 import Stream ( Stream(..) )
 import qualified Stream as S
-import Prelude hiding ( iterate )
+
+import Prelude hiding ( iterate , take )
 
 -- | A @Tape@ is like a Turing-machine tape: infinite in both directions, with a focus in the middle.
 data Tape a = Tape { viewL :: Stream a -- ^ the side of the @Tape@ left of @focus@
@@ -85,33 +94,33 @@ type Tape3 = Compose Tape2 Tape
 type Tape4 = Compose Tape3 Tape
 
 -- | Any tape of one dimension or higher can be zipped /left/ or /right/.
-class Dimension1 z where
+class Dimension1 t where
   -- | Moves /left/ by one step (if it's indexed, this is the negative direction).
-  zipL :: z a -> z a 
+  zipL :: t a -> t a 
   -- | Moves /right/ by one step (if it's indexed, this is the positive direction).
-  zipR :: z a -> z a 
+  zipR :: t a -> t a 
 
 -- | Any tape of two dimensions or higher can be zipped /up/ or /down/.
-class Dimension2 z where
+class Dimension2 t where
   -- | Moves /up/ by one step (if indexed, negative direction).
-  zipU :: z a -> z a 
+  zipU :: t a -> t a 
   -- | Moves /down/ by one step (if indexed, positive direction).
-  zipD :: z a -> z a 
+  zipD :: t a -> t a 
 
 -- | Any tape of three dimensions or higher can be zipped /in/ or /out/.
-class Dimension3 z where
+class Dimension3 t where
   -- | Moves /in/ by one step (if indexed, negative direction).
-  zipI :: z a -> z a 
+  zipI :: t a -> t a 
   -- | Moves /out/ by one step (if indexed, positive direction).
-  zipO :: z a -> z a 
+  zipO :: t a -> t a 
 
 -- | Any tape of four dimensions or higher can be zipped /ana/ or /kata/ (following the nomenclature
 --   of <http://en.wikipedia.org/wiki/Charles_Howard_Hinton Charles Howard Hinton>).
-class Dimension4 z where
+class Dimension4 t where
   -- | Moves /ana/ by one step (if indexed, negative direction).
-  zipA :: z a -> z a 
+  zipA :: t a -> t a 
   -- | Moves /kata/ by one step (if indexed, positive direction).
-  zipK :: z a -> z a 
+  zipK :: t a -> t a 
 
 -- | Apply a function to the inside of a @Compose@.
 --
@@ -133,17 +142,17 @@ instance (Functor f) => Dimension1 (Compose f Tape) where
 
 -- | Telling a nested tape to move in the second axis always moves the second-inner-most tape,
 --   regardless of the depth of nesting.
-instance (Dimension1 z) => Dimension2 (Compose z Tape) where
+instance (Dimension1 t) => Dimension2 (Compose t Tape) where
   zipU = composedly zipL
   zipD = composedly zipR
 
 -- | Telling a nested tape to move in the third axis always moves the third-inner-most tape.
-instance (Dimension2 z) => Dimension3 (Compose z Tape) where
+instance (Dimension2 t) => Dimension3 (Compose t Tape) where
   zipI = composedly zipU
   zipO = composedly zipD
 
 -- | Telling a nested tape to move in the fourth axis always moves the fourth-inner-most tape.
-instance (Dimension3 z) => Dimension4 (Compose z Tape) where
+instance (Dimension3 t) => Dimension4 (Compose t Tape) where
   zipA = composedly zipI
   zipK = composedly zipO
 
@@ -173,6 +182,105 @@ instance (Comonad f, Comonad g, Distributive g) => Comonad (Compose f g) where
              . fmap duplicate         -- duplicate inner functor g: f (g a) -> f (g (g a))
              . getCompose             -- unwrap it: Compose f g a -> f (g a) 
 
+-- | Cartesian product space for two Tapes.
+cross :: Tape a -> Tape b -> Tape2 (a,b)
+cross a b = (,) <$> Compose (     pure a)
+                <*> Compose (fmap pure b)
+
+-- | Cartesian product space for three Tapes.
+cross3 :: Tape a -> Tape b -> Tape c -> Tape3 (a,b,c)
+cross3 a b c = (,,) <$> (Compose . Compose) (     pure .      pure $ a)
+                    <*> (Compose . Compose) (     pure . fmap pure $ b)
+                    <*> (Compose . Compose) (fmap pure . fmap pure $ c)
+
+-- | Cartesian product space for four Tapes.
+cross4 :: Tape a -> Tape b -> Tape c -> Tape d -> Tape4 (a,b,c,d)
+cross4 a b c d = (,,,) <$> (Compose . Compose . Compose) (     pure .      pure .      pure $ a)
+                       <*> (Compose . Compose . Compose) (     pure .      pure . fmap pure $ b)
+                       <*> (Compose . Compose . Compose) (     pure . fmap pure . fmap pure $ c)
+                       <*> (Compose . Compose . Compose) (fmap pure . fmap pure . fmap pure $ d)
+
 -- | The tape of integers, with zero centered.
 ints :: Tape Integer
 ints = enumerate 0
+
+class Take i t l | t -> i l where
+   take :: i -> t -> l
+
+instance Take Int (Tape a) [a] where
+   take i t | i > 0 = focus t : S.take     (i - 1) (viewR t)
+   take i t | i < 0 = focus t : S.take (abs i - 1) (viewL t)
+   take _ _ = []
+
+instance Take (Int,Int) (Tape2 a) [[a]] where
+   take (i,j) = take j . fmap (take i) . getCompose
+
+instance Take (Int,Int,Int) (Tape3 a) [[[a]]] where
+   take (i,j,k) = take (j,k) . fmap (take i) . getCompose
+
+instance Take (Int,Int,Int,Int) (Tape4 a) [[[[a]]]] where
+   take (i,j,k,l) = take (j,k,l) . fmap (take i) . getCompose
+
+class Window i t l | t -> i l where
+   window :: i -> i -> t -> l
+
+instance Window Int (Tape a) [a] where
+   window i i' t = reverse (take (negate (abs i)) t) ++ tail (take (abs i') t)
+
+instance Window (Int,Int) (Tape2 a) [[a]] where
+   window (i,j) (i',j') = window i i' . fmap (window j j') . getCompose
+
+instance Window (Int,Int,Int) (Tape3 a) [[[a]]] where
+   window (i,j,k) (i',j',k') = window (i,j) (i',j') . fmap (window k k') . getCompose
+
+instance Window (Int,Int,Int,Int) (Tape4 a) [[[[a]]]] where
+   window (i,j,k,l) (i',j',k',l') = window (i,j,k) (i',j',k') . fmap (window l l') . getCompose
+
+data Signed f a = Positive (f a)
+                | Negative (f a)
+                deriving ( Eq , Ord , Show )
+
+class InsertCompose l t where
+   insertCompose :: l a -> t a -> t a
+
+instance InsertCompose [] Tape where
+   insertCompose [] t = t
+   insertCompose (x:xs) (Tape ls c rs) =
+      Tape ls x (S.prefix xs (Cons c rs))
+
+instance InsertCompose Stream Tape where
+   insertCompose (Cons x xs) (Tape ls _ _) = Tape ls x xs
+
+instance InsertCompose Tape Tape where
+   insertCompose t _ = t
+
+instance InsertCompose (Signed []) Tape where
+   insertCompose (Positive []) t = t
+   insertCompose (Negative []) t = t
+   insertCompose (Positive (x:xs)) (Tape ls c rs) =
+      Tape ls x (S.prefix xs (Cons c rs))
+   insertCompose (Negative (x:xs)) (Tape ls c rs) =
+      Tape (S.prefix xs (Cons c ls)) x rs
+
+instance InsertCompose (Signed Stream) Tape where
+   insertCompose (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
+   insertCompose (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
+      
+instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) => InsertCompose (Compose l m) (Compose f g) where
+   insertCompose (Compose lm) (Compose fg) =
+      Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
+
+class Insert l t where
+   insert :: l -> t -> t
+
+instance (InsertCompose f Tape) => Insert (f a) (Tape a) where
+   insert = insertCompose
+
+instance (InsertCompose (Compose f g) Tape2) => Insert (f (g a)) (Tape2 a) where
+   insert = insertCompose . Compose
+
+instance (InsertCompose (Compose (Compose f g) h) Tape3) => Insert (f (g (h a))) (Tape3 a) where
+   insert = insertCompose . Compose . Compose
+
+instance (InsertCompose (Compose (Compose (Compose f g) h) i) Tape4) => Insert (f (g (h (i a)))) (Tape4 a) where
+   insert = insertCompose . Compose . Compose . Compose
