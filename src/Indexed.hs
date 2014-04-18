@@ -13,6 +13,7 @@ import Control.Lens ( view , over )
 import Control.Lens.Tuple
 
 import Tape
+import Cartesian
 import Prelude hiding ( iterate )
 
 data Indexed i z a =

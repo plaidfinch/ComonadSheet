@@ -15,7 +15,10 @@ import qualified Stream as S
 import Prelude hiding ( iterate )
 
 -- | A @Tape@ is like a Turing-machine tape: infinite in both directions, with a focus in the middle.
-data Tape a = Tape (Stream a) a (Stream a) deriving ( Functor )
+data Tape a = Tape { viewL :: Stream a -- ^ the side of the @Tape@ left of @focus@
+                   , focus :: a        -- ^ the focused element
+                   , viewR :: Stream a -- ^ the side of the @Tape@ right of @focus@
+                   } deriving ( Functor )
 
 -- | Produce a @Tape@ from a seed value, ala unfoldr for lists, or unfold for @Stream@s.
 unfold :: (c -> (a,c)) -- ^ leftwards unfolding function
@@ -62,15 +65,15 @@ instance Applicative Tape where
 
 -- | Tapes are @Distributive@ because we can replicate their structure on the outside of a functor by
 --   sending movement commands through the functor via @fmap zipL@ and @fmap zipR@, and using
---   @fmap extract@ to remove the extra structure inside the functor. As stated in the Distributive
+--   @fmap focus@ to remove the extra structure inside the functor. As stated in the Distributive
 --   documentation, this can only work if all Tapes have the same cardinality of holes, and if there
 --   is no extra information to propagate from outside the functor -- hence, an @Indexed@ tape can't
 --   be made into a @Distributive@, as there's no way to extract the index from the functor.
 instance Distributive Tape where
    distribute =
-      unfold (fmap extract &&& fmap zipL)
-             (fmap extract)
-             (fmap extract &&& fmap zipR)
+      unfold (fmap focus &&& fmap zipL)
+             (fmap focus)
+             (fmap focus &&& fmap zipR)
 
 -- Now let's get multi-dimensional!
 
@@ -169,24 +172,6 @@ instance (Comonad f, Comonad g, Distributive g) => Comonad (Compose f g) where
              . duplicate              -- duplicate outer functor f: f (g (g a)) -> f (f (g (g a)))
              . fmap duplicate         -- duplicate inner functor g: f (g a) -> f (g (g a))
              . getCompose             -- unwrap it: Compose f g a -> f (g a) 
-
--- | Cartesian product space for two Tapes.
-cross :: Tape a -> Tape b -> Tape2 (a,b)
-cross a b = (,) <$> Compose (     pure a)
-                <*> Compose (fmap pure b)
-
--- | Cartesian product space for three Tapes.
-cross3 :: Tape a -> Tape b -> Tape c -> Tape3 (a,b,c)
-cross3 a b c = (,,) <$> (Compose . Compose) (     pure .      pure $ a)
-                    <*> (Compose . Compose) (     pure . fmap pure $ b)
-                    <*> (Compose . Compose) (fmap pure . fmap pure $ c)
-
--- | Cartesian product space for four Tapes.
-cross4 :: Tape a -> Tape b -> Tape c -> Tape d -> Tape4 (a,b,c,d)
-cross4 a b c d = (,,,) <$> (Compose . Compose . Compose) (     pure .      pure .      pure $ a)
-                       <*> (Compose . Compose . Compose) (     pure .      pure . fmap pure $ b)
-                       <*> (Compose . Compose . Compose) (     pure . fmap pure . fmap pure $ c)
-                       <*> (Compose . Compose . Compose) (fmap pure . fmap pure . fmap pure $ d)
 
 -- | The tape of integers, with zero centered.
 ints :: Tape Integer
