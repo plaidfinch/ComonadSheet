@@ -116,8 +116,8 @@ instance InsertCompose (Signed []) Tape where
    insertCompose (Negative (x : xs)) (Tape ls c rs) =
       Tape (S.prefix xs (Cons c ls)) x rs
 
-data S n = S n deriving Show
-data Z   = Z   deriving Show
+data S n = S n deriving ( Show )
+data Z   = Z   deriving ( Show )
 
 type family ComposeCount f where
    ComposeCount (Compose f g a) = S (ComposeCount (f (g a)))
@@ -152,11 +152,13 @@ instance (ComposeN n f, NCompose n f ~ g (h a), NCompose (S n) f ~ Compose g h a
 asComposedAs :: (CountCompose g, ComposeN (ComposeCount g) f) => f -> g -> NCompose (ComposeCount g) f
 f `asComposedAs` g = composeN (countCompose g) f
 
+-- | This is a synonym for all the things which must be true in order to insert a list-like structure
+--   into some n-dimensional tape-like structure.
 type Insertable composedList list tape a =
-   ( CountCompose (tape a)
-   , ComposeN (ComposeCount (tape a)) list
-   , NCompose (ComposeCount (tape a)) list ~ composedList a
-   , InsertCompose composedList tape )
+   ( CountCompose (tape a)                                  -- can we count tape's dimensionality (yes)?
+   , ComposeN (ComposeCount (tape a)) list                  -- can we Compose the list that # of times?
+   , NCompose (ComposeCount (tape a)) list ~ composedList a -- let (composedList a) be the result of this
+   , InsertCompose composedList tape )                      -- and, can we insert that into the tape?
 
 insert :: (Insertable c l t a) => l -> t a -> t a
 insert l t = insertCompose (l `asComposedAs` t) t
