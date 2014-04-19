@@ -68,67 +68,40 @@ data Signed f a = Positive (f a)
                 | Negative (f a)
                 deriving ( Eq , Ord , Show )
 
-class InsertC l t where
-   insertC :: l a -> t a -> t a
+class InsertCompose l t where
+   insertCompose :: l a -> t a -> t a
 
 -- | Given the @Compose@ of two list-like things and the @Compose@ of two @Tape@-like things, we can
 --   insert the list-like things into the @Tape@-like things if we know how to insert each corresponding
 --   level with one another. Thus, other than this instance, all the other instances we need to define
 --   are base cases: how to insert a single list-like thing into a single @Tape@.
-instance (Functor l, Applicative f, InsertC l f, InsertC m g) => InsertC (Compose l m) (Compose f g)
+instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) => InsertCompose (Compose l m) (Compose f g)
    where
-      insertC (Compose lm) (Compose fg) =
-         Compose $ insertC (fmap insertC lm) (pure id) <*> fg
+      insertCompose (Compose lm) (Compose fg) =
+         Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
 
-instance InsertC Tape Tape where
-   insertC t _ = t
+instance InsertCompose Tape Tape where
+   insertCompose t _ = t
 
-instance InsertC Stream Tape where
-   insertC (Cons x xs) (Tape ls _ _) = Tape ls x xs
+instance InsertCompose Stream Tape where
+   insertCompose (Cons x xs) (Tape ls _ _) = Tape ls x xs
 
-instance InsertC (Signed Stream) Tape where
-   insertC (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
-   insertC (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
+instance InsertCompose (Signed Stream) Tape where
+   insertCompose (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
+   insertCompose (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
 
-instance InsertC [] Tape where
-   insertC [] t = t
-   insertC (x : xs) (Tape ls c rs) =
+instance InsertCompose [] Tape where
+   insertCompose [] t = t
+   insertCompose (x : xs) (Tape ls c rs) =
       Tape ls x (S.prefix xs (Cons c rs))
 
-instance InsertC (Signed []) Tape where
-   insertC (Positive []) t = t
-   insertC (Negative []) t = t
-   insertC (Positive (x : xs)) (Tape ls c rs) =
+instance InsertCompose (Signed []) Tape where
+   insertCompose (Positive []) t = t
+   insertCompose (Negative []) t = t
+   insertCompose (Positive (x : xs)) (Tape ls c rs) =
       Tape ls x (S.prefix xs (Cons c rs))
-   insertC (Negative (x : xs)) (Tape ls c rs) =
+   insertCompose (Negative (x : xs)) (Tape ls c rs) =
       Tape (S.prefix xs (Cons c ls)) x rs
-
-insert1 :: (InsertC f t) => f a -> t a -> t a
-insert1 = insertC
-
-insert2 :: (InsertC (Compose f g) t) => f (g a) -> t a -> t a
-insert2 = insertC . Compose
-
-insert3 :: (InsertC (Compose (Compose f g) h) t) => f (g (h a)) -> t a -> t a
-insert3 = insertC . Compose . Compose
-
-insert4 :: (InsertC (Compose (Compose (Compose f g) h) i) t) => f (g (h (i a))) -> t a -> t a
-insert4 = insertC . Compose . Compose . Compose
-
-class Insert l t where
-   insert :: l -> t -> t
-
-instance (InsertC f t) => Insert (f a) (t a)
-   where insert = insert1
-
-instance (InsertC (Compose f g) t) => Insert (f (g a)) (t a)
-   where insert = insert2
-
-instance (InsertC (Compose (Compose f g) h) t) => Insert (f (g (h a))) (t a)
-   where insert = insert3
-
-instance (InsertC (Compose (Compose (Compose f g) h) i) t) => Insert (f (g (h (i a)))) (t a)
-   where insert = insert4
 
 data S n = S n deriving Show
 data Z   = Z   deriving Show
@@ -145,3 +118,27 @@ instance (CountCompose (f (g a))) => CountCompose (Compose f g a) where
 
 instance (CountC f ~ Z) => CountCompose f where
    countCompose _ = Z
+
+type family ComposeNatIter n a b where
+   ComposeNatIter Z     a     f = f a
+   ComposeNatIter (S n) (g a) f = ComposeNatIter n a (Compose f g)
+
+type family ComposeNat n a where
+   ComposeNat Z a             = a
+   ComposeNat (S n) (f (g a)) = ComposeNatIter n a (Compose f g)
+
+class ComposeN n f where
+   composeN :: n -> f -> ComposeNat n f
+
+instance (ComposeNat Z f ~ f) => ComposeN Z f where
+   composeN _ f = f
+
+instance (ComposeN n f, ComposeNat n f ~ g (h a), ComposeNat (S n) f ~ Compose g h a) => ComposeN (S n) f
+   where
+   composeN (S n) = Compose . composeN n
+
+asComposedAs :: (ComposeN (CountC g) f, CountCompose g) => f -> g -> ComposeNat (CountC g) f
+f `asComposedAs` g = composeN (countCompose g) f
+
+insert :: (InsertCompose cl t, ComposeN (CountC (t a)) l, CountCompose (t a), ComposeNat (CountC (t a)) l ~ cl a) => l -> t a -> t a
+insert l t = insertCompose (l `asComposedAs` t) t
