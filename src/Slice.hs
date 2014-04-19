@@ -2,7 +2,9 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE OverlappingInstances   #-}
 
 module Slice where
 
@@ -127,3 +129,19 @@ instance (InsertC (Compose (Compose f g) h) t) => Insert (f (g (h a))) (t a)
 
 instance (InsertC (Compose (Compose (Compose f g) h) i) t) => Insert (f (g (h (i a)))) (t a)
    where insert = insert4
+
+data S n = S n deriving Show
+data Z   = Z   deriving Show
+
+type family CountC f where
+   CountC (Compose f g a) = S (CountC (f (g a)))
+   CountC x               = Z
+
+class CountCompose f where
+   countCompose :: f -> CountC f
+
+instance (CountCompose (f (g a))) => CountCompose (Compose f g a) where
+   countCompose = S . countCompose . getCompose
+
+instance (CountC f ~ Z) => CountCompose f where
+   countCompose _ = Z
