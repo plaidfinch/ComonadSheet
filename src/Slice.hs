@@ -127,7 +127,7 @@ class CountCompose f where
    countCompose :: f -> ComposeCount f
 
 instance (CountCompose (f (g a))) => CountCompose (Compose f g a) where
-   countCompose = S . countCompose . getCompose
+   countCompose (Compose x) = S (countCompose x)
 
 instance (ComposeCount f ~ Z) => CountCompose f where
    countCompose _ = Z
@@ -140,15 +140,14 @@ type family NComposeIter n a f where
    NComposeIter  Z       a  f = f a
    NComposeIter (S n) (g a) f = NComposeIter n a (Compose f g)
 
-class ComposeN n f where
-   composeN :: n -> f -> NCompose n f
+class ComposeN n f
+   where composeN :: n -> f -> NCompose n f
 
-instance (NCompose Z f ~ f) => ComposeN Z f where
-   composeN _ f = f
+instance (NCompose Z f ~ f) => ComposeN Z f
+   where composeN  Z    = id
 
 instance (ComposeN n f, NCompose n f ~ g (h a), NCompose (S n) f ~ Compose g h a) => ComposeN (S n) f
-   where
-      composeN (S n) = Compose . composeN n
+   where composeN (S n) = Compose . composeN n
 
 asComposedAs :: (CountCompose g, ComposeN (ComposeCount g) f) => f -> g -> NCompose (ComposeCount g) f
 f `asComposedAs` g = composeN (countCompose g) f
