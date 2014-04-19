@@ -17,6 +17,7 @@ import qualified Stream as S
 import Prelude hiding ( iterate , take )
 
 import Tape
+import Indexed
 
 class Take t where
    type CountFor t
@@ -45,6 +46,11 @@ instance Take (Tape4 a) where
    type ListFrom (Tape4 a) = [[[[a]]]]
    take (i,j,k,l) = take (j,k,l) . fmap (take i) . getCompose
 
+instance (Take (t a)) => Take (Indexed i t a) where
+  type CountFor (Indexed i t a) = CountFor (t a)
+  type ListFrom (Indexed i t a) = ListFrom (t a)
+  take i (Indexed _ t) = take i t
+
 class (Take t) => Window t where
    window :: CountFor t -> CountFor t -> t -> ListFrom t
 
@@ -64,6 +70,9 @@ instance Window (Tape4 a) where
    window (i,j,k,l) (i',j',k',l') =
       window (i,j,k) (i',j',k') . fmap (window l l') . getCompose
 
+instance (Window (t a)) => Window (Indexed i t a) where
+  window i i' (Indexed _ t) = window i i' t
+
 data Signed f a = Positive (f a)
                 | Negative (f a)
                 deriving ( Eq , Ord , Show )
@@ -79,6 +88,9 @@ instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) => Ins
    where
       insertCompose (Compose lm) (Compose fg) =
          Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
+
+instance (InsertCompose l t) => InsertCompose l (Indexed i t) where
+  insertCompose l (Indexed i t) = Indexed i (insertCompose l t)
 
 instance InsertCompose Tape Tape where
    insertCompose t _ = t

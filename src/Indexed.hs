@@ -14,7 +14,6 @@ import Control.Lens ( view , over )
 import Control.Lens.Tuple
 
 import Tape
-import Slice
 import Prelude hiding ( iterate , take )
 
 data Indexed i t a =
@@ -85,14 +84,3 @@ instance (Dimension4 t, Enum x, Field4 i i x x) => Dimension4 (Indexed i t) wher
                   <*> zipA . unindexed
    zipK = Indexed <$> over _4 succ . index
                   <*> zipK . unindexed
-
-instance (Take (t a)) => Take (Indexed i t a) where
-  type CountFor (Indexed i t a) = CountFor (t a)
-  type ListFrom (Indexed i t a) = ListFrom (t a)
-  take i (Indexed _ t) = take i t
-
-instance (Window (t a)) => Window (Indexed i t a) where
-  window i i' (Indexed _ t) = window i i' t
-
-instance (InsertC l t) => InsertC l (Indexed i t) where
-  insertC l (Indexed i t) = Indexed i (insertC l t)
