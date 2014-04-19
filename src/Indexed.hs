@@ -59,28 +59,28 @@ instance (Enum a, Enum b, Enum c, Enum d) => Indexes (a,b,c,d) Tape4 where
    indices = cross4 <$> iterate pred succ . view _1
                     <*> iterate pred succ . view _2
                     <*> iterate pred succ . view _3
-                   <*> iterate pred succ . view _4
+                    <*> iterate pred succ . view _4
 
 instance (Dimension1 t, Enum x, Field1 i i x x) => Dimension1 (Indexed i t) where
-   zipL = Indexed <$> over _1 pred . index
-                  <*> zipL . unindexed
-   zipR = Indexed <$> over _1 succ . index
-                  <*> zipR . unindexed
+   moveL = Indexed <$> over _1 pred . index
+                   <*> moveL . unindexed
+   moveR = Indexed <$> over _1 succ . index
+                   <*> moveR . unindexed
 
 instance (Dimension2 t, Enum x, Field2 i i x x) => Dimension2 (Indexed i t) where
-   zipU = Indexed <$> over _2 pred . index
-                  <*> zipU . unindexed
-   zipD = Indexed <$> over _2 succ . index
-                  <*> zipD . unindexed
+   moveU = Indexed <$> over _2 pred . index
+                   <*> moveU . unindexed
+   moveD = Indexed <$> over _2 succ . index
+                   <*> moveD . unindexed
 
 instance (Dimension3 t, Enum x, Field3 i i x x) => Dimension3 (Indexed i t) where
-   zipI = Indexed <$> over _3 pred . index
-                  <*> zipI . unindexed
-   zipO = Indexed <$> over _3 succ . index
-                  <*> zipO . unindexed
+   moveI = Indexed <$> over _3 pred . index
+                   <*> moveI . unindexed
+   moveO = Indexed <$> over _3 succ . index
+                   <*> moveO . unindexed
 
 instance (Dimension4 t, Enum x, Field4 i i x x) => Dimension4 (Indexed i t) where
-   zipA = Indexed <$> over _4 pred . index
-                  <*> zipA . unindexed
-   zipK = Indexed <$> over _4 succ . index
-                  <*> zipK . unindexed
+   moveA = Indexed <$> over _4 pred . index
+                   <*> moveA . unindexed
+   moveK = Indexed <$> over _4 succ . index
+                   <*> moveK . unindexed
