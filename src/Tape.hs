@@ -72,9 +72,9 @@ instance Applicative Tape where
 --   be made into a @Distributive@, as there's no way to extract the index from the functor.
 instance Distributive Tape where
    distribute =
-      unfold (fmap focus &&& fmap zipL)
+      unfold (fmap (focus . zipL) &&& fmap zipL)
              (fmap focus)
-             (fmap focus &&& fmap zipR)
+             (fmap (focus . zipR) &&& fmap zipR)
 
 -- Now let's get multi-dimensional!
 
