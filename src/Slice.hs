@@ -3,6 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE UndecidableInstances   #-}
 {-# LANGUAGE OverlappingInstances   #-}
 
@@ -84,9 +85,9 @@ class InsertCompose l t where
 --   insert the list-like things into the @Tape@-like things if we know how to insert each corresponding
 --   level with one another. Thus, other than this instance, all the other instances we need to define
 --   are base cases: how to insert a single list-like thing into a single @Tape@.
-instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) => InsertCompose (Compose l m) (Compose f g)
-   where
-      insertCompose (Compose lm) (Compose fg) =
+instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) 
+   => InsertCompose (Compose l m) (Compose f g) where
+      insertCompose (Compose lm)  (Compose fg) =
          Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
 
 instance (InsertCompose l t) => InsertCompose l (Indexed i t) where
@@ -118,41 +119,47 @@ instance InsertCompose (Signed []) Tape where
 data S n = S n deriving Show
 data Z   = Z   deriving Show
 
-type family CountC f where
-   CountC (Compose f g a) = S (CountC (f (g a)))
-   CountC x               = Z
+type family ComposeCount f where
+   ComposeCount (Compose f g a) = S (ComposeCount (f (g a)))
+   ComposeCount x               = Z
 
 class CountCompose f where
-   countCompose :: f -> CountC f
+   countCompose :: f -> ComposeCount f
 
 instance (CountCompose (f (g a))) => CountCompose (Compose f g a) where
    countCompose = S . countCompose . getCompose
 
-instance (CountC f ~ Z) => CountCompose f where
+instance (ComposeCount f ~ Z) => CountCompose f where
    countCompose _ = Z
 
-type family ComposeNatIter n a b where
-   ComposeNatIter Z     a     f = f a
-   ComposeNatIter (S n) (g a) f = ComposeNatIter n a (Compose f g)
+type family NCompose n a where
+   NCompose  Z          a   = a
+   NCompose (S n) (f (g a)) = NComposeIter n a (Compose f g)
 
-type family ComposeNat n a where
-   ComposeNat Z a             = a
-   ComposeNat (S n) (f (g a)) = ComposeNatIter n a (Compose f g)
+type family NComposeIter n a f where
+   NComposeIter  Z       a  f = f a
+   NComposeIter (S n) (g a) f = NComposeIter n a (Compose f g)
 
 class ComposeN n f where
-   composeN :: n -> f -> ComposeNat n f
+   composeN :: n -> f -> NCompose n f
 
-instance (ComposeNat Z f ~ f) => ComposeN Z f where
+instance (NCompose Z f ~ f) => ComposeN Z f where
    composeN _ f = f
 
-instance (ComposeN n f, ComposeNat n f ~ g (h a), ComposeNat (S n) f ~ Compose g h a) => ComposeN (S n) f
+instance (ComposeN n f, NCompose n f ~ g (h a), NCompose (S n) f ~ Compose g h a) => ComposeN (S n) f
    where
-   composeN (S n) = Compose . composeN n
+      composeN (S n) = Compose . composeN n
 
-asComposedAs :: (ComposeN (CountC g) f, CountCompose g) => f -> g -> ComposeNat (CountC g) f
+asComposedAs :: (CountCompose g, ComposeN (ComposeCount g) f) => f -> g -> NCompose (ComposeCount g) f
 f `asComposedAs` g = composeN (countCompose g) f
 
-insert :: (InsertCompose cl t, ComposeN (CountC (t a)) l, CountCompose (t a), ComposeNat (CountC (t a)) l ~ cl a) => l -> t a -> t a
+type Insertable composedList list tape a =
+   ( CountCompose (tape a)
+   , ComposeN (ComposeCount (tape a)) list
+   , NCompose (ComposeCount (tape a)) list ~ composedList a
+   , InsertCompose composedList tape )
+
+insert :: (Insertable c l t a) => l -> t a -> t a
 insert l t = insertCompose (l `asComposedAs` t) t
 
 class PolyNatToNum n where
@@ -162,5 +169,5 @@ instance PolyNatToNum Z where
 instance (PolyNatToNum n) => PolyNatToNum (S n) where
    polyNatToNum (S n) = 1 + polyNatToNum n
 
-dimensionality :: (CountCompose t, PolyNatToNum (CountC t)) => Num a => t -> a
+dimensionality :: (CountCompose t, PolyNatToNum (ComposeCount t)) => Num a => t -> a
 dimensionality = (1+) . polyNatToNum . countCompose
