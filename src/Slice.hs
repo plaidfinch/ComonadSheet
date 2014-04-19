@@ -154,3 +154,13 @@ f `asComposedAs` g = composeN (countCompose g) f
 
 insert :: (InsertCompose cl t, ComposeN (CountC (t a)) l, CountCompose (t a), ComposeNat (CountC (t a)) l ~ cl a) => l -> t a -> t a
 insert l t = insertCompose (l `asComposedAs` t) t
+
+class PolyNatToNum n where
+   polyNatToNum :: Num a => n -> a
+instance PolyNatToNum Z where
+   polyNatToNum _ = 0
+instance (PolyNatToNum n) => PolyNatToNum (S n) where
+   polyNatToNum (S n) = 1 + polyNatToNum n
+
+dimensionality :: (CountCompose t, PolyNatToNum (CountC t)) => Num a => t -> a
+dimensionality = (1+) . polyNatToNum . countCompose
