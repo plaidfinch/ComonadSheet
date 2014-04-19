@@ -34,7 +34,7 @@ instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
                             <@> duplicate (unindexed it)
 
 instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
-   (Indexed _ fs) <@> (Indexed i xs) = Indexed i (fs <@> xs)
+   (Indexed i fs) <@> (Indexed _ xs) = Indexed i (fs <@> xs)
 
 -- Notice that we don't have any instances of Applicative or Distributive for Indexed.
 -- This is because, respectively, there's no sensible way to satisfy Applicative's interchange law,
