@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveFunctor         #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
 module Indexed where
@@ -16,9 +17,9 @@ import Tape
 import Slice
 import Prelude hiding ( iterate , take )
 
-data Indexed i z a =
+data Indexed i t a =
   Indexed { index     :: i
-          , unindexed :: z a
+          , unindexed :: t a
           } deriving ( Functor )
 
 type ITape  c       = Indexed (Identity c) Tape
@@ -26,22 +27,22 @@ type ITape2 c r     = Indexed (c,r)        Tape2
 type ITape3 c r l   = Indexed (c,r,l)      Tape3
 type ITape4 c r l s = Indexed (c,r,l,s)    Tape4
 
-instance (ComonadApply z, Indexes i z) => Comonad (Indexed i z) where
+instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
   extract      = extract . unindexed
-  duplicate iz = Indexed (index iz) $
-                    Indexed <$> indices (index iz)
-                            <@> duplicate (unindexed iz)
+  duplicate it = Indexed (index it) $
+                    Indexed <$> indices (index it)
+                            <@> duplicate (unindexed it)
 
-instance (ComonadApply z, Indexes i z) => ComonadApply (Indexed i z) where
+instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
    (Indexed _ fs) <@> (Indexed i xs) = Indexed i (fs <@> xs)
 
 -- Notice that we don't have any instances of Applicative or Distributive for Indexed.
 -- This is because, respectively, there's no sensible way to satisfy Applicative's interchange law,
--- and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i z)),
+-- and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i t)),
 -- as would be necessary to implement distribute (what would you do if f = Maybe, for instance?).
 
-class Indexes i z where
-   indices :: i -> z i
+class Indexes i t where
+   indices :: i -> t i
 
 instance (Enum a) => Indexes (Identity a) Tape where
    indices = iterate (fmap pred) (fmap succ)
@@ -61,34 +62,36 @@ instance (Enum a, Enum b, Enum c, Enum d) => Indexes (a,b,c,d) Tape4 where
                    <*> iterate pred succ . view _3
                    <*> iterate pred succ . view _4
 
-instance (Dimension1 z, Enum x, Field1 i i x x) => Dimension1 (Indexed i z) where
+instance (Dimension1 t, Enum x, Field1 i i x x) => Dimension1 (Indexed i t) where
    zipL = Indexed <$> over _1 pred . index
                   <*> zipL . unindexed
    zipR = Indexed <$> over _1 succ . index
                   <*> zipR . unindexed
 
-instance (Dimension2 z, Enum x, Field2 i i x x) => Dimension2 (Indexed i z) where
+instance (Dimension2 t, Enum x, Field2 i i x x) => Dimension2 (Indexed i t) where
    zipU = Indexed <$> over _2 pred . index
                   <*> zipU . unindexed
    zipD = Indexed <$> over _2 succ . index
                   <*> zipD . unindexed
 
-instance (Dimension3 z, Enum x, Field3 i i x x) => Dimension3 (Indexed i z) where
+instance (Dimension3 t, Enum x, Field3 i i x x) => Dimension3 (Indexed i t) where
    zipI = Indexed <$> over _3 pred . index
                   <*> zipI . unindexed
    zipO = Indexed <$> over _3 succ . index
                   <*> zipO . unindexed
 
-instance (Dimension4 z, Enum x, Field4 i i x x) => Dimension4 (Indexed i z) where
+instance (Dimension4 t, Enum x, Field4 i i x x) => Dimension4 (Indexed i t) where
    zipA = Indexed <$> over _4 pred . index
                   <*> zipA . unindexed
    zipK = Indexed <$> over _4 succ . index
                   <*> zipK . unindexed
 
-instance (Take i (f a) l) => Take i (Indexed i f a) l where
+instance (Take (t a)) => Take (Indexed i t a) where
+  type CountFor (Indexed i t a) = CountFor (t a)
+  type ListFrom (Indexed i t a) = ListFrom (t a)
   take i (Indexed _ t) = take i t
 
-instance (Window i (f a) l) => Window i (Indexed i f a) l where
+instance (Window (t a)) => Window (Indexed i t a) where
   window i i' (Indexed _ t) = window i i' t
 
 instance (InsertC l t) => InsertC l (Indexed i t) where

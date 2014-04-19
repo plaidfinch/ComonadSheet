@@ -1,5 +1,5 @@
-{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE UndecidableInstances   #-}
@@ -17,34 +17,34 @@ import Prelude hiding ( iterate , take )
 import Tape
 
 class Take t where
-   type Index t
-   type List  t
-   take :: Index t -> t -> List t
+   type CountFor t
+   type ListFrom t
+   take :: CountFor t -> t -> ListFrom t
 
 instance Take (Tape a) where
-   type Index (Tape a) = Int
-   type List  (Tape a) = [a]
+   type CountFor (Tape a) = Int
+   type ListFrom (Tape a) = [a]
    take i t | i > 0 = focus t : S.take     (i - 1) (viewR t)
    take i t | i < 0 = focus t : S.take (abs i - 1) (viewL t)
    take _ _ = []
 
 instance Take (Tape2 a) where
-   type Index (Tape2 a) = (Int,Int)
-   type List  (Tape2 a) = [[a]]
+   type CountFor (Tape2 a) = (Int,Int)
+   type ListFrom (Tape2 a) = [[a]]
    take (i,j) = take j . fmap (take i) . getCompose
 
 instance Take (Tape3 a) where
-   type Index (Tape3 a) = (Int,Int,Int)
-   type List  (Tape3 a) = [[[a]]]
+   type CountFor (Tape3 a) = (Int,Int,Int)
+   type ListFrom (Tape3 a) = [[[a]]]
    take (i,j,k) = take (j,k) . fmap (take i) . getCompose
 
 instance Take (Tape4 a) where
-   type Index (Tape4 a) = (Int,Int,Int,Int)
-   type List  (Tape4 a) = [[[[a]]]]
+   type CountFor (Tape4 a) = (Int,Int,Int,Int)
+   type ListFrom (Tape4 a) = [[[[a]]]]
    take (i,j,k,l) = take (j,k,l) . fmap (take i) . getCompose
 
-class Window t where
-   window :: Index t -> Index t -> t -> List t
+class (Take t) => Window t where
+   window :: CountFor t -> CountFor t -> t -> ListFrom t
 
 instance Window (Tape a) where
    window i i' t =
