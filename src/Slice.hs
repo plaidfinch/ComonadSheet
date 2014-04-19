@@ -91,7 +91,7 @@ instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g)
          Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
 
 instance (InsertCompose l t) => InsertCompose l (Indexed i t) where
-  insertCompose l (Indexed i t) = Indexed i (insertCompose l t)
+   insertCompose l (Indexed i t) = Indexed i (insertCompose l t)
 
 instance InsertCompose Tape Tape where
    insertCompose t _ = t

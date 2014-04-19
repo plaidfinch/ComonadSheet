@@ -27,10 +27,10 @@ type ITape3 c r l   = Indexed (c,r,l)      Tape3
 type ITape4 c r l s = Indexed (c,r,l,s)    Tape4
 
 instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
-  extract      = extract . unindexed
-  duplicate it = Indexed (index it) $
-                    Indexed <$> indices (index it)
-                            <@> duplicate (unindexed it)
+   extract      = extract . unindexed
+   duplicate it = Indexed (index it) $
+                     Indexed <$> indices (index it)
+                             <@> duplicate (unindexed it)
 
 instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
    (Indexed i fs) <@> (Indexed _ xs) = Indexed i (fs <@> xs)
@@ -51,14 +51,14 @@ instance (Enum a, Enum b) => Indexes (a,b) Tape2 where
                    <*> iterate pred succ . view _2
 
 instance (Enum a, Enum b, Enum c) => Indexes (a,b,c) Tape3 where
-  indices = cross3 <$> iterate pred succ . view _1
-                   <*> iterate pred succ . view _2
-                   <*> iterate pred succ . view _3
+   indices = cross3 <$> iterate pred succ . view _1
+                    <*> iterate pred succ . view _2
+                    <*> iterate pred succ . view _3
 
 instance (Enum a, Enum b, Enum c, Enum d) => Indexes (a,b,c,d) Tape4 where
-  indices = cross4 <$> iterate pred succ . view _1
-                   <*> iterate pred succ . view _2
-                   <*> iterate pred succ . view _3
+   indices = cross4 <$> iterate pred succ . view _1
+                    <*> iterate pred succ . view _2
+                    <*> iterate pred succ . view _3
                    <*> iterate pred succ . view _4
 
 instance (Dimension1 t, Enum x, Field1 i i x x) => Dimension1 (Indexed i t) where
