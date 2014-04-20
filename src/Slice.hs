@@ -132,33 +132,33 @@ instance (CountCompose (f (g a))) => CountCompose (Compose f g a) where
 instance (ComposeCount f ~ Z) => CountCompose f where
    countCompose _ = Z
 
-type family NCompose n a where
-   NCompose  Z          a   = a
-   NCompose (S n) (f (g a)) = NComposeIter n a (Compose f g)
+type family NthCompose n a where
+   NthCompose  Z          a   = a
+   NthCompose (S n) (f (g a)) = NthComposeIter n a (Compose f g)
 
-type family NComposeIter n a f where
-   NComposeIter  Z       a  f = f a
-   NComposeIter (S n) (g a) f = NComposeIter n a (Compose f g)
+type family NthComposeIter n a f where
+   NthComposeIter  Z       a  f = f a
+   NthComposeIter (S n) (g a) f = NthComposeIter n a (Compose f g)
 
 class ComposeN n f
-   where composeN :: n -> f -> NCompose n f
+   where composeN :: n -> f -> NthCompose n f
 
-instance (NCompose Z f ~ f) => ComposeN Z f
+instance (NthCompose Z f ~ f) => ComposeN Z f
    where composeN  Z    = id
 
-instance (ComposeN n f, NCompose n f ~ g (h a), NCompose (S n) f ~ Compose g h a) => ComposeN (S n) f
+instance (ComposeN n f, NthCompose n f ~ g (h a), NthCompose (S n) f ~ Compose g h a) => ComposeN (S n) f
    where composeN (S n) = Compose . composeN n
 
-asComposedAs :: (CountCompose g, ComposeN (ComposeCount g) f) => f -> g -> NCompose (ComposeCount g) f
+asComposedAs :: (CountCompose g, ComposeN (ComposeCount g) f) => f -> g -> NthCompose (ComposeCount g) f
 f `asComposedAs` g = composeN (countCompose g) f
 
 -- | This is a synonym for all the things which must be true in order to insert a list-like structure
 --   into some n-dimensional tape-like structure.
-type Insertable composedList list tape a =
-   ( CountCompose (tape a)                                  -- can we count tape's dimensionality (yes)?
-   , ComposeN (ComposeCount (tape a)) list                  -- can we Compose the list that # of times?
-   , NCompose (ComposeCount (tape a)) list ~ composedList a -- let (composedList a) be the result of this
-   , InsertCompose composedList tape )                      -- and, can we insert that into the tape?
+type Insertable compList list tape a =
+   ( CountCompose (tape a)                                -- can we count tape's dimensionality (yes)?
+   , ComposeN (ComposeCount (tape a)) list                -- can we Compose the list that # of times?
+   , NthCompose (ComposeCount (tape a)) list ~ compList a -- let (compList a) be the result of this
+   , InsertCompose compList tape )                        -- and, can we insert that into the tape?
 
 insert :: (Insertable c l t a) => l -> t a -> t a
 insert l t = insertCompose (l `asComposedAs` t) t
