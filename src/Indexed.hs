@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveFunctor         #-}
 {-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
 module Indexed where
@@ -9,19 +11,23 @@ module Indexed where
 import Control.Comonad
 import Control.Applicative
 import Data.Functor.Identity
+import Data.Functor.Compose
 
 import Control.Lens ( view , over )
 import Control.Lens.Tuple
 
 import Tape
+import Reference
+import Cartesian
 
 data Indexed i t a =
   Indexed { index     :: i
           , unindexed :: t a
           } deriving ( Functor )
 
-class Indexes i t where
-   indices :: i -> t i
+type Indexes i t = ( Cross (Map Tape i)
+                   , TapesFromIndex i
+                   , Cartesian (Map Tape i) ~ t i )
 
 instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
    extract      = extract . unindexed
@@ -36,3 +42,13 @@ instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
 -- This is because, respectively, there's no sensible way to satisfy Applicative's interchange law,
 -- and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i t)),
 -- as would be necessary to implement distribute (what would you do if f = Maybe, for instance?).
+
+class TapesFromIndex i where
+   tapesFromIndex :: i -> Map Tape i
+instance (Map Tape a ~ Tape a, Enum a) => TapesFromIndex a where
+   tapesFromIndex a = enumerate a
+instance (Enum a, TapesFromIndex as) => TapesFromIndex (a :*: as) where
+   tapesFromIndex (a :*: as) = enumerate a :*: tapesFromIndex as
+
+indices :: (Cross (Map Tape a), TapesFromIndex a) => a -> Cartesian (Map Tape a)
+indices = cross . tapesFromIndex

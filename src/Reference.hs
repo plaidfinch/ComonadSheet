@@ -12,6 +12,10 @@ import Peano
 newtype Rel   = Rel Int deriving ( Show , Eq , Ord )
 newtype Abs x = Abs x   deriving ( Functor , Show , Eq , Ord )
 
+instance (Enum a) => Enum (Abs a) where
+   toEnum = Abs . toEnum
+   fromEnum (Abs a) = fromEnum a
+
 infixr 5 :*:
 data a :*: b = a :*: b deriving ( Show , Eq , Ord )
 
@@ -80,3 +84,7 @@ instance Dimensional One a where
    dimensional _ a = a
 instance (Dimensional n a) => Dimensional (S n) a where
    dimensional (S n) a = Rel 0 :*: dimensional n a
+
+type family Map f a where
+   Map f (a :*: b) = (f a :*: Map f b)
+   Map f  a        = f a

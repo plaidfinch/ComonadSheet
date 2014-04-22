@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE DataKinds              #-}
@@ -154,10 +155,3 @@ instance (i ~ (i & DiffOf r i), Combine i (DiffOf r i), Diff r i, Go (DiffOf r i
    where go r (Indexed i t) =
             let move = r `diff` i
             in  Indexed (i & move) (go move t)
-
--- TODO: a generic cross-product for a :*:-list of Tapes, so we can define Indexes generically
-
--- | Cartesian product space for two Tapes.
-cross :: (Applicative t, Applicative t') => t a -> t' b -> Compose t' t (a :*: b)
-cross a b = (:*:) <$> Compose (     pure a)
-                  <*> Compose (fmap pure b)
