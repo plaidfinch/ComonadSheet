@@ -17,7 +17,7 @@ import Prelude hiding ( iterate , tail , head )
 
 instance Comonad Stream where
    extract   = head
-   duplicate = iterate tail
+   duplicate = tails
 
 instance ComonadApply Stream where (<@>) = (<*>)
 

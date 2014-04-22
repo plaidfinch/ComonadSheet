@@ -1,189 +1,133 @@
-{-# LANGUAGE TupleSections, MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE ConstraintKinds        #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
-module Generic
-   ( module Control.Applicative, module Control.Comonad
-
-   , AnyZipper(..) , Ref(..) , RefOf(..) , AnyRef(..)
-
-   , goto , modify
-   , genericZipBy , genericZipTo , genericDeref
-
-   , Zipper1(..) , Zipper2(..) , Zipper3(..) , Zipper4(..)
-   , Ref1(..)    , Ref2(..)    , Ref3(..)    , Ref4(..)
-
-   , right , left , below , above , outward , inward , kata , ana
-   ) where
+module Slice where
 
 import Control.Applicative
-import Control.Comonad
 
-data Ref x = Abs x | Rel Int deriving (Show, Eq, Ord)
+import Stream ( Stream(..) )
+import qualified Stream as S
 
-class RefOf ref zipper list | zipper -> ref list where
-   go     :: ref -> zipper -> zipper
-   slice  :: ref -> ref -> zipper -> list
-   insert :: list -> zipper -> zipper
+import Prelude hiding ( iterate , take )
 
-class AnyZipper z i a | z -> i a where
-   index :: z -> i
-   view  :: z -> a
-   write   :: a -> z -> z
-   reindex :: i -> z -> z
+import Tape
+import Indexed
+import Peano
+import Composition
 
-modify :: AnyZipper z i a => (a -> a) -> z -> z
-modify f = write <$> f . view <*> id
+class Take t where
+   type CountFor t
+   type ListFrom t
+   take :: CountFor t -> t -> ListFrom t
 
-class Zipper1 z c | z -> c where
-   zipL :: z -> z
-   zipR :: z -> z
-   col  :: z -> c
+instance Take (Tape a) where
+   type CountFor (Tape a) = Int
+   type ListFrom (Tape a) = [a]
+   take i t | i > 0 = focus t : S.take     (i - 1) (viewR t)
+   take i t | i < 0 = focus t : S.take (abs i - 1) (viewL t)
+   take _ _ = []
 
-class Zipper2 z r | z -> r where
-   zipU :: z -> z
-   zipD :: z -> z
-   row  :: z -> r
+instance Take (Tape2 a) where
+   type CountFor (Tape2 a) = (Int,Int)
+   type ListFrom (Tape2 a) = [[a]]
+   take (i,j) = take j . fmap (take i) . getCompose
 
-class Zipper3 z l | z -> l where
-   zipI  :: z -> z
-   zipO  :: z -> z
-   level :: z -> l
+instance Take (Tape3 a) where
+   type CountFor (Tape3 a) = (Int,Int,Int)
+   type ListFrom (Tape3 a) = [[[a]]]
+   take (i,j,k) = take (j,k) . fmap (take i) . getCompose
 
-class Zipper4 z s | z -> s where
-   zipA  :: z -> z
-   zipK  :: z -> z
-   space :: z -> s
+instance Take (Tape4 a) where
+   type CountFor (Tape4 a) = (Int,Int,Int,Int)
+   type ListFrom (Tape4 a) = [[[[a]]]]
+   take (i,j,k,l) = take (j,k,l) . fmap (take i) . getCompose
 
-infixl 6 &
+instance (Take (t a)) => Take (Indexed i t a) where
+  type CountFor (Indexed i t a) = CountFor (t a)
+  type ListFrom (Indexed i t a) = ListFrom (t a)
+  take i (Indexed _ t) = take i t
 
-class AnyRef ref i | ref -> i where
-   at   :: i -> ref
-   here :: ref
-   (&)  :: ref -> ref -> ref
+class (Take t) => Window t where
+   window :: CountFor t -> CountFor t -> t -> ListFrom t
 
-goto :: (RefOf ref zipper list, AnyRef ref i) => i -> zipper -> zipper
-goto = go . at
+instance Window (Tape a) where
+   window i i' t =
+      reverse (take (negate (abs i)) t) ++ tail (take (abs i') t)
 
-instance Enum col => AnyRef (Ref col) col where
-   here          = Rel 0
-   at            = Abs
-   Abs x & Rel y = Abs $ toEnum (fromEnum x + y)
-   Rel x & Abs y = Abs $ toEnum (x + fromEnum y)
-   Rel x & Rel y = Rel (x + y)
-   Abs _ & Abs y = Abs y
+instance Window (Tape2 a) where
+   window (i,j) (i',j') =
+      window i i' . fmap (window j j') . getCompose
 
-instance (Enum col, Enum row) => AnyRef (Ref col,Ref row) (col,row) where
-   here            = (here,here)
-   at (c,r)        = (at c,at r)
-   (c,r) & (c',r') = (c & c',r & r')
+instance Window (Tape3 a) where
+   window (i,j,k) (i',j',k') =
+      window (i,j) (i',j') . fmap (window k k') . getCompose
 
-instance (Enum col, Enum row, Enum lev) => AnyRef (Ref col, Ref row,Ref lev) (col,row,lev) where
-   here                 = (here,here,here)
-   at (c,r,l)           = (at c,at r,at l)
-   (c,r,l) & (c',r',l') = (c & c',r & r',l & l')
+instance Window (Tape4 a) where
+   window (i,j,k,l) (i',j',k',l') =
+      window (i,j,k) (i',j',k') . fmap (window l l') . getCompose
 
-instance (Enum col, Enum row, Enum lev, Enum spc) => AnyRef (Ref col, Ref row,Ref lev,Ref spc) (col,row,lev,spc) where
-   here                      = (here,here,here,here)
-   at (c,r,l,s)              = (at c,at r,at l,at s)
-   (c,r,l,s) & (c',r',l',s') = (c & c',r & r',l & l',s & s')
+instance (Window (t a)) => Window (Indexed i t a) where
+  window i i' (Indexed _ t) = window i i' t
 
-class Ref1 ref col | ref -> col where
-   rightBy :: Int -> ref
-   rightBy = leftBy . negate
-   leftBy  :: Int -> ref
-   leftBy = rightBy . negate
-   atCol   :: col -> ref
+data Signed f a = Positive (f a)
+                | Negative (f a)
+                deriving ( Eq , Ord , Show )
 
-class Ref2 ref row | ref -> row where
-   belowBy :: Int -> ref
-   belowBy = aboveBy . negate
-   aboveBy :: Int -> ref
-   aboveBy = belowBy . negate
-   atRow   :: row -> ref
+class InsertCompose l t where
+   insertCompose :: l a -> t a -> t a
 
-class Ref3 ref lev | ref -> lev where
-   inwardBy  :: Int -> ref
-   inwardBy = outwardBy . negate
-   outwardBy :: Int -> ref
-   outwardBy = inwardBy . negate
-   atLevel   :: lev -> ref
+-- | Given the @Compose@ of two list-like things and the @Compose@ of two @Tape@-like things, we can
+--   insert the list-like things into the @Tape@-like things if we know how to insert each corresponding
+--   level with one another. Thus, other than this instance, all the other instances we need to define
+--   are base cases: how to insert a single list-like thing into a single @Tape@.
+instance (Functor l, Applicative f, InsertCompose l f, InsertCompose m g) 
+   => InsertCompose (Compose l m) (Compose f g) where
+      insertCompose (Compose lm)  (Compose fg) =
+         Compose $ insertCompose (fmap insertCompose lm) (pure id) <*> fg
 
-class Ref4 ref lev | ref -> lev where
-   anaBy  :: Int -> ref
-   anaBy = kataBy . negate
-   kataBy :: Int -> ref
-   kataBy = anaBy . negate
-   atSpace :: lev -> ref
+instance (InsertCompose l t) => InsertCompose l (Indexed i t) where
+   insertCompose l (Indexed i t) = Indexed i (insertCompose l t)
 
-above, below :: Ref2 ref row => ref
-above = aboveBy 1
-below = belowBy 1
+instance InsertCompose Tape Tape where
+   insertCompose t _ = t
 
-right, left :: Ref1 ref col => ref
-right = rightBy 1
-left  = leftBy  1
+instance InsertCompose Stream Tape where
+   insertCompose (Cons x xs) (Tape ls _ _) = Tape ls x xs
 
-inward, outward :: Ref3 ref lev => ref
-inward  = inwardBy  1
-outward = outwardBy 1
+instance InsertCompose (Signed Stream) Tape where
+   insertCompose (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
+   insertCompose (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
 
-ana, kata :: Ref4 ref spc => ref
-ana  = anaBy  1
-kata = kataBy 1
+instance InsertCompose [] Tape where
+   insertCompose [] t = t
+   insertCompose (x : xs) (Tape ls c rs) =
+      Tape ls x (S.prefix xs (Cons c rs))
 
-instance Enum col => Ref1 (Ref col) col where
-   rightBy = Rel
-   atCol   = Abs
+instance InsertCompose (Signed []) Tape where
+   insertCompose (Positive []) t = t
+   insertCompose (Negative []) t = t
+   insertCompose (Positive (x : xs)) (Tape ls c rs) =
+      Tape ls x (S.prefix xs (Cons c rs))
+   insertCompose (Negative (x : xs)) (Tape ls c rs) =
+      Tape (S.prefix xs (Cons c ls)) x rs
 
-instance (Enum row, Enum col) => Ref1 (Ref col,Ref row) col where
-   rightBy = (,here) . Rel
-   atCol   = (,here) . Abs
+-- | This is a synonym for all the things which must be true in order to insert a list-like structure
+--   into some n-dimensional tape-like structure.
+type Insertable compList list tape a =
+   ( CountCompose (tape a)                                -- can we count tape's dimensionality (yes)?
+   , ComposeN (ComposeCount (tape a)) list                -- can we Compose the list that # of times?
+   , NthCompose (ComposeCount (tape a)) list ~ compList a -- then let (compList a) be the result of this,
+   , InsertCompose compList tape )                        -- and, can we insert that into the tape?
 
-instance (Enum row, Enum col) => Ref2 (Ref col,Ref row) row where
-   belowBy = (here,) . Rel
-   atRow   = (here,) . Abs
+insert :: (Insertable c l t a) => l -> t a -> t a
+insert l t = insertCompose (l `asComposedAs` t) t
 
-instance (Enum row, Enum col, Enum lev) => Ref1 (Ref col,Ref row,Ref lev) col where
-   rightBy = (,here,here) . Rel
-   atCol   = (,here,here) . Abs
-
-instance (Enum row, Enum col, Enum lev) => Ref2 (Ref col,Ref row,Ref lev) row where
-   belowBy = (here,,here) . Rel
-   atRow   = (here,,here) . Abs
-
-instance (Enum row, Enum col, Enum lev) => Ref3 (Ref col,Ref row,Ref lev) lev where
-   outwardBy = (here,here,) . Rel
-   atLevel   = (here,here,) . Abs
-
-instance (Enum row, Enum col, Enum lev, Enum spc) => Ref1 (Ref col,Ref row,Ref lev,Ref spc) col where
-   rightBy = (,here,here,here) . Rel
-   atCol   = (,here,here,here) . Abs
-
-instance (Enum row, Enum col, Enum lev, Enum spc) => Ref2 (Ref col,Ref row,Ref lev,Ref spc) row where
-   belowBy = (here,,here,here) . Rel
-   atRow   = (here,,here,here) . Abs
-
-instance (Enum row, Enum col, Enum lev, Enum spc) => Ref3 (Ref col,Ref row,Ref lev,Ref spc) lev where
-   outwardBy = (here,here,,here) . Rel
-   atLevel   = (here,here,,here) . Abs
-
-instance (Enum row, Enum col, Enum lev, Enum spc) => Ref4 (Ref col,Ref row,Ref lev,Ref spc) spc where
-   kataBy  = (here,here,here,) . Rel
-   atSpace = (here,here,here,) . Abs
-
-genericZipBy :: (z -> z) -> (z -> z) -> Int -> z -> z
-genericZipBy zl zr i | i < 0     = genericZipBy zl zr (succ i) . zl
-genericZipBy zl zr i | i > 0     = genericZipBy zl zr (pred i) . zr
-genericZipBy zl zr i | otherwise = id
-
-genericZipTo :: (Ord i) => (z -> z) -> (z -> z) -> (z -> i) -> i -> z -> z
-genericZipTo zl zr idx i z | i < idx z = genericZipTo zl zr idx i . zl $ z
-genericZipTo zl zr idx i z | i > idx z = genericZipTo zl zr idx i . zr $ z
-genericZipTo zl zr idx i z | otherwise = z
-
-genericDeref :: (Ord i) => (z -> z) -> (z -> z) -> (z -> i) -> Ref i -> z -> z
-genericDeref zl zr idx ref =
-   case ref of
-      Rel i -> relative i
-      Abs x -> absolute x
-   where relative = genericZipBy zl zr
-         absolute = genericZipTo zl zr idx
+dimensionality :: (CountCompose t, WholeFromNat (S (ComposeCount t)))
+               => t -> NatToWhole (S (ComposeCount t))
+dimensionality = wholeFromNat . S . countCompose
