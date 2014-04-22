@@ -14,17 +14,11 @@ import Control.Lens ( view , over )
 import Control.Lens.Tuple
 
 import Tape
-import Prelude hiding ( iterate , take )
 
 data Indexed i t a =
   Indexed { index     :: i
           , unindexed :: t a
           } deriving ( Functor )
-
-type ITape  c       = Indexed (Identity c) Tape
-type ITape2 c r     = Indexed (c,r)        Tape2
-type ITape3 c r l   = Indexed (c,r,l)      Tape3
-type ITape4 c r l s = Indexed (c,r,l,s)    Tape4
 
 instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
    extract      = extract . unindexed
@@ -42,45 +36,3 @@ instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
 
 class Indexes i t where
    indices :: i -> t i
-
-instance (Enum a) => Indexes (Identity a) Tape where
-   indices = iterate (fmap pred) (fmap succ)
-
-instance (Enum a, Enum b) => Indexes (a,b) Tape2 where
-   indices = cross <$> iterate pred succ . view _1
-                   <*> iterate pred succ . view _2
-
-instance (Enum a, Enum b, Enum c) => Indexes (a,b,c) Tape3 where
-   indices = cross3 <$> iterate pred succ . view _1
-                    <*> iterate pred succ . view _2
-                    <*> iterate pred succ . view _3
-
-instance (Enum a, Enum b, Enum c, Enum d) => Indexes (a,b,c,d) Tape4 where
-   indices = cross4 <$> iterate pred succ . view _1
-                    <*> iterate pred succ . view _2
-                    <*> iterate pred succ . view _3
-                    <*> iterate pred succ . view _4
-
-instance (Dimension1 t, Enum x, Field1 i i x x) => Dimension1 (Indexed i t) where
-   moveL = Indexed <$> over _1 pred . index
-                   <*> moveL . unindexed
-   moveR = Indexed <$> over _1 succ . index
-                   <*> moveR . unindexed
-
-instance (Dimension2 t, Enum x, Field2 i i x x) => Dimension2 (Indexed i t) where
-   moveU = Indexed <$> over _2 pred . index
-                   <*> moveU . unindexed
-   moveD = Indexed <$> over _2 succ . index
-                   <*> moveD . unindexed
-
-instance (Dimension3 t, Enum x, Field3 i i x x) => Dimension3 (Indexed i t) where
-   moveI = Indexed <$> over _3 pred . index
-                   <*> moveI . unindexed
-   moveO = Indexed <$> over _3 succ . index
-                   <*> moveO . unindexed
-
-instance (Dimension4 t, Enum x, Field4 i i x x) => Dimension4 (Indexed i t) where
-   moveA = Indexed <$> over _4 pred . index
-                   <*> moveA . unindexed
-   moveK = Indexed <$> over _4 succ . index
-                   <*> moveK . unindexed

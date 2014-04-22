@@ -7,7 +7,7 @@
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Slice where
+module Generic where
 
 import Control.Applicative
 
@@ -20,6 +20,8 @@ import Tape
 import Indexed
 import Peano
 import Composition
+import Reference
+import Names
 
 class Take t where
    type CountFor t
@@ -131,3 +133,31 @@ insert l t = insertCompose (l `asComposedAs` t) t
 dimensionality :: (CountCompose t, WholeFromNat (S (ComposeCount t)))
                => t -> NatToWhole (S (ComposeCount t))
 dimensionality = wholeFromNat . S . countCompose
+
+nTimes :: Int -> (a -> a) -> a -> a
+nTimes n = foldr (.) id . replicate n
+
+class Go r t where
+   go :: r -> t a -> t a
+
+instance Go Rel Tape where
+   go (Rel r) | r > 0      = nTimes (abs r) moveR
+   go (Rel r) | otherwise  = nTimes (abs r) moveL
+
+instance (Functor t) => Go Rel (Compose t Tape) where
+   go r = composedly (fmap (go r))
+
+instance (Go r Tape, Go rs t, Functor t) => Go (r :*: rs) (Compose t Tape) where
+   go (r :*: rs) = composedly (go rs . fmap (go r))
+
+instance (i ~ (i & DiffOf r i), Combine i (DiffOf r i), Diff r i, Go (DiffOf r i) t) => Go r (Indexed i t)
+   where go r (Indexed i t) =
+            let move = r `diff` i
+            in  Indexed (i & move) (go move t)
+
+-- NEED: a generic cross-product for a :*:-list of Tapes, so we can define Indexes generically
+
+-- | Cartesian product space for two Tapes.
+cross :: (Applicative t, Applicative t') => t a -> t' b -> Compose t' t (a :*: b)
+cross a b = (:*:) <$> Compose (     pure a)
+                  <*> Compose (fmap pure b)

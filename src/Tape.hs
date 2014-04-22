@@ -79,71 +79,9 @@ instance Distributive Tape where
              (fmap focus)
              (fmap (focus . moveR) &&& fmap moveR)
 
--- Now let's get multi-dimensional!
-
--- | A @Tape2@ is a 2-dimensional tape formed by the composition of two 1D tapes.
-type Tape2 = Compose Tape  Tape
--- | A @Tape3@ is a 3-dimensional tape formed by the composition of a 2D tape and a 1D tape.
-type Tape3 = Compose Tape2 Tape
--- | A @Tape4@ is a 4-dimensional tape formed by the composition of a 3D tape and a 1D tape.
-type Tape4 = Compose Tape3 Tape
-
--- | Any tape of one dimension or higher can be moved /left/ or /right/.
-class Dimension1 t where
-  -- | Moves /left/ by one step (if it's indexed, this is the negative direction).
-  moveL :: t a -> t a 
-  -- | Moves /right/ by one step (if it's indexed, this is the positive direction).
-  moveR :: t a -> t a 
-
--- | Any tape of two dimensions or higher can be moved /up/ or /down/.
-class Dimension2 t where
-  -- | Moves /up/ by one step (if indexed, negative direction).
-  moveU :: t a -> t a 
-  -- | Moves /down/ by one step (if indexed, positive direction).
-  moveD :: t a -> t a 
-
--- | Any tape of three dimensions or higher can be moved /in/ or /out/.
-class Dimension3 t where
-  -- | Moves /in/ by one step (if indexed, negative direction).
-  moveI :: t a -> t a 
-  -- | Moves /out/ by one step (if indexed, positive direction).
-  moveO :: t a -> t a 
-
--- | Any tape of four dimensions or higher can be moved /ana/ or /kata/ (following the nomenclature
---   of <http://en.wikipedia.org/wiki/Charles_Howard_Hinton Charles Howard Hinton>).
-class Dimension4 t where
-  -- | Moves /ana/ by one step (if indexed, negative direction).
-  moveA :: t a -> t a 
-  -- | Moves /kata/ by one step (if indexed, positive direction).
-  moveK :: t a -> t a 
-
--- | A single tape is one-dimensional in the obvious way. This is the base-case instance that allows
---   all the higher-dimensional instances to work properly.
-instance Dimension1 Tape where
-  moveR (Tape ls c (Cons r rs)) = Tape (Cons c ls) r rs
-  moveL (Tape (Cons l ls) c rs) = Tape ls l (Cons c rs)
-
--- | Telling a nested tape to move in the first axis always moves the inner-most tape, regardless of
---   how deeply nested it is.
-instance (Functor f) => Dimension1 (Compose f Tape) where
-  moveL = composedly (fmap moveL)
-  moveR = composedly (fmap moveR)
-
--- | Telling a nested tape to move in the second axis always moves the second-inner-most tape,
---   regardless of the depth of nesting.
-instance (Dimension1 t) => Dimension2 (Compose t Tape) where
-  moveU = composedly moveL
-  moveD = composedly moveR
-
--- | Telling a nested tape to move in the third axis always moves the third-inner-most tape.
-instance (Dimension2 t) => Dimension3 (Compose t Tape) where
-  moveI = composedly moveU
-  moveO = composedly moveD
-
--- | Telling a nested tape to move in the fourth axis always moves the fourth-inner-most tape.
-instance (Dimension3 t) => Dimension4 (Compose t Tape) where
-  moveA = composedly moveI
-  moveK = composedly moveO
+moveL, moveR :: Tape a -> Tape a
+moveL (Tape (Cons l ls) c rs) = Tape ls l (Cons c rs)
+moveR (Tape ls c (Cons r rs)) = Tape (Cons c ls) r rs
 
 -- | This is just like the @Applicative@ instance given for @Compose@, but it has the additional
 --   @Distributive@ constraint because that's necessary for the whole thing to be a comonad.
@@ -170,24 +108,6 @@ instance (Comonad f, Comonad g, Distributive g) => Comonad (Compose f g) where
              . duplicate              -- duplicate outer functor f: f (g (g a)) -> f (f (g (g a)))
              . fmap duplicate         -- duplicate inner functor g: f (g a) -> f (g (g a))
              . getCompose             -- unwrap it: Compose f g a -> f (g a) 
-
--- | Cartesian product space for two Tapes.
-cross :: Tape a -> Tape b -> Tape2 (a,b)
-cross a b = (,) <$> Compose (     pure a)
-                <*> Compose (fmap pure b)
-
--- | Cartesian product space for three Tapes.
-cross3 :: Tape a -> Tape b -> Tape c -> Tape3 (a,b,c)
-cross3 a b c = (,,) <$> (Compose . Compose) (     pure .      pure $ a)
-                    <*> (Compose . Compose) (     pure . fmap pure $ b)
-                    <*> (Compose . Compose) (fmap pure . fmap pure $ c)
-
--- | Cartesian product space for four Tapes.
-cross4 :: Tape a -> Tape b -> Tape c -> Tape d -> Tape4 (a,b,c,d)
-cross4 a b c d = (,,,) <$> (Compose . Compose . Compose) (     pure .      pure .      pure $ a)
-                       <*> (Compose . Compose . Compose) (     pure .      pure . fmap pure $ b)
-                       <*> (Compose . Compose . Compose) (     pure . fmap pure . fmap pure $ c)
-                       <*> (Compose . Compose . Compose) (fmap pure . fmap pure . fmap pure $ d)
 
 -- | The tape of integers, with zero centered.
 ints :: Tape Integer
