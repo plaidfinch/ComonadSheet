@@ -127,8 +127,17 @@ type Insertable compList list tape a =
    , NthCompose (ComposeCount (tape a)) list ~ compList a -- then let (compList a) be the result of this,
    , InsertCompose compList tape )                        -- and, can we insert that into the tape?
 
-insert :: (Insertable c l t a) => l -> t a -> t a
-insert l t = insertCompose (l `asComposedAs` t) t
+class Insert l t a where
+   insert :: l -> t a -> t a
+
+instance (InsertCompose l Tape) => Insert (l a) Tape a where
+   insert l t = insertCompose l t 
+
+instance (Insertable c l (Compose f g) a) => Insert l (Compose f g) a where
+   insert l t = insertCompose (l `asComposedAs` t) t
+
+instance (Insert l t a) => Insert l (Indexed i t) a where
+   insert l (Indexed i t) = Indexed i (insert l t)
 
 dimensionality :: (CountCompose t, WholeFromNat (S (ComposeCount t)))
                => t -> NatToWhole (S (ComposeCount t))
