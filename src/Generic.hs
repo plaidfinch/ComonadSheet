@@ -131,7 +131,7 @@ class Insert l t a where
    insert :: l -> t a -> t a
 
 instance (InsertCompose l Tape) => Insert (l a) Tape a where
-   insert l t = insertCompose l t 
+   insert = insertCompose
 
 instance (Insertable c l (Compose f g) a) => Insert l (Compose f g) a where
    insert l t = insertCompose (l `asComposedAs` t) t
