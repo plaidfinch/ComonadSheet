@@ -8,10 +8,11 @@ import Control.Arrow
 import Control.Applicative
 import Data.Distributive
 import Data.Traversable
-import Data.Functor.Compose
 
 import Stream ( Stream(..) )
 import qualified Stream as S
+
+import Composition
 
 import Prelude hiding ( iterate , take )
 
@@ -115,12 +116,6 @@ class Dimension4 t where
   moveA :: t a -> t a 
   -- | Moves /kata/ by one step (if indexed, positive direction).
   moveK :: t a -> t a 
-
--- | Apply a function to the inside of a @Compose@.
---
---   @composedly f = Compose . f . getCompose@
-composedly :: (f (g a) -> f' (g' a')) -> Compose f g a -> Compose f' g' a'
-composedly f = Compose . f . getCompose
 
 -- | A single tape is one-dimensional in the obvious way. This is the base-case instance that allows
 --   all the higher-dimensional instances to work properly.

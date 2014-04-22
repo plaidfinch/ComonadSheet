@@ -10,6 +10,7 @@ module Composition
    , CountCompose(..)
    , NthCompose(..)
    , ComposeN(..)
+   , composedly
    , asComposedAs
    , module Data.Functor.Compose
    ) where
@@ -17,6 +18,12 @@ module Composition
 import Data.Functor.Compose
 
 import Peano
+
+-- | Apply a function to the inside of a @Compose@.
+--
+--   @composedly f = Compose . f . getCompose@
+composedly :: (f (g a) -> f' (g' a')) -> Compose f g a -> Compose f' g' a'
+composedly f = Compose . f . getCompose
 
 type family ComposeCount f where
    ComposeCount (Compose f g a) = S (ComposeCount (f (g a)))
