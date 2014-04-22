@@ -127,17 +127,8 @@ type Insertable compList list tape a =
    , NthCompose (ComposeCount (tape a)) list ~ compList a -- then let (compList a) be the result of this,
    , InsertCompose compList tape )                        -- and, can we insert that into the tape?
 
-class Insert l t a where
-   insert :: l -> t a -> t a
-
-instance (InsertCompose l Tape) => Insert (l a) Tape a where
-   insert = insertCompose
-
-instance (Insertable c l (Compose f g) a) => Insert l (Compose f g) a where
-   insert l t = insertCompose (l `asComposedAs` t) t
-
-instance (Insert l t a) => Insert l (Indexed i t) a where
-   insert l (Indexed i t) = Indexed i (insert l t)
+insert :: (Insertable c l t a) => l -> t a -> t a
+insert l t = insertCompose (l `asComposedAs` t) t
 
 dimensionality :: (CountCompose t, WholeFromNat (S (ComposeCount t)))
                => t -> NatToWhole (S (ComposeCount t))
@@ -164,7 +155,7 @@ instance (i ~ (i & DiffOf r i), Combine i (DiffOf r i), Diff r i, Go (DiffOf r i
             let move = r `diff` i
             in  Indexed (i & move) (go move t)
 
--- NEED: a generic cross-product for a :*:-list of Tapes, so we can define Indexes generically
+-- TODO: a generic cross-product for a :*:-list of Tapes, so we can define Indexes generically
 
 -- | Cartesian product space for two Tapes.
 cross :: (Applicative t, Applicative t') => t a -> t' b -> Compose t' t (a :*: b)

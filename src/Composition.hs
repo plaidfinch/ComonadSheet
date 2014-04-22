@@ -18,6 +18,7 @@ module Composition
 import Data.Functor.Compose
 
 import Peano
+import Indexed
 
 -- | Apply a function to the inside of a @Compose@.
 --
@@ -25,12 +26,17 @@ import Peano
 composedly :: (f (g a) -> f' (g' a')) -> Compose f g a -> Compose f' g' a'
 composedly f = Compose . f . getCompose
 
+-- TODO: unmuddle the Indexed thing from ComposeCount, probably by creating a new type family / class such as DimensionCount and using that. This way, we get something nice out of this module which isn't specialized to this particular problem.
+
 type family ComposeCount f where
+   ComposeCount (Indexed i t a) = ComposeCount (t a)
    ComposeCount (Compose f g a) = S (ComposeCount (f (g a)))
    ComposeCount x               = Zero
 
 class CountCompose f where
    countCompose :: f -> ComposeCount f
+instance (CountCompose (t a)) => CountCompose (Indexed i t a) where
+   countCompose (Indexed i t) = countCompose t
 instance (CountCompose (f (g a))) => CountCompose (Compose f g a) where
    countCompose (Compose x) = S (countCompose x)
 instance (ComposeCount f ~ Zero) => CountCompose f where

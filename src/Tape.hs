@@ -8,11 +8,10 @@ import Control.Arrow
 import Control.Applicative
 import Data.Distributive
 import Data.Traversable
+import Data.Functor.Compose
 
 import Stream ( Stream(..) )
 import qualified Stream as S
-
-import Composition
 
 import Prelude hiding ( iterate , take )
 
