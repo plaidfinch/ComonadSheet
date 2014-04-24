@@ -12,13 +12,13 @@ import Control.Applicative
 import Tape
 import Reference
 
-type family Cartesian f where
-   Cartesian (f a :*: as) = CartesianIter f as a
-   Cartesian (f a)        = f a
+type family Cartesian ts where
+   Cartesian (t a :*: ts) = CartesianIter ts t a
+   Cartesian (t a)        = t a
 
-type family CartesianIter f as bs where
-   CartesianIter f (t a :*: as) bs = CartesianIter (Compose f t) as (a :*: bs)
-   CartesianIter f (t a)        bs = Compose f t (a :*: bs)
+type family CartesianIter ts t as where
+   CartesianIter (t a :*: ts) f as = CartesianIter ts (Compose f t) (a :*: as)
+   CartesianIter (t a)        f as = Compose f t (a :*: as)
 
 class Cross a where
    cross :: a -> Cartesian a

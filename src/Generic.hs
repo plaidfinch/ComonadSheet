@@ -37,20 +37,10 @@ instance Take (Tape a) where
    take i t | i < 0 = focus t : S.take (abs i - 1) (viewL t)
    take _ _ = []
 
-instance Take (Tape2 a) where
-   type CountFor (Tape2 a) = (Int,Int)
-   type ListFrom (Tape2 a) = [[a]]
-   take (i,j) = take j . fmap (take i) . getCompose
-
-instance Take (Tape3 a) where
-   type CountFor (Tape3 a) = (Int,Int,Int)
-   type ListFrom (Tape3 a) = [[[a]]]
-   take (i,j,k) = take (j,k) . fmap (take i) . getCompose
-
-instance Take (Tape4 a) where
-   type CountFor (Tape4 a) = (Int,Int,Int,Int)
-   type ListFrom (Tape4 a) = [[[[a]]]]
-   take (i,j,k,l) = take (j,k,l) . fmap (take i) . getCompose
+instance (Take (f [a]), Functor f) => Take (Compose f Tape a) where
+   type CountFor (Compose f Tape a) = Int :*: CountFor (f [a])
+   type ListFrom (Compose f Tape a) = ListFrom (f [a])
+   take (i :*: is) = take is . fmap (take i) . getCompose
 
 instance (Take (t a)) => Take (Indexed i t a) where
   type CountFor (Indexed i t a) = CountFor (t a)
@@ -61,20 +51,13 @@ class (Take t) => Window t where
    window :: CountFor t -> CountFor t -> t -> ListFrom t
 
 instance Window (Tape a) where
-   window i i' t =
-      reverse (take (negate (abs i)) t) ++ tail (take (abs i') t)
+   window i j t =
+      reverse (take (- (abs i)) t)
+      ++ tail (take    (abs j)  t)
 
-instance Window (Tape2 a) where
-   window (i,j) (i',j') =
-      window i i' . fmap (window j j') . getCompose
-
-instance Window (Tape3 a) where
-   window (i,j,k) (i',j',k') =
-      window (i,j) (i',j') . fmap (window k k') . getCompose
-
-instance Window (Tape4 a) where
-   window (i,j,k,l) (i',j',k',l') =
-      window (i,j,k) (i',j',k') . fmap (window l l') . getCompose
+instance (Window (f [a]), Functor f) => Window (Compose f Tape a) where
+   window (i :*: is) (j :*: js) =
+      window is js . fmap (window i j) . getCompose
 
 instance (Window (t a)) => Window (Indexed i t a) where
   window i i' (Indexed _ t) = window i i' t
