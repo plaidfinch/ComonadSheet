@@ -1,20 +1,17 @@
-{-# LANGUAGE DeriveFunctor          #-}
-{-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Reference where
 
 import Peano
 
-newtype Rel   = Rel Int deriving ( Show , Eq , Ord )
-newtype Abs x = Abs x   deriving ( Functor , Show , Eq , Ord )
-
-instance (Enum a) => Enum (Abs a) where
-   toEnum = Abs . toEnum
-   fromEnum (Abs a) = fromEnum a
+newtype Rel   = Rel Int deriving ( Show , Eq , Ord , Enum , Num )
+newtype Abs x = Abs x   deriving ( Show , Eq , Ord , Enum , Num , Functor )
 
 infixr 5 :*:
 data a :*: b = a :*: b deriving ( Show , Eq , Ord )

@@ -17,8 +17,8 @@ type ITape2 c r     = Indexed (Abs c :*: Abs r)                     Tape2
 type ITape3 c r l   = Indexed (Abs c :*: Abs r :*: Abs l)           Tape3
 type ITape4 c r l s = Indexed (Abs c :*: Abs r :*: Abs l :*: Abs s) Tape4
 
-column :: a -> Abs a
-column = dimensional One . Abs
+columnAt :: a -> Abs a
+columnAt = dimensional One . Abs
 
 rightBy, leftBy :: Int -> Rel
 rightBy = dimensional One . Rel
@@ -28,8 +28,8 @@ right, left :: Rel
 right = rightBy 1
 left  = leftBy  1
 
-row :: a -> Rel :*: Abs a
-row = dimensional (S One) . Abs
+rowAt :: a -> Rel :*: Abs a
+rowAt = dimensional (S One) . Abs
 
 belowBy, aboveBy :: Int -> Rel :*: Rel
 belowBy = dimensional (S One) . Rel
@@ -39,8 +39,8 @@ below, above :: Rel :*: Rel
 below = belowBy 1
 above = aboveBy 1
 
-level :: a -> Rel :*: Rel :*: Abs a
-level = dimensional (S (S One)) . Abs
+levelAt :: a -> Rel :*: Rel :*: Abs a
+levelAt = dimensional (S (S One)) . Abs
 
 inwardBy, outwardBy :: Int -> Rel :*: Rel :*: Rel
 inwardBy  = dimensional (S (S One)) . Rel
@@ -50,8 +50,8 @@ inward, outward :: Rel :*: Rel :*: Rel
 inward  = inwardBy  1
 outward = outwardBy 1
 
-space :: a -> Rel :*: Rel :*: Rel :*: Abs a
-space = dimensional (S (S (S One))) . Abs
+spaceAt :: a -> Rel :*: Rel :*: Rel :*: Abs a
+spaceAt = dimensional (S (S (S One))) . Abs
 
 anaBy, kataBy :: Int -> Rel :*: Rel :*: Rel :*: Rel
 anaBy  = dimensional (S (S (S One))) . Rel
