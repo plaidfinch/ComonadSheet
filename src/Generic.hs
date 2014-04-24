@@ -27,39 +27,39 @@ import Names
 
 class Take t where
    type CountFor t
-   type ListFrom t
-   take :: CountFor t -> t -> ListFrom t
+   type ListFrom t a
+   take :: CountFor t -> t a -> ListFrom t a
 
-instance Take (Tape a) where
-   type CountFor (Tape a) = Int
-   type ListFrom (Tape a) = [a]
+instance Take Tape where
+   type CountFor Tape = Int
+   type ListFrom Tape a = [a]
    take i t | i > 0 = focus t : S.take     (i - 1) (viewR t)
    take i t | i < 0 = focus t : S.take (abs i - 1) (viewL t)
    take _ _ = []
 
-instance (Take (f [a]), Functor f) => Take (Compose f Tape a) where
-   type CountFor (Compose f Tape a) = Int :*: CountFor (f [a])
-   type ListFrom (Compose f Tape a) = ListFrom (f [a])
+instance (Take t, Functor t) => Take (Compose t Tape) where
+   type CountFor (Compose f Tape) = Int :*: CountFor f
+   type ListFrom (Compose f Tape) a = ListFrom f [a]
    take (i :*: is) = take is . fmap (take i) . getCompose
 
-instance (Take (t a)) => Take (Indexed i t a) where
-  type CountFor (Indexed i t a) = CountFor (t a)
-  type ListFrom (Indexed i t a) = ListFrom (t a)
+instance (Take t) => Take (Indexed i t) where
+  type CountFor (Indexed i t) = CountFor t
+  type ListFrom (Indexed i t) a = ListFrom t a
   take i (Indexed _ t) = take i t
 
 class (Take t) => Window t where
-   window :: CountFor t -> CountFor t -> t -> ListFrom t
+   window :: CountFor t -> CountFor t -> t a -> ListFrom t a
 
-instance Window (Tape a) where
+instance Window Tape where
    window i j t =
       reverse (take (- (abs i)) t)
       ++ tail (take    (abs j)  t)
 
-instance (Window (f [a]), Functor f) => Window (Compose f Tape a) where
+instance (Window t, Functor t) => Window (Compose t Tape) where
    window (i :*: is) (j :*: js) =
       window is js . fmap (window i j) . getCompose
 
-instance (Window (t a)) => Window (Indexed i t a) where
+instance (Window t) => Window (Indexed i t) where
   window i i' (Indexed _ t) = window i i' t
 
 data Signed f a = Positive (f a)
