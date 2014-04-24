@@ -6,6 +6,7 @@ module All
    , module Tape
    , module Composition
    , module Peano
+   , module Cartesian
    , module Control.Comonad
    ) where
 
@@ -16,5 +17,8 @@ import Indexed
 import Tape
 import Composition
 import Peano
+import Cartesian
 
 import Control.Comonad
+
+import Prelude hiding ( take )

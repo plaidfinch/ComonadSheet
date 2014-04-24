@@ -25,9 +25,10 @@ data Indexed i t a =
           , unindexed :: t a
           } deriving ( Functor )
 
-type Indexes i t = ( Cross (Map Tape i)
-                   , TapesFromIndex i
-                   , Cartesian (Map Tape i) ~ t i )
+type Indexes i t =                  -- For i to index t...
+   ( Cross (Map Tape i)             -- We must be able to take the cartesian product of i's axes
+   , TapesFromIndex i               -- We must be able to actually create the tapes for i's axes
+   , Cartesian (Map Tape i) ~ t i ) -- The Cartesian product of i's axes must be the same type as (t i)
 
 instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
    extract      = extract . unindexed

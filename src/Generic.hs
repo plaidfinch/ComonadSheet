@@ -7,6 +7,7 @@
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE OverlappingInstances   #-}
 
 module Generic where
 
@@ -120,30 +121,47 @@ instance InsertCompose (Signed []) Tape where
    insertCompose (Negative (x : xs)) (Tape ls c rs) =
       Tape (S.prefix xs (Cons c ls)) x rs
 
+type family DimensionCount f where
+   DimensionCount (Indexed i t a) = ComposeCount (t a)
+   DimensionCount              a  = ComposeCount    a
+
+class CountDimension f where
+   countDimension :: f -> DimensionCount f
+instance (CountCompose (t a)) => CountDimension (Indexed i t a) where
+   countDimension (Indexed i t) = countCompose t
+instance (CountCompose (f (g a))) => CountDimension (Compose f g a) where
+   countDimension = countCompose
+instance (DimensionCount f ~ Zero) => CountDimension f where
+   countDimension _ = Zero
+
+asDimensionalAs :: (ComposeN (DimensionCount g) f, CountDimension g)
+                => f -> g -> NthCompose (DimensionCount g) f
+f `asDimensionalAs` g = composeN (countDimension g) f
+
 -- | This is a synonym for all the things which must be true in order to insert a list-like structure
 --   into some n-dimensional tape-like structure.
 type Insertable compList list tape a =
-   ( CountCompose (tape a)                                -- can we count tape's dimensionality (yes)?
-   , ComposeN (ComposeCount (tape a)) list                -- can we Compose the list that # of times?
-   , NthCompose (ComposeCount (tape a)) list ~ compList a -- then let (compList a) be the result of this,
-   , InsertCompose compList tape )                        -- and, can we insert that into the tape?
+   ( CountDimension (tape a)                                -- can we count tape's dimensionality (yes)?
+   , ComposeN (DimensionCount (tape a)) list                -- can we Compose the list that # of times?
+   , NthCompose (DimensionCount (tape a)) list ~ compList a -- then let (compList a) be result of this,
+   , InsertCompose compList tape )                          -- and, can we insert that into the tape?
 
 insert :: (Insertable c l t a) => l -> t a -> t a
-insert l t = insertCompose (l `asComposedAs` t) t
+insert l t = insertCompose (l `asDimensionalAs` t) t
 
-dimensionality :: (CountCompose t, WholeFromNat (S (ComposeCount t)))
-               => t -> NatToWhole (S (ComposeCount t))
-dimensionality = wholeFromNat . S . countCompose
+dimensionality :: (CountDimension t, WholeFromNat (S (DimensionCount t)))
+               => t -> NatToWhole (S (DimensionCount t))
+dimensionality = wholeFromNat . S . countDimension
 
-nTimes :: Int -> (a -> a) -> a -> a
-nTimes n = foldr (.) id . replicate n
+fpow :: Int -> (a -> a) -> a -> a
+fpow n = foldr (.) id . replicate n
 
 class Go r t where
    go :: r -> t a -> t a
 
 instance Go Rel Tape where
-   go (Rel r) | r > 0      = nTimes (abs r) moveR
-   go (Rel r) | otherwise  = nTimes (abs r) moveL
+   go (Rel r) | r > 0      = fpow (abs r) moveR
+   go (Rel r) | otherwise  = fpow (abs r) moveL
 
 instance (Functor t) => Go Rel (Compose t Tape) where
    go r = composedly (fmap (go r))
