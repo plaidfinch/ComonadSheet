@@ -17,17 +17,18 @@ type family Cartesian f where
    Cartesian (f a)        = f a
 
 type family CartesianIter f as bs where
-   CartesianIter f (g a :*: as) bs = CartesianIter (Compose f g) as (a :*: bs)
-   CartesianIter f (t a) bs = Compose f t (a :*: bs)
+   CartesianIter f (t a :*: as) bs = CartesianIter (Compose f t) as (a :*: bs)
+   CartesianIter f (t a)        bs = Compose f t (a :*: bs)
 
 class Cross a where
    cross :: a -> Cartesian a
 instance Cross (Tape a) where
    cross = id
-instance (CartesianIter t as a ~ Compose s t (a :*: bs), Cartesian as ~ s bs, Cross as, Applicative s, Applicative t) => Cross (t a :*: as) where
-   cross (a :*: as) = cross2 a (cross as)
+instance ( Cartesian (t a :*: ts) ~ Compose s t (a :*: as) , Cartesian ts ~ s as
+         , Cross ts, Applicative s, Applicative t ) => Cross (t a :*: ts) where
+   cross (t :*: ts) = cross2 t (cross ts)
 
 -- | Cartesian product space for two Tapes.
-cross2 :: (Applicative t, Applicative t') => t a -> t' b -> Compose t' t (a :*: b)
+cross2 :: (Applicative t, Applicative s) => t a -> s b -> Compose s t (a :*: b)
 cross2 a b = (:*:) <$> Compose (     pure a)
                    <*> Compose (fmap pure b)
