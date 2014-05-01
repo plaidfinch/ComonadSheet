@@ -18,7 +18,10 @@ import Tape
 import Composition
 import Peano
 import Cartesian
+
 import Unchecked
+import qualified Unchecked as U
+import qualified Checked   as C
 
 import NumericInstances
 
