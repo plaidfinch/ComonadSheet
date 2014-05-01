@@ -33,7 +33,7 @@ runCell :: (r -> Extract f) -> CellExpr r a b -> f a -> b
 runCell f = runAp $ \(CellRef r) -> f r
 
 -- | Constructs a 'CellExpr' which evaluates to whatever is at index r.
-cell :: r -> CellExpr r b b
+cell :: r -> CellExpr r a a
 cell = liftAp . CellRef
 
 -- | Constructs a 'CellExpr' which evaluates to a Traversable of the referents of the references given.
