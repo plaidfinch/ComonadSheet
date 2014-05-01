@@ -44,6 +44,8 @@ instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
 -- and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i t)),
 -- as would be necessary to implement distribute (what would you do if f = Maybe, for instance?).
 
+-- TODO: try to define TapesFromIndex in terms of a generic heterogeneous map function
+
 class TapesFromIndex i where
    tapesFromIndex :: i -> Map Tape i
 instance (Map Tape a ~ Tape a, Enum a) => TapesFromIndex a where

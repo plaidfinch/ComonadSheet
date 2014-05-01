@@ -18,6 +18,9 @@ import Tape
 import Composition
 import Peano
 import Cartesian
+import Unchecked
+
+import NumericInstances
 
 import Control.Comonad
 

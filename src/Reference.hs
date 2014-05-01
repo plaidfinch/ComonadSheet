@@ -24,6 +24,8 @@ type family a & b where
    Abs a      & Rel        = Abs a
    Rel        & Rel        = Rel
 
+-- TODO: turn this into a Combine family/class that takes 2 rel/abs's and makes one, and then an & family/class that zips together two lists
+
 infixr 4 &
 class Combine a b where
    (&) :: a -> b -> a & b
