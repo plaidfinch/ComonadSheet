@@ -117,6 +117,8 @@ instance ( Take (Replicate (NestedCount ts) Relative) (Nested ts)
    type ListFrom (Indexed ts) a = ListFrom (Nested ts) a
    take r (Indexed i t) = take (heterogenize id (getMovement r i)) t
 
+-- TODO: Add a View class which lets you extract nested streams from tapes.
+
 tapeGo :: Ref Relative -> Tape a -> Tape a
 tapeGo (Rel r) = fpow (abs r) (if r > 0 then moveR else moveL)
    where fpow n = foldr (.) id . replicate n -- iterate a function n times

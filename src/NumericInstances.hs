@@ -3,9 +3,6 @@
 module NumericInstances where
 
 import Control.Applicative
---import Data.String
---import Data.Digits
---import Data.Char
 
 instance (Applicative f, Num a) => Num (f a) where
    (+)  = liftA2 (+)
@@ -36,15 +33,3 @@ instance (Enum (f a), Real (f a), Applicative f, Integral a) => Integral (f a) w
    x `quotRem` y = (x `quot` y, x `rem` y)
    x `divMod`  y = (x `div`  y, x `mod` y)
    toInteger     = error "toInteger: can't go from arbitrary functor to integer"
-
---newtype GodelString = GodelString { fromGodelString :: Int } deriving (Eq, Ord, Enum, Num)
-
---instance IsString GodelString where
---   fromString s =
---      if all (liftA2 (&&) ('A' <=) (<= 'Z')) s
---         then GodelString . unDigits 26 .
---              map (subtract (pred (fromEnum 'A')) . fromEnum) $ s
---         else error "fromString: all characters in string must be in range A-Z"
-
---instance Show GodelString where
---   show = map (chr . (+ (pred (fromEnum 'A')))) . digits 26 . fromGodelString
