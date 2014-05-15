@@ -7,8 +7,6 @@ import Control.Comonad
 import Control.Arrow
 import Control.Applicative
 import Data.Distributive
-import Data.Traversable
-import Data.Functor.Compose
 
 import Stream ( Stream(..) )
 import qualified Stream as S
@@ -81,32 +79,6 @@ instance Distributive Tape where
 moveL, moveR :: Tape a -> Tape a
 moveL (Tape (Cons l ls) c rs) = Tape ls l (Cons c rs)
 moveR (Tape ls c (Cons r rs)) = Tape (Cons c ls) r rs
-
--- | This is just like the @Applicative@ instance given for @Compose@, but it has the additional
---   @Distributive@ constraint because that's necessary for the whole thing to be a comonad.
-instance (ComonadApply f, ComonadApply g, Distributive g) => ComonadApply (Compose f g) where
-   Compose f <@> Compose x =
-      Compose ((<@>) <$> f <@> x)
-
--- | Given a @Compose f g@ where @f@ and @g@ are comonads, we can define a sensible @Comonad@ instance
---   for the whole. But! It requires that g be @Distributive@ in addition, which enables us to permute
---   the layerings of comonads to produce the proper result.
---
---   This might be an overly-general instance, because it would conflict with another possible
---   (valid) definition for the composition of two comonads, but which requires constraints we can't
---   satisfy with the comonads we're using. Namely, you can also instantiate this instance if you
---   replace @fmap distribute@ with @fmap sequenceA@ (from @Data.Traversable@), and let the resulting
---   instance have the constraints @(Comonad f, Comonad g, Traversable f, Applicative g)@. Since not
---   all of our comonads in this project are applicative, and no infinite structure (e.g. @Tape@) has
---   a good (i.e. not returning bottom in unpredictable ways) definition of @Traversable@, using the
---   @Distributive@ constraint makes much more sense here.
-instance (Comonad f, Comonad g, Distributive g) => Comonad (Compose f g) where
-   extract   = extract . extract . getCompose
-   duplicate = fmap Compose . Compose -- wrap it again: f (g (f (g a))) -> Compose f g (Compose f g a)
-             . fmap distribute        -- swap middle two layers: f (f (g (g a))) -> f (g (f (g a)))
-             . duplicate              -- duplicate outer functor f: f (g (g a)) -> f (f (g (g a)))
-             . fmap duplicate         -- duplicate inner functor g: f (g a) -> f (g (g a))
-             . getCompose             -- unwrap it: Compose f g a -> f (g a) 
 
 -- | The tape of integers, with zero centered.
 ints :: Tape Integer

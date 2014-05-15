@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds     #-}
 
 module Names where
 
@@ -6,57 +7,50 @@ import Reference
 import Peano
 import Tape
 import Indexed
-import Composition
+import Nested
+import TaggedList
+import CountedList
 
-type Tape2 = Compose Tape  Tape
-type Tape3 = Compose Tape2 Tape
-type Tape4 = Compose Tape3 Tape
+columnAt :: Int -> TaggedList Ref (Absolute :-: Nil)
+columnAt = dimensional (Succ Zero) . Abs
 
-type ITape  c       = Indexed (Abs c)                               Tape
-type ITape2 c r     = Indexed (Abs c :*: Abs r)                     Tape2
-type ITape3 c r l   = Indexed (Abs c :*: Abs r :*: Abs l)           Tape3
-type ITape4 c r l s = Indexed (Abs c :*: Abs r :*: Abs l :*: Abs s) Tape4
-
-columnAt :: a -> Abs a
-columnAt = dimensional One . Abs
-
-rightBy, leftBy :: Int -> Rel
-rightBy = dimensional One . Rel
+rightBy, leftBy :: Int -> TaggedList Ref (Relative :-: Nil)
+rightBy = dimensional (Succ Zero) . Rel
 leftBy = rightBy . negate
 
-right, left :: Rel
+right, left :: TaggedList Ref (Relative :-: Nil)
 right = rightBy 1
 left  = leftBy  1
 
-rowAt :: a -> Rel :*: Abs a
-rowAt = dimensional (S One) . Abs
+rowAt :: Int -> TaggedList Ref (Relative :-: Absolute :-: Nil)
+rowAt = dimensional (Succ (Succ Zero)) . Abs
 
-belowBy, aboveBy :: Int -> Rel :*: Rel
-belowBy = dimensional (S One) . Rel
+belowBy, aboveBy :: Int -> TaggedList Ref (Relative :-: Relative :-: Nil)
+belowBy = dimensional (Succ (Succ Zero)) . Rel
 aboveBy = belowBy . negate
 
-below, above :: Rel :*: Rel
+below, above :: TaggedList Ref (Relative :-: Relative :-: Nil)
 below = belowBy 1
 above = aboveBy 1
 
-levelAt :: a -> Rel :*: Rel :*: Abs a
-levelAt = dimensional (S (S One)) . Abs
+levelAt :: Int -> TaggedList Ref (Relative :-: Relative :-: Absolute :-: Nil)
+levelAt = dimensional (Succ (Succ (Succ Zero))) . Abs
 
-inwardBy, outwardBy :: Int -> Rel :*: Rel :*: Rel
-inwardBy  = dimensional (S (S One)) . Rel
+inwardBy, outwardBy :: Int -> TaggedList Ref (Relative :-: Relative :-: Relative :-: Nil)
+inwardBy  = dimensional (Succ (Succ (Succ Zero))) . Rel
 outwardBy = inwardBy . negate
 
-inward, outward :: Rel :*: Rel :*: Rel
+inward, outward :: TaggedList Ref (Relative :-: Relative :-: Relative :-: Nil)
 inward  = inwardBy  1
 outward = outwardBy 1
 
-spaceAt :: a -> Rel :*: Rel :*: Rel :*: Abs a
-spaceAt = dimensional (S (S (S One))) . Abs
+spaceAt :: Int -> TaggedList Ref (Relative :-: Relative :-: Relative :-: Absolute :-: Nil)
+spaceAt = dimensional (Succ (Succ (Succ (Succ Zero)))) . Abs
 
-anaBy, kataBy :: Int -> Rel :*: Rel :*: Rel :*: Rel
-anaBy  = dimensional (S (S (S One))) . Rel
+anaBy, kataBy :: Int -> TaggedList Ref (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
+anaBy  = dimensional (Succ (Succ (Succ (Succ Zero)))) . Rel
 kataBy = anaBy . negate
 
-ana, kata :: Rel :*: Rel :*: Rel :*: Rel
+ana, kata :: TaggedList Ref (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
 ana  = anaBy  1
 kata = kataBy 1

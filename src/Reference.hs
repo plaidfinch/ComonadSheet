@@ -1,89 +1,97 @@
-{-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE TypeOperators              #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Reference where
 
 import Peano
+import CountedList
+import TaggedList
 
-newtype Rel   = Rel Int deriving ( Show , Eq , Ord , Enum , Num )
-newtype Abs x = Abs x   deriving ( Show , Eq , Ord , Enum , Num , Functor )
+import Control.Applicative
+import Data.List ( intercalate )
 
-infixr 5 :*:
-data a :*: b = a :*: b deriving ( Show , Eq , Ord )
+import Prelude hiding ( replicate , length )
 
-type family a & b where
-   (a :*: as) & (b :*: bs) = (a & b) :*: (as & bs)
-   a          & (b :*: bs) = (a & b) :*: bs
-   (a :*: as) &  b         = (a & b) :*: as
-   Rel        & Abs b      = Abs b
-   Abs a      & Rel        = Abs a
-   Rel        & Rel        = Rel
+data RefType = Relative | Absolute
 
--- TODO: turn this into a Combine family/class that takes 2 rel/abs's and makes one, and then an & family/class that zips together two lists
+data Ref (t :: RefType) where
+   Rel :: Int -> Ref Relative
+   Abs :: Int -> Ref Absolute
+deriving instance Show (Ref t)
+
+type family Combine a b where
+   Combine Relative Absolute = Absolute
+   Combine Absolute Relative = Absolute
+   Combine Relative Relative = Relative
+
+class CombineRefs a b where
+   combine :: Ref a -> Ref b -> Ref (Combine a b)
+instance CombineRefs Absolute Relative where
+   combine (Abs a) (Rel b) = Abs (a + b)
+instance CombineRefs Relative Absolute where
+   combine (Rel a) (Abs b) = Abs (a + b)
+instance CombineRefs Relative Relative where
+   combine (Rel a) (Rel b) = Rel (a + b)
 
 infixr 4 &
-class Combine a b where
-   (&) :: a -> b -> a & b
-instance Combine Rel Rel where
-   (Rel a) & (Rel b) = Rel (a + b)
-instance (Enum b) => Combine Rel (Abs b) where
-   (Rel r) & (Abs b) = Abs $ toEnum (r + fromEnum b)
-instance (Enum a) => Combine (Abs a) Rel where
-   (Abs a) & (Rel r) = Abs $ toEnum (r + fromEnum a)
-instance (Combine Rel b) => Combine Rel (b :*: bs) where
-   a & (b :*: bs) = (a & b) :*: bs
-instance (Combine a Rel) => Combine (a :*: as) Rel where
-   (a :*: as) & b = (a & b) :*: as
-instance (Combine (Abs a) b) => Combine (Abs a) (b :*: bs) where
-   a & (b :*: bs) = (a & b) :*: bs
-instance (Combine a (Abs b)) => Combine (a :*: as) (Abs b) where
-   (a :*: as) & b = (a & b) :*: as
-instance (Combine a b, Combine as bs) => Combine (a :*: as) (b :*: bs) where
-   (a :*: as) & (b :*: bs) = (a & b) :*: (as & bs)
+type family a & b where
+   (a :-: as) & (b :-: bs) = Combine a b :-: (as & bs)
+   Nil        & bs         = bs
+   as         & Nil        = as
 
-type family DiffOf a b where
-   DiffOf (a :*: as) (b :*: bs) = DiffOf a b :*: DiffOf as bs
-   DiffOf  a         (b :*: bs) = DiffOf a b
-   DiffOf (a :*: as)  b         = DiffOf a b
-   DiffOf (Abs a)     Rel       = Rel
-   DiffOf  Rel       (Abs a)    = Rel
-   DiffOf (Abs a)    (Abs a)    = Rel
+type RefList = TaggedList Ref
 
-class Diff a b where
-   diff :: a -> b -> DiffOf a b
-instance (Enum a) => Diff (Abs a) (Abs a) where
-   diff (Abs a) (Abs b) = Rel (fromEnum a - fromEnum b)
-instance Diff (Abs a) Rel where
-   diff _ r = r
-instance Diff Rel (Abs a) where
-   diff r _ = r
-instance (Diff a Rel) => Diff (a :*: as) Rel where
-   diff (a :*: as) b = diff a b
-instance (Diff Rel b) => Diff Rel (b :*: bs) where
-   diff a (b :*: bs) = diff a b
-instance (Diff a (Abs b)) => Diff (a :*: as) (Abs b) where
-   diff (a :*: as) b = diff a b
-instance (Diff (Abs a) b) => Diff (Abs a) (b :*: bs) where
-   diff a (b :*: bs) = diff a b
-instance (Diff a b, Diff as bs) => Diff (a :*: as) (b :*: bs) where
-   diff (a :*: as) (b :*: bs) = diff a b :*: diff as bs
+class CombineRefLists as bs where
+   (&) :: RefList as -> RefList bs -> RefList (as & bs)
+instance (CombineRefs a b, CombineRefLists as bs)
+      => CombineRefLists (a :-: as) (b :-: bs) where (a :-: as) & (b :-: bs) = combine a b :-: (as & bs)
+instance CombineRefLists Nil        (b :-: bs) where TNil       & bs         = bs
+instance CombineRefLists (a :-: as) Nil        where as         & TNil       = as
+instance CombineRefLists Nil        Nil        where TNil       & TNil       = TNil
 
-type family InDimension n a where
-   InDimension One a   = a
-   InDimension (S n) a = Rel :*: InDimension n a
+merge :: (Applicative (CountedList n))
+      => CountedList n (Ref Relative)
+      -> CountedList n (Ref Absolute)
+      -> CountedList n (Ref Absolute)
+merge rs as = (\(Rel r) (Abs a) -> Abs (r + a)) <$> rs <*> as
 
-class Dimensional n a where
-   dimensional :: n -> a -> InDimension n a
-instance Dimensional One a where
-   dimensional _ a = a
-instance (Dimensional n a) => Dimensional (S n) a where
-   dimensional (S n) a = Rel 0 :*: dimensional n a
+diff :: CountedList n (Either (Ref Relative) (Ref Absolute))
+     -> CountedList n (Ref Absolute)
+     -> CountedList n (Ref Relative)
+diff (Left  (Rel r) ::: rs) (Abs i ::: is) = Rel  r      ::: diff rs is
+diff (Right (Abs r) ::: rs) (Abs i ::: is) = Rel (r - i) ::: diff rs is
+diff CNil _  = CNil
+diff _  CNil = CNil
 
-type family Map f a where
-   Map f (a :*: b) = (f a :*: Map f b)
-   Map f  a        = f a
+getMovement :: (n ~ PadNatTo n (Length ts), Pad n (Length ts))
+            => RefList ts -> CountedList n (Ref Absolute) -> CountedList n (Ref Relative)
+getMovement refs coords =
+   padTo (count coords) (Left (Rel 0)) (homogenize eitherFromRef refs) `diff` coords
+
+heterogenize :: (a -> f t) -> CountedList n a -> TaggedList f (Replicate n t)
+heterogenize _ CNil       = TNil
+heterogenize f (x ::: xs) = f x :-: heterogenize f xs
+
+homogenize :: (forall t. f t -> a) -> TaggedList f ts -> CountedList (Length ts) a
+homogenize _ TNil       = CNil
+homogenize f (x :-: xs) = f x ::: homogenize f xs
+
+eitherFromRef :: Ref t -> Either (Ref Relative) (Ref Absolute)
+eitherFromRef (Rel r) = Left  (Rel r)
+eitherFromRef (Abs a) = Right (Abs a)
+
+dimensional :: Natural (Succ n) -> Ref t -> RefList (Tack t (Replicate n Relative))
+dimensional (Succ n) a = tack a (heterogenize id (replicate n (Rel 0)))
+
+instance Show (RefList ts) where
+   showsPrec p xs = showParen (p > 10) $
+      (showString $ ( intercalate " :-: "
+                    $ map (either show show)
+                    $ unCount
+                    $ homogenize eitherFromRef xs ) ++ " :-: TNil")

@@ -4,7 +4,8 @@
 module Unchecked where
 
 import Generic
-import Composition
+import Reference
+import Nested
 import Indexed
 
 import Data.Function
@@ -15,14 +16,18 @@ import Data.Traversable
 evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 evaluate fs = fix $ (fs <@>) . duplicate
 
-cell :: (Comonad w, Go r w) => r -> w a -> a
+cell :: (Comonad w, Go r w) => RefList r -> w a -> a
 cell = (extract .) . go
 
-cells :: (Traversable t, Comonad w, Go r w) => t r -> w a -> t a
+cells :: (Traversable t, Comonad w, Go r w) => t (RefList r) -> w a -> t a
 cells = traverse cell
 
-sheet :: (Insertable c l t (t a -> a), Applicative t) => a -> l -> t (t a -> a)
+sheet :: ( InsertNested l t , Applicative t
+         , DimensionalAs x (t (b -> a)) , AsDimensionalAs x (t (b -> a)) ~ l (b -> a) )
+         => a -> x -> t (b -> a)
 sheet background functions = insert functions (pure (const background))
 
-indexedSheet :: (Insertable c l t (t a -> a), Applicative t) => i -> a -> l -> Indexed i t (t a -> a)
+indexedSheet :: ( InsertNested l (Nested ts) , Applicative (Nested ts)
+                , NestedAs a1 (Nested ts (b -> a)) , AsNestedAs a1 (Nested ts (b -> a)) ~ l (b -> a))
+                => Coordinate (NestedCount ts) -> a -> a1 -> Indexed ts (b -> a)
 indexedSheet i = (Indexed i .) . sheet

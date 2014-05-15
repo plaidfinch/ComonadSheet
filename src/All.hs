@@ -4,10 +4,13 @@ module All
    , module Reference
    , module Indexed
    , module Tape
-   , module Composition
+   , module Nested
    , module Peano
-   , module Cartesian
+   , module Unchecked
+   , module TaggedList
+   , module CountedList
    , module Control.Comonad
+   , module Data.Distributive
    ) where
 
 import Names
@@ -15,9 +18,11 @@ import Generic
 import Reference
 import Indexed
 import Tape
-import Composition
+import Nested
 import Peano
-import Cartesian
+import TaggedList
+import CountedList
+--import Cartesian
 
 import Unchecked
 import qualified Unchecked as U
@@ -26,5 +31,6 @@ import qualified Checked   as C
 import NumericInstances
 
 import Control.Comonad
+import Data.Distributive
 
 import Prelude hiding ( take )
