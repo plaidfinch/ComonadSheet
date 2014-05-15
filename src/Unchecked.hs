@@ -28,6 +28,6 @@ sheet :: ( InsertNested l t , Applicative t
 sheet background functions = insert functions (pure (const background))
 
 indexedSheet :: ( InsertNested l (Nested ts) , Applicative (Nested ts)
-                , NestedAs a1 (Nested ts (b -> a)) , AsNestedAs a1 (Nested ts (b -> a)) ~ l (b -> a))
-                => Coordinate (NestedCount ts) -> a -> a1 -> Indexed ts (b -> a)
+                , NestedAs x (Nested ts (b -> a)) , AsNestedAs x (Nested ts (b -> a)) ~ l (b -> a))
+                => Coordinate (NestedCount ts) -> a -> x -> Indexed ts (b -> a)
 indexedSheet i = (Indexed i .) . sheet

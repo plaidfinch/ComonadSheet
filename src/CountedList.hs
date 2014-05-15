@@ -3,6 +3,8 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE TypeOperators         #-}
 
 module CountedList where
 
@@ -36,6 +38,20 @@ unCount (x ::: xs) = x : unCount xs
 replicate :: Natural n -> x -> CountedList n x
 replicate Zero _ = CNil
 replicate (Succ n) x = x ::: replicate n x
+
+type family LessThanOrEqual a b where
+   LessThanOrEqual Zero (Succ m) = True
+   LessThanOrEqual (Succ n) (Succ m) = LessThanOrEqual n m
+   LessThanOrEqual x y = False
+
+type a <= b = (LessThanOrEqual a b ~ True)
+
+class Nth n m where
+   nth :: (n <= m) => Natural n -> CountedList m a -> a
+instance Nth Zero (Succ n) where
+   nth _ (a ::: _) = a
+instance (Nth n m) => Nth (Succ n) (Succ m) where
+   nth (Succ n) (_ ::: as) = nth n as
 
 instance Functor (CountedList n) where
    fmap f CNil       = CNil
