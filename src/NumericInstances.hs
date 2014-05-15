@@ -15,12 +15,6 @@ instance (Applicative f, Num a) => Num (f a) where
    signum = fmap signum
    fromInteger = pure . fromInteger
 
-instance (Enum a, Applicative f) => Enum (f a) where
-   succ           = fmap succ
-   pred           = fmap pred
-   toEnum         = pure . toEnum
-   fromEnum       = error "fromEnum: can't go from arbitrary functor to integer"
-
 instance (Ord (f a), Applicative f, Real a) => Real (f a) where
    toRational     = error "toRational: can't go from arbitrary functor to rational"
 
