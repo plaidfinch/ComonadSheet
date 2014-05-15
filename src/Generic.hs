@@ -83,17 +83,22 @@ instance (NestedAs x (Nested ts y)) => DimensionalAs x (Indexed ts y) where
 insert :: (DimensionalAs x (t a), InsertNested l t, AsDimensionalAs x (t a) ~ l a) => x -> t a -> t a
 insert l t = insertNested (l `asDimensionalAs` t) t
 
-fpow :: Int -> (a -> a) -> a -> a
-fpow n = foldr (.) id . replicate n
-
 tapeTake :: Ref Relative -> Tape a -> [a]
-tapeTake (Rel r) t | r > 0 = focus t : S.take      r (viewR t)
+tapeTake (Rel r) t | r > 0 = focus t : S.take      r  (viewR t)
 tapeTake (Rel r) t | r < 0 = focus t : S.take (abs r) (viewL t)
 tapeTake _ _ = []
 
 class Take r t where
    type ListFrom t a
    take :: RefList r -> t a -> ListFrom t a
+
+instance Take Nil (Nested (Flat Tape)) where
+   type ListFrom (Nested (Flat Tape)) a = [a]
+   take _ _ = []
+
+instance (Take Nil (Nested ts), Functor (Nested ts)) => Take Nil (Nested (Nest ts Tape)) where
+   type ListFrom (Nested (Nest ts Tape)) a = ListFrom (Nested ts) [a]
+   take _ = take (Rel 0 :-: TNil)
 
 instance Take (Relative :-: Nil) (Nested (Flat Tape)) where
    type ListFrom (Nested (Flat Tape)) a = [a]
@@ -110,16 +115,15 @@ instance ( Take (Replicate (NestedCount ts) Relative) (Nested ts)
    take r (Indexed i t) = take (heterogenize id (getMovement r i)) t
 
 tapeGo :: Ref Relative -> Tape a -> Tape a
-tapeGo (Rel r) | r > 0      = fpow (abs r) moveR
-tapeGo (Rel r) | otherwise  = fpow (abs r) moveL
+tapeGo (Rel r) = fpow (abs r) (if r > 0 then moveR else moveL)
+   where fpow n = foldr (.) id . replicate n
 
 class Go r t where
    go :: RefList r -> t a -> t a
 
 instance Go (Relative :-: Nil) (Nested (Flat Tape)) where
    go (r :-: _) (Flat t) = Flat $ tapeGo r t
-
--- This instance means that we can go to a coordinate with fewer dimensions specified than the space we're moving in has -- we don't do this for Take, because it doesn't make sense to not specify a dimension for Take.
+   
 instance Go Nil (Nested ts) where go _ = id
 
 instance (Go rs (Nested ts), Functor (Nested ts)) => Go (Relative :-: rs) (Nested (Nest ts Tape)) where
