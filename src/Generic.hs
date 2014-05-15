@@ -4,8 +4,8 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE UndecidableInstances   #-}
 {-# LANGUAGE ConstraintKinds        #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 module Generic where
 
