@@ -36,18 +36,10 @@ unCount CNil       = []
 unCount (x ::: xs) = x : unCount xs
 
 replicate :: Natural n -> x -> CountedList n x
-replicate Zero _ = CNil
+replicate Zero     _ = CNil
 replicate (Succ n) x = x ::: replicate n x
 
-type family LessThanOrEqual a b where
-   LessThanOrEqual Zero Zero         = True
-   LessThanOrEqual Zero (Succ m)     = True
-   LessThanOrEqual (Succ n) (Succ m) = LessThanOrEqual n m
-   LessThanOrEqual x y               = False
-
-type a <= b = (LessThanOrEqual a b ~ True)
-
-class (n <= m) => Nth n m where
+class (n < m) => Nth n m where
    nth :: Natural n -> CountedList m a -> a
 instance Nth Zero (Succ n) where
    nth _ (a ::: _) = a
