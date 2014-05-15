@@ -112,7 +112,7 @@ instance ( Functor (Nested ts), Take rs (Nested ts) )
    take (r :-: rs) (Nest t) = take rs . fmap (tapeTake r) $ t
 
 instance ( Take (Replicate (NestedCount ts) Relative) (Nested ts)
-         , Paddable (NestedCount ts) (Length r))
+         , Pad (NestedCount ts) (Length r))
          => Take r (Indexed ts) where
    type ListFrom (Indexed ts) a = ListFrom (Nested ts) a
    take r (Indexed i t) = take (heterogenize id (getMovement r i)) t
@@ -135,7 +135,7 @@ instance (Go rs (Nested ts), Functor (Nested ts)) => Go (Relative :-: rs) (Neste
    go (r :-: rs) (Nest t) = Nest . go rs . fmap (tapeGo r) $ t
 
 instance ( Go (Replicate (NestedCount ts) Relative) (Nested ts)
-         , Paddable (NestedCount ts) (Length r)
+         , Pad (NestedCount ts) (Length r)
          , Applicative (CountedList (NestedCount ts)))
          => Go r (Indexed ts) where
    go r (Indexed i t) =
