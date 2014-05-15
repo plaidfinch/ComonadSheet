@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeOperators         #-}
 
 module CountedList where
@@ -11,9 +12,9 @@ module CountedList where
 import Peano
 
 import Control.Applicative
-import Data.List hiding ( replicate )
+import Data.List hiding ( replicate , zip )
 
-import Prelude hiding ( replicate )
+import Prelude hiding ( replicate , zip )
 
 infixr 5 :::
 
@@ -50,19 +51,20 @@ class (m <= n) => Pad n m where
    padTo :: Natural n -> x -> CountedList m x -> CountedList n x
 instance Pad Zero Zero where
    padTo _ _ _ = CNil
-instance (Applicative (CountedList n)) => Pad (Succ n) Zero where
-   padTo n x CNil = pure x
-instance (Applicative (CountedList n), Pad n m) => Pad (Succ n) (Succ m) where
+instance Pad (Succ n) Zero where
+   padTo n x CNil = replicate n x
+instance (Pad n m) => Pad (Succ n) (Succ m) where
    padTo (Succ n) x (y ::: ys) = y ::: padTo n x ys
+
+zip :: CountedList n a -> CountedList n b -> CountedList n (a,b)
+zip (a ::: as) (b ::: bs) = (a,b) ::: zip as bs
+zip CNil _ = CNil
+zip _ CNil = CNil
 
 instance Functor (CountedList n) where
    fmap f CNil       = CNil
    fmap f (a ::: as) = f a ::: fmap f as
 
-instance Applicative (CountedList Zero) where
-   pure _  = CNil
-   _ <*> _ = CNil
-
-instance (Applicative (CountedList n)) => Applicative (CountedList (Succ n)) where
-   pure x = x ::: pure x
-   (a ::: as) <*> (b ::: bs) = (a b) ::: (as <*> bs)
+instance (ReifyNatural n) => Applicative (CountedList n) where
+   pure x    = replicate (reifyNatural :: Natural n) x
+   fs <*> xs = uncurry id <$> zip fs xs

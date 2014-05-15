@@ -136,7 +136,7 @@ instance (Go rs (Nested ts), Functor (Nested ts)) => Go (Relative :-: rs) (Neste
 
 instance ( Go (Replicate (NestedCount ts) Relative) (Nested ts)
          , Pad (NestedCount ts) (Length r)
-         , Applicative (CountedList (NestedCount ts)))
+         , ReifyNatural (NestedCount ts) )
          => Go r (Indexed ts) where
    go r (Indexed i t) =
       let move = getMovement r i

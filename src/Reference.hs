@@ -63,7 +63,7 @@ instance CombineRefLists Nil        (b :-: bs) where TNil       & bs         = b
 instance CombineRefLists (a :-: as) Nil        where as         & TNil       = as
 instance CombineRefLists Nil        Nil        where TNil       & TNil       = TNil
 
-merge :: (Applicative (CountedList n))
+merge :: (ReifyNatural n)
       => CountedList n (Ref Relative)
       -> CountedList n (Ref Absolute)
       -> CountedList n (Ref Absolute)
