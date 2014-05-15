@@ -1,4 +1,7 @@
-{-# LANGUAGE FlexibleInstances , FlexibleContexts , UndecidableInstances , OverlappingInstances #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE OverlappingInstances #-}
 
 module NumericInstances where
 
