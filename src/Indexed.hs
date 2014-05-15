@@ -1,8 +1,4 @@
-{-# LANGUAGE DeriveFunctor         #-}
-{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE UndecidableInstances  #-}
@@ -21,7 +17,7 @@ import Tape
 import Reference
 import Nested
 import CountedList
---import Cartesian
+import Cartesian
 
 type Coordinate n = CountedList n (Ref Absolute)
 
@@ -32,33 +28,16 @@ data Indexed ts a =
 instance (Functor (Nested ts)) => Functor (Indexed ts) where
    fmap f (Indexed i t) = Indexed i (fmap f t)
 
---type Indexes i t =                  -- For i to index t...
---   ( Cross (Map Tape i)             -- We must be able to take the cartesian product of i's axes
---   , TapesFromIndex i               -- We must be able to actually create the tapes for i's axes
---   , Cartesian (Map Tape i) ~ t i ) -- The Cartesian product of i's axes must be the same type as (t i)
+type Indexable ts = ( Cross (NestedCount ts) Tape , ts ~ NestedNTimes (NestedCount ts) Tape )
 
---instance (ComonadApply t, Indexes i t) => Comonad (Indexed i t) where
---   extract      = extract . unindexed
---   duplicate it = Indexed (index it) $
---                     Indexed <$> indices (index it)
---                             <@> duplicate (unindexed it)
+indices :: (Cross n Tape) => Coordinate n -> Nested (NestedNTimes n Tape) (Coordinate n)
+indices = cross . fmap enumerate
 
---instance (ComonadApply t, Indexes i t) => ComonadApply (Indexed i t) where
---   (Indexed i fs) <@> (Indexed _ xs) = Indexed i (fs <@> xs)
+instance (ComonadApply (Nested ts), Indexable ts) => Comonad (Indexed ts) where
+   extract      = extract . unindexed
+   duplicate it = Indexed (index it) $
+                     Indexed <$> indices (index it)
+                             <@> duplicate (unindexed it)
 
--- Notice that we don't have any instances of Applicative or Distributive for Indexed.
--- This is because, respectively, there's no sensible way to satisfy Applicative's interchange law,
--- and given an arbitrary functor f, there's no way to lift the index up out of an (f (Indexed i t)),
--- as would be necessary to implement distribute (what would you do if f = Maybe, for instance?).
-
--- TODO: try to define TapesFromIndex in terms of a generic heterogeneous map function
-
---class TapesFromIndex i where
---   tapesFromIndex :: i -> Map Tape i
---instance (Map Tape a ~ Tape a, Enum a) => TapesFromIndex a where
---   tapesFromIndex a = enumerate a
---instance (Enum a, TapesFromIndex as) => TapesFromIndex (a :*: as) where
---   tapesFromIndex (a :*: as) = enumerate a :*: tapesFromIndex as
-
---indices :: (Cross (Map Tape a), TapesFromIndex a) => a -> Cartesian (Map Tape a)
---indices = cross . tapesFromIndex
+instance (ComonadApply (Nested ts), Indexable ts) => ComonadApply (Indexed ts) where
+   (Indexed i fs) <@> (Indexed _ xs) = Indexed i (fs <@> xs)

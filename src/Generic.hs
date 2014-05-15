@@ -60,16 +60,18 @@ class InsertNested l t where
 instance (InsertBase l t) => InsertNested (Nested (Flat l)) (Nested (Flat t)) where
    insertNested (Flat l) (Flat t) = Flat $ insertBase l t
 
-instance (InsertBase l t, InsertNested (Nested ls) (Nested ts), Functor (Nested ls), Applicative (Nested ts)) => InsertNested (Nested (Nest ls l)) (Nested (Nest ts t)) where
+instance ( InsertBase l t , InsertNested (Nested ls) (Nested ts)
+         , Functor (Nested ls) , Applicative (Nested ts) )
+         => InsertNested (Nested (Nest ls l)) (Nested (Nest ts t)) where
    insertNested (Nest l) (Nest t) =
-      Nest $ insertNested (fmap insertBase l) (pure id) <*> t
+      Nest $ insertNested (insertBase <$> l) (pure id) <*> t
 
 instance (InsertNested l (Nested ts)) => InsertNested l (Indexed ts) where
    insertNested l (Indexed i t) = Indexed i (insertNested l t)
 
 type family AsDimensionalAs x y where
    x `AsDimensionalAs` (Indexed ts a) = x `AsNestedAs` (Nested ts a)
-   x `AsDimensionalAs` y             = x `AsNestedAs` y
+   x `AsDimensionalAs` y              = x `AsNestedAs` y
 
 class DimensionalAs x y where
    asDimensionalAs :: x -> y -> x `AsDimensionalAs` y
@@ -104,7 +106,8 @@ instance Take (Relative :-: Nil) (Nested (Flat Tape)) where
    type ListFrom (Nested (Flat Tape)) a = [a]
    take (r :-: _) (Flat t) = tapeTake r t
 
-instance (Functor (Nested ts), Take rs (Nested ts)) => Take (Relative :-: rs) (Nested (Nest ts Tape)) where
+instance ( Functor (Nested ts), Take rs (Nested ts) )
+         => Take (Relative :-: rs) (Nested (Nest ts Tape)) where
    type ListFrom (Nested (Nest ts Tape)) a = ListFrom (Nested ts) [a]
    take (r :-: rs) (Nest t) = take rs . fmap (tapeTake r) $ t
 
@@ -116,14 +119,14 @@ instance ( Take (Replicate (NestedCount ts) Relative) (Nested ts)
 
 tapeGo :: Ref Relative -> Tape a -> Tape a
 tapeGo (Rel r) = fpow (abs r) (if r > 0 then moveR else moveL)
-   where fpow n = foldr (.) id . replicate n
+   where fpow n = foldr (.) id . replicate n -- iterate a function n times
 
 class Go r t where
    go :: RefList r -> t a -> t a
 
 instance Go (Relative :-: Nil) (Nested (Flat Tape)) where
    go (r :-: _) (Flat t) = Flat $ tapeGo r t
-   
+
 instance Go Nil (Nested ts) where go _ = id
 
 instance (Go rs (Nested ts), Functor (Nested ts)) => Go (Relative :-: rs) (Nested (Nest ts Tape)) where

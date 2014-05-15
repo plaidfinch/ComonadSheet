@@ -103,3 +103,7 @@ type family NestedCount x where
 nestedCount :: Nested f x -> Natural (NestedCount f)
 nestedCount (Flat x) = Succ Zero
 nestedCount (Nest x) = Succ (nestedCount x)
+
+type family NestedNTimes n f where
+   NestedNTimes (Succ Zero) f = Flat f
+   NestedNTimes (Succ n)    f = Nest (NestedNTimes n f) f

@@ -1,34 +1,27 @@
 {-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE OverlappingInstances  #-}
 
 module Cartesian where
 
-import Data.Functor.Compose
 import Control.Applicative
 
 import Tape
-import Reference
+import CountedList
+import Nested
+import Peano
 
-type family Cartesian ts where
-   Cartesian (t a :*: ts) = CartesianIter ts t a
-   Cartesian (t a)        = t a
+class Cross n t where
+   cross :: CountedList n (t a) -> Nested (NestedNTimes n t) (CountedList n a)
 
-type family CartesianIter ts t as where
-   CartesianIter (t a :*: ts) f as = CartesianIter ts (Compose f t) (a :*: as)
-   CartesianIter (t a)        f as = Compose f t (a :*: as)
+instance (Functor t) => Cross (Succ Zero) t where
+   cross (t ::: _) =
+      Flat $ (::: CNil) <$> t
 
-class Cross a where
-   cross :: a -> Cartesian a
-instance Cross (Tape a) where
-   cross = id
-instance ( Cartesian (t a :*: ts) ~ Compose s t (a :*: as) , Cartesian ts ~ s as
-         , Cross ts, Applicative s, Applicative t ) => Cross (t a :*: ts) where
-   cross (t :*: ts) = cross2 t (cross ts)
+instance ( Cross (Succ n) t , Functor t
+         , Functor (Nested (NestedNTimes (Succ n) t)) )
+         => Cross (Succ (Succ n)) t where
+   cross (t ::: ts) =
+      Nest $ (\xs -> (::: xs) <$> t) <$> cross ts
 
--- | Cartesian product space for two Tapes.
-cross2 :: (Applicative t, Applicative s) => t a -> s b -> Compose s t (a :*: b)
-cross2 a b = (:*:) <$> Compose (     pure a)
-                   <*> Compose (fmap pure b)

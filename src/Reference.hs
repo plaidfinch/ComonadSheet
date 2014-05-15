@@ -25,6 +25,14 @@ data Ref (t :: RefType) where
    Abs :: Int -> Ref Absolute
 deriving instance Show (Ref t)
 
+instance Enum (Ref Relative) where
+   fromEnum (Rel r) = r
+   toEnum = Rel
+
+instance Enum (Ref Absolute) where
+   fromEnum (Abs r) = r
+   toEnum = Abs
+
 type family Combine a b where
    Combine Relative Absolute = Absolute
    Combine Absolute Relative = Absolute
