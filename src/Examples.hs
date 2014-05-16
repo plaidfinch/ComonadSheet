@@ -1,13 +1,12 @@
 module Examples where
 
-import All hiding ( replicate )
+import All
 
 import Control.Applicative
 import Prelude hiding ( repeat , take )
 import qualified Prelude as P
 
 import Stream ( Stream , repeat , (<:>) )
-import Cartesian
 
 pascal :: Tape2 Integer
 pascal = evaluate . sheet 0 $
@@ -49,7 +48,7 @@ printConway (c,r) generations universe =
    (separator >>) . mapM_ ((>> separator) . printFrame) $
       take (rightBy c & belowBy r & outwardBy generations) universe
    where
-      separator  = putStrLn $ "+" ++ replicate (succ c) '-' ++ "+"
+      separator  = putStrLn $ "+" ++ P.replicate (succ c) '-' ++ "+"
       printFrame = mapM_ $ putStrLn . ("|" ++) . (++ "|") . map showCell
       showCell X = ' '
       showCell O = '*'
