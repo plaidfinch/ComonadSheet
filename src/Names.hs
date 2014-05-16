@@ -12,94 +12,126 @@ import Nested
 import TaggedList
 import CountedList
 
-type Tape1 = Nested (NestedNTimes (Succ Zero) Tape)
-type ITape1 = Indexed (NestedNTimes (Succ Zero) Tape)
+-- One dimension...
 
-here1 :: RefList (Relative :-: Nil)
+type Rel1 = Relative :-: Nil
+type Nat1 = Succ Zero
+
+nat1 :: Natural Nat1
+nat1 = reifyNatural
+
+type Tape1  = Nested  (NestedNTimes Nat1 Tape)
+type ITape1 = Indexed (NestedNTimes Nat1 Tape)
+
+here1 :: RefList Rel1
 here1 = Rel 0 :-: TNil
 
-d1 :: (CombineRefLists (Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Nil) & x)
+d1 :: (CombineRefLists Rel1 x) => RefList x -> RefList (Rel1 & x)
 d1 = (here1 &)
 
 columnAt :: Int -> RefList (Absolute :-: Nil)
-columnAt = dimensional (Succ Zero) . Abs
+columnAt = dimensional nat1 . Abs
 
 column :: (Nth Zero (NestedCount ts)) => Indexed ts x -> Int
 column = (\(Abs a) -> a) . nth Zero . index
 
-rightBy, leftBy :: Int -> RefList (Relative :-: Nil)
-rightBy = dimensional (Succ Zero) . Rel
+rightBy, leftBy :: Int -> RefList Rel1
+rightBy = dimensional nat1 . Rel
 leftBy = rightBy . negate
 
-right, left :: RefList (Relative :-: Nil)
+right, left :: RefList Rel1
 right = rightBy 1
 left  = leftBy  1
 
-type Tape2 = Nested (NestedNTimes (Succ (Succ Zero)) Tape)
-type ITape2 = Indexed (NestedNTimes (Succ (Succ Zero)) Tape)
+-- Two dimensions...
 
-here2 :: RefList (Relative :-: Relative :-: Nil)
+type Rel2 = Relative :-: Rel1
+type Nat2 = Succ Nat1
+
+nat2 :: Natural Nat2
+nat2 = reifyNatural
+
+type Tape2  = Nested  (NestedNTimes Nat2 Tape)
+type ITape2 = Indexed (NestedNTimes Nat2 Tape)
+
+here2 :: RefList Rel2
 here2 = Rel 0 :-: here1
 
-d2 :: (CombineRefLists (Relative :-: Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Relative :-: Nil) & x)
+d2 :: (CombineRefLists Rel2 x) => RefList x -> RefList (Rel2 & x)
 d2 = (here2 &)
 
-rowAt :: Int -> RefList (Relative :-: Absolute :-: Nil)
-rowAt = dimensional (Succ (Succ Zero)) . Abs
+rowAt :: Int -> RefList (Tack Absolute Rel1)
+rowAt = dimensional nat2 . Abs
 
 row :: (Nth (Succ Zero) (NestedCount ts)) => Indexed ts x -> Int
-row = (\(Abs a) -> a) . nth (Succ Zero) . index
+row = (\(Abs a) -> a) . nth nat1 . index
 
-belowBy, aboveBy :: Int -> RefList (Relative :-: Relative :-: Nil)
-belowBy = dimensional (Succ (Succ Zero)) . Rel
+belowBy, aboveBy :: Int -> RefList Rel2
+belowBy = dimensional nat2 . Rel
 aboveBy = belowBy . negate
 
-below, above :: RefList (Relative :-: Relative :-: Nil)
+below, above :: RefList Rel2
 below = belowBy 1
 above = aboveBy 1
 
-type Tape3 = Nested (NestedNTimes (Succ (Succ (Succ Zero))) Tape)
-type ITape3 = Indexed (NestedNTimes (Succ (Succ (Succ Zero))) Tape)
+-- Three dimensions...
 
-here3 :: RefList (Relative :-: Relative :-: Relative :-: Nil)
+type Rel3 = Relative :-: Rel2
+type Nat3 = Succ Nat2
+
+nat3 :: Natural Nat3
+nat3 = reifyNatural
+
+type Tape3  = Nested  (NestedNTimes Nat3 Tape)
+type ITape3 = Indexed (NestedNTimes Nat3 Tape)
+
+here3 :: RefList Rel3
 here3 = Rel 0 :-: here2
 
-d3 :: (CombineRefLists (Relative :-: Relative :-: Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Relative :-: Relative :-: Nil) & x)
+d3 :: (CombineRefLists Rel3 x) => RefList x -> RefList (Rel3 & x)
 d3 = (here3 &)
 
-levelAt :: Int -> RefList (Relative :-: Relative :-: Absolute :-: Nil)
-levelAt = dimensional (Succ (Succ (Succ Zero))) . Abs
+levelAt :: Int -> RefList (Tack Absolute Rel2)
+levelAt = dimensional nat3 . Abs
 
 level :: (Nth (Succ (Succ Zero)) (NestedCount ts)) => Indexed ts x -> Int
-level = (\(Abs a) -> a) . nth (Succ (Succ Zero)) . index
+level = (\(Abs a) -> a) . nth nat2 . index
 
-outwardBy, inwardBy :: Int -> RefList (Relative :-: Relative :-: Relative :-: Nil)
-outwardBy = dimensional (Succ (Succ (Succ Zero))) . Rel
+outwardBy, inwardBy :: Int -> RefList Rel3
+outwardBy = dimensional nat3 . Rel
 inwardBy  = outwardBy . negate
 
-outward, inward :: RefList (Relative :-: Relative :-: Relative :-: Nil)
+outward, inward :: RefList Rel3
 outward = outwardBy 1
 inward  = inwardBy  1
 
-type Tape4 = Nested (NestedNTimes (Succ (Succ (Succ (Succ Zero)))) Tape)
-type ITape4 = Indexed (NestedNTimes (Succ (Succ (Succ (Succ Zero)))) Tape)
+-- Four dimensions...
 
-here4 :: RefList (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
+type Rel4 = Relative :-: Rel3
+type Nat4 = Succ Nat3
+
+nat4 :: Natural Nat4
+nat4 = reifyNatural
+
+type Tape4  = Nested  (NestedNTimes Nat4 Tape)
+type ITape4 = Indexed (NestedNTimes Nat4 Tape)
+
+here4 :: RefList Rel4
 here4 = Rel 0 :-: here3
 
-d4 :: (CombineRefLists (Relative :-: Relative :-: Relative :-: Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Relative :-: Relative :-: Relative :-: Nil) & x)
+d4 :: (CombineRefLists Rel4 x) => RefList x -> RefList (Rel4 & x)
 d4 = (here4 &)
 
-spaceAt :: Int -> RefList (Relative :-: Relative :-: Relative :-: Absolute :-: Nil)
-spaceAt = dimensional (Succ (Succ (Succ (Succ Zero)))) . Abs
+spaceAt :: Int -> RefList (Tack Absolute Rel3)
+spaceAt = dimensional nat4 . Abs
 
-space :: (Nth (Succ (Succ (Succ Zero))) (NestedCount ts)) => Indexed ts x -> Int
-space = (\(Abs a) -> a) . nth (Succ (Succ (Succ Zero))) . index
+space :: (Nth Nat3 (NestedCount ts)) => Indexed ts x -> Int
+space = (\(Abs a) -> a) . nth nat3 . index
 
-anaBy, kataBy :: Int -> RefList (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
-anaBy  = dimensional (Succ (Succ (Succ (Succ Zero)))) . Rel
+anaBy, kataBy :: Int -> RefList Rel4
+anaBy  = dimensional nat4 . Rel
 kataBy = anaBy . negate
 
-ana, kata :: RefList (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
+ana, kata :: RefList Rel4
 ana  = anaBy  1
 kata = kataBy 1
