@@ -4,17 +4,9 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE ConstraintKinds        #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Generic where
-
-import Control.Applicative
-
-import Stream ( Stream(..) )
-import qualified Stream as S
-
-import Prelude hiding ( iterate , take )
+module Slice where
 
 import Tape
 import Indexed
@@ -22,68 +14,13 @@ import Peano
 import Nested
 import Reference
 import TaggedList
-import CountedList hiding ( replicate )
+import CountedList ( Pad(..) )
 
-data Signed f a = Positive (f a)
-                | Negative (f a)
-                deriving ( Eq , Ord , Show )
+import Stream ( Stream(..) , (<:>) )
+import qualified Stream as S
 
-class InsertBase l t where
-   insertBase :: l a -> t a -> t a
-
-instance InsertBase Tape Tape where
-   insertBase t _ = t
-
-instance InsertBase Stream Tape where
-   insertBase (Cons x xs) (Tape ls _ _) = Tape ls x xs
-
-instance InsertBase (Signed Stream) Tape where
-   insertBase (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
-   insertBase (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
-
-instance InsertBase [] Tape where
-   insertBase [] t = t
-   insertBase (x : xs) (Tape ls c rs) =
-      Tape ls x (S.prefix xs (Cons c rs))
-
-instance InsertBase (Signed []) Tape where
-   insertBase (Positive []) t = t
-   insertBase (Negative []) t = t
-   insertBase (Positive (x : xs)) (Tape ls c rs) =
-      Tape ls x (S.prefix xs (Cons c rs))
-   insertBase (Negative (x : xs)) (Tape ls c rs) =
-      Tape (S.prefix xs (Cons c ls)) x rs
-
-class InsertNested l t where
-   insertNested :: l a -> t a -> t a
-
-instance (InsertBase l t) => InsertNested (Nested (Flat l)) (Nested (Flat t)) where
-   insertNested (Flat l) (Flat t) = Flat $ insertBase l t
-
-instance ( InsertBase l t , InsertNested (Nested ls) (Nested ts)
-         , Functor (Nested ls) , Applicative (Nested ts) )
-         => InsertNested (Nested (Nest ls l)) (Nested (Nest ts t)) where
-   insertNested (Nest l) (Nest t) =
-      Nest $ insertNested (insertBase <$> l) (pure id) <*> t
-
-instance (InsertNested l (Nested ts)) => InsertNested l (Indexed ts) where
-   insertNested l (Indexed i t) = Indexed i (insertNested l t)
-
-type family AsDimensionalAs x y where
-   x `AsDimensionalAs` (Indexed ts a) = x `AsNestedAs` (Nested ts a)
-   x `AsDimensionalAs` y              = x `AsNestedAs` y
-
-class DimensionalAs x y where
-   asDimensionalAs :: x -> y -> x `AsDimensionalAs` y
-
-instance (NestedAs x (Nested ts y), AsDimensionalAs x (Nested ts y) ~ AsNestedAs x (Nested ts y)) => DimensionalAs x (Nested ts y) where
-   asDimensionalAs = asNestedAs
-
-instance (NestedAs x (Nested ts y)) => DimensionalAs x (Indexed ts y) where
-   x `asDimensionalAs` (Indexed i t) = x `asNestedAs` t
-
-insert :: (DimensionalAs x (t a), InsertNested l t, AsDimensionalAs x (t a) ~ l a) => x -> t a -> t a
-insert l t = insertNested (l `asDimensionalAs` t) t
+import Control.Applicative
+import Prelude hiding ( take )
 
 tapeTake :: Ref Relative -> Tape a -> [a]
 tapeTake (Rel r) t | r > 0 = focus t : S.take      r  (viewR t)
@@ -117,7 +54,36 @@ instance ( Take (Replicate (NestedCount ts) Relative) (Nested ts)
    type ListFrom (Indexed ts) a = ListFrom (Nested ts) a
    take r (Indexed i t) = take (heterogenize id (getMovement r i)) t
 
--- TODO: Add a View class which lets you extract nested streams from tapes.
+tapeView :: Ref Relative -> Tape a -> Stream a
+tapeView (Rel r) t | r >= 0    = focus t <:> viewR t
+tapeView (Rel r) t | otherwise = focus t <:> viewL t
+
+class View r t where
+   type StreamFrom t a
+   view :: RefList r -> t a -> StreamFrom t a
+
+instance View Nil (Nested (Flat Tape)) where
+   type StreamFrom (Nested (Flat Tape)) a = Stream a
+   view _ (Flat t) = tapeView (Rel 0) t
+
+instance (View Nil (Nested ts), Functor (Nested ts)) => View Nil (Nested (Nest ts Tape)) where
+   type StreamFrom (Nested (Nest ts Tape)) a = StreamFrom (Nested ts) (Stream a)
+   view _ = view (Rel 0 :-: TNil)
+
+instance View (Relative :-: Nil) (Nested (Flat Tape)) where
+   type StreamFrom (Nested (Flat Tape)) a = (Stream a)
+   view (r :-: _) (Flat t) = tapeView r t
+
+instance ( Functor (Nested ts), View rs (Nested ts) )
+         => View (Relative :-: rs) (Nested (Nest ts Tape)) where
+   type StreamFrom (Nested (Nest ts Tape)) a = StreamFrom (Nested ts) (Stream a)
+   view (r :-: rs) (Nest t) = view rs . fmap (tapeView r) $ t
+
+instance ( View (Replicate (NestedCount ts) Relative) (Nested ts)
+         , Pad (NestedCount ts) (Length r))
+         => View r (Indexed ts) where
+   type StreamFrom (Indexed ts) a = StreamFrom (Nested ts) a
+   view r (Indexed i t) = view (heterogenize id (getMovement r i)) t
 
 tapeGo :: Ref Relative -> Tape a -> Tape a
 tapeGo (Rel r) = fpow (abs r) (if r > 0 then moveR else moveL)

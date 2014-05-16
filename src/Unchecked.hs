@@ -3,7 +3,8 @@
 
 module Unchecked where
 
-import Generic
+import Insert
+import Slice
 import Reference
 import Nested
 import Indexed

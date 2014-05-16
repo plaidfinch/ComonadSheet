@@ -1,7 +1,8 @@
 module All
    ( module Names
    , module Unchecked
-   , module Generic
+   , module Slice
+   , module Insert
    , module Nested
    , module Indexed
    , module Reference
@@ -18,7 +19,8 @@ module All
 
 import Names
 import Unchecked
-import Generic
+import Slice
+import Insert
 import Nested
 import Indexed
 import Reference
