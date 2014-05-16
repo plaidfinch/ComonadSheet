@@ -15,6 +15,9 @@ import CountedList
 type Tape1 = Nested (NestedNTimes (Succ Zero) Tape)
 type ITape1 = Indexed (NestedNTimes (Succ Zero) Tape)
 
+here1 :: RefList (Relative :-: Nil)
+here1 = Rel 0 :-: TNil
+
 columnAt :: Int -> RefList (Absolute :-: Nil)
 columnAt = dimensional (Succ Zero) . Abs
 
@@ -31,6 +34,9 @@ left  = leftBy  1
 
 type Tape2 = Nested (NestedNTimes (Succ (Succ Zero)) Tape)
 type ITape2 = Indexed (NestedNTimes (Succ (Succ Zero)) Tape)
+
+here2 :: RefList (Relative :-: Relative :-: Nil)
+here2 = Rel 0 :-: here1
 
 rowAt :: Int -> RefList (Relative :-: Absolute :-: Nil)
 rowAt = dimensional (Succ (Succ Zero)) . Abs
@@ -49,22 +55,28 @@ above = aboveBy 1
 type Tape3 = Nested (NestedNTimes (Succ (Succ (Succ Zero))) Tape)
 type ITape3 = Indexed (NestedNTimes (Succ (Succ (Succ Zero))) Tape)
 
+here3 :: RefList (Relative :-: Relative :-: Relative :-: Nil)
+here3 = Rel 0 :-: here2
+
 levelAt :: Int -> RefList (Relative :-: Relative :-: Absolute :-: Nil)
 levelAt = dimensional (Succ (Succ (Succ Zero))) . Abs
 
 level :: (Nth (Succ (Succ Zero)) (NestedCount ts)) => Indexed ts x -> Int
 level = (\(Abs a) -> a) . nth (Succ (Succ Zero)) . index
 
-inwardBy, outwardBy :: Int -> RefList (Relative :-: Relative :-: Relative :-: Nil)
-inwardBy  = dimensional (Succ (Succ (Succ Zero))) . Rel
-outwardBy = inwardBy . negate
+outwardBy, inwardBy :: Int -> RefList (Relative :-: Relative :-: Relative :-: Nil)
+outwardBy = dimensional (Succ (Succ (Succ Zero))) . Rel
+inwardBy  = outwardBy . negate
 
-inward, outward :: RefList (Relative :-: Relative :-: Relative :-: Nil)
-inward  = inwardBy  1
+outward, inward :: RefList (Relative :-: Relative :-: Relative :-: Nil)
 outward = outwardBy 1
+inward  = inwardBy  1
 
 type Tape4 = Nested (NestedNTimes (Succ (Succ (Succ (Succ Zero)))) Tape)
 type ITape4 = Indexed (NestedNTimes (Succ (Succ (Succ (Succ Zero)))) Tape)
+
+here4 :: RefList (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
+here4 = Rel 0 :-: here3
 
 spaceAt :: Int -> RefList (Relative :-: Relative :-: Relative :-: Absolute :-: Nil)
 spaceAt = dimensional (Succ (Succ (Succ (Succ Zero)))) . Abs
