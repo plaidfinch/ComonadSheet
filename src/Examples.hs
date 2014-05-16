@@ -4,6 +4,7 @@ import All hiding ( replicate )
 
 import Control.Applicative
 import Prelude hiding ( repeat , take )
+import qualified Prelude as P
 
 import Stream ( Stream , repeat , (<:>) )
 import Cartesian
@@ -12,6 +13,13 @@ pascal :: Tape2 Integer
 pascal = evaluate . sheet 0 $
   repeat 1 <:> repeat (1 <:> pascalRow)
   where pascalRow = repeat $ cell above + cell left
+
+--diagonalize2 :: (Go (Relative :-: Relative :-: Nil) w, Comonad w) => w a -> [[a]]
+diagonalize2 :: Tape2 a -> [[a]]
+diagonalize2 = 
+   zipWith P.take [1..]
+   . map (map extract . P.iterate (go (above & right)))
+   . P.iterate (go below)
 
 fibLike :: Tape3 Integer
 fibLike = evaluate $ sheet 0 $
