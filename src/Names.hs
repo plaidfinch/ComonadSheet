@@ -18,6 +18,9 @@ type ITape1 = Indexed (NestedNTimes (Succ Zero) Tape)
 here1 :: RefList (Relative :-: Nil)
 here1 = Rel 0 :-: TNil
 
+d1 :: (CombineRefLists (Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Nil) & x)
+d1 = (here1 &)
+
 columnAt :: Int -> RefList (Absolute :-: Nil)
 columnAt = dimensional (Succ Zero) . Abs
 
@@ -37,6 +40,9 @@ type ITape2 = Indexed (NestedNTimes (Succ (Succ Zero)) Tape)
 
 here2 :: RefList (Relative :-: Relative :-: Nil)
 here2 = Rel 0 :-: here1
+
+d2 :: (CombineRefLists (Relative :-: Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Relative :-: Nil) & x)
+d2 = (here2 &)
 
 rowAt :: Int -> RefList (Relative :-: Absolute :-: Nil)
 rowAt = dimensional (Succ (Succ Zero)) . Abs
@@ -58,6 +64,9 @@ type ITape3 = Indexed (NestedNTimes (Succ (Succ (Succ Zero))) Tape)
 here3 :: RefList (Relative :-: Relative :-: Relative :-: Nil)
 here3 = Rel 0 :-: here2
 
+d3 :: (CombineRefLists (Relative :-: Relative :-: Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Relative :-: Relative :-: Nil) & x)
+d3 = (here3 &)
+
 levelAt :: Int -> RefList (Relative :-: Relative :-: Absolute :-: Nil)
 levelAt = dimensional (Succ (Succ (Succ Zero))) . Abs
 
@@ -77,6 +86,9 @@ type ITape4 = Indexed (NestedNTimes (Succ (Succ (Succ (Succ Zero)))) Tape)
 
 here4 :: RefList (Relative :-: Relative :-: Relative :-: Relative :-: Nil)
 here4 = Rel 0 :-: here3
+
+d4 :: (CombineRefLists (Relative :-: Relative :-: Relative :-: Relative :-: Nil) x) => RefList x -> RefList ((Relative :-: Relative :-: Relative :-: Relative :-: Nil) & x)
+d4 = (here4 &)
 
 spaceAt :: Int -> RefList (Relative :-: Relative :-: Relative :-: Absolute :-: Nil)
 spaceAt = dimensional (Succ (Succ (Succ (Succ Zero)))) . Abs

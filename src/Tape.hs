@@ -80,6 +80,9 @@ moveL, moveR :: Tape a -> Tape a
 moveL (Tape (Cons l ls) c rs) = Tape ls l (Cons c rs)
 moveR (Tape ls c (Cons r rs)) = Tape (Cons c ls) r rs
 
+tapeOf :: a -> Tape a
+tapeOf = pure
+
 -- | The tape of integers, with zero centered.
 ints :: Tape Integer
 ints = enumerate 0
