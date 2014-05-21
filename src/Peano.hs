@@ -35,3 +35,20 @@ type family LessThan a b where
    LessThan x y               = False
 
 type a < b = (LessThan a b ~ True)
+
+type family x + y where
+   x + Zero     = x
+   x + (Succ y) = Succ (x + y)
+
+type family x - y where
+   x        - Zero     = x
+   (Succ x) - (Succ y) = x - y
+
+plus :: Natural a -> Natural b -> Natural (a + b)
+plus x Zero     = x
+plus x (Succ y) = Succ (plus x y)
+
+minus :: (b <= a) => Natural a -> Natural b -> Natural (a - b)
+minus x        Zero     = x
+minus (Succ x) (Succ y) = minus x y
+minus _        _        = error "minus: the impossible occurred"
