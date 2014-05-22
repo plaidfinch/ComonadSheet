@@ -32,7 +32,7 @@ d1 = (here1 &)
 columnAt :: Int -> RefList (Absolute :-: Nil)
 columnAt = dimensional nat1 . Abs
 
-column :: (Nth Zero (NestedCount ts)) => Indexed ts x -> Int
+column :: (Zero < NestedCount ts) => Indexed ts x -> Int
 column = (\(Abs a) -> a) . nth Zero . index
 
 rightBy, leftBy :: Int -> RefList Rel1
@@ -63,7 +63,7 @@ d2 = (here2 &)
 rowAt :: Int -> RefList (Tack Absolute Rel1)
 rowAt = dimensional nat2 . Abs
 
-row :: (Nth (Succ Zero) (NestedCount ts)) => Indexed ts x -> Int
+row :: (Nat1 < NestedCount ts) => Indexed ts x -> Int
 row = (\(Abs a) -> a) . nth nat1 . index
 
 belowBy, aboveBy :: Int -> RefList Rel2
@@ -94,7 +94,7 @@ d3 = (here3 &)
 levelAt :: Int -> RefList (Tack Absolute Rel2)
 levelAt = dimensional nat3 . Abs
 
-level :: (Nth (Succ (Succ Zero)) (NestedCount ts)) => Indexed ts x -> Int
+level :: (Nat2 < NestedCount ts) => Indexed ts x -> Int
 level = (\(Abs a) -> a) . nth nat2 . index
 
 outwardBy, inwardBy :: Int -> RefList Rel3
@@ -125,7 +125,7 @@ d4 = (here4 &)
 spaceAt :: Int -> RefList (Tack Absolute Rel3)
 spaceAt = dimensional nat4 . Abs
 
-space :: (Nth Nat3 (NestedCount ts)) => Indexed ts x -> Int
+space :: (Nat3 < NestedCount ts) => Indexed ts x -> Int
 space = (\(Abs a) -> a) . nth nat3 . index
 
 anaBy, kataBy :: Int -> RefList Rel4

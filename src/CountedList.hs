@@ -40,21 +40,18 @@ replicate :: Natural n -> x -> CountedList n x
 replicate Zero     _ = CNil
 replicate (Succ n) x = x ::: replicate n x
 
-class (n < m) => Nth n m where
-   nth :: Natural n -> CountedList m a -> a
-instance Nth Zero (Succ n) where
-   nth _ (a ::: _) = a
-instance (Nth n m) => Nth (Succ n) (Succ m) where
-   nth (Succ n) (_ ::: as) = nth n as
+append :: CountedList n a -> CountedList m a -> CountedList (m + n) a
+append CNil       ys = ys
+append (x ::: xs) ys = x ::: append xs ys
 
-class (m <= n) => Pad n m where
-   padTo :: Natural n -> x -> CountedList m x -> CountedList n x
-instance Pad Zero Zero where
-   padTo _ _ _ = CNil
-instance Pad (Succ n) Zero where
-   padTo n x CNil = replicate n x
-instance (Pad n m) => Pad (Succ n) (Succ m) where
-   padTo (Succ n) x (y ::: ys) = y ::: padTo n x ys
+nth :: (n < m) => Natural n -> CountedList m a -> a
+nth Zero     (a ::: _)  = a
+nth (Succ n) (_ ::: as) = nth n as
+nth _ _ = error "nth: the impossible occurred" -- like in minus, GHC can't prove this is unreachable
+
+padTo :: (m <= n) => Natural n -> x -> CountedList m x -> CountedList ((n - m) + m) x
+padTo n x list =
+   list `append` replicate (n `minus` count list) x
 
 zip :: CountedList n a -> CountedList n b -> CountedList n (a,b)
 zip (a ::: as) (b ::: bs) = (a,b) ::: zip as bs

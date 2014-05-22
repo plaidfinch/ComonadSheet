@@ -8,6 +8,8 @@
 
 module Peano where
 
+import Data.Proxy
+
 data Zero
 data Succ n
 
@@ -51,4 +53,4 @@ plus x (Succ y) = Succ (plus x y)
 minus :: (b <= a) => Natural a -> Natural b -> Natural (a - b)
 minus x        Zero     = x
 minus (Succ x) (Succ y) = minus x y
-minus _        _        = error "minus: the impossible occurred"
+minus _ _ = error "minus: the impossible occurred" -- GHC can't prove this is unreachable

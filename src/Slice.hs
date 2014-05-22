@@ -14,7 +14,7 @@ import Peano
 import Nested
 import Reference
 import TaggedList
-import CountedList ( Pad(..) )
+import CountedList ( padTo )
 
 import Stream ( Stream(..) , (<:>) )
 import qualified Stream as S
@@ -49,8 +49,9 @@ instance ( Functor (Nested ts), Take rs (Nested ts) )
    take (r :-: rs) (Nest t) = take rs . fmap (tapeTake r) $ t
 
 instance ( Take (Replicate (NestedCount ts) Relative) (Nested ts)
-         , Pad (NestedCount ts) (Length r))
-         => Take r (Indexed ts) where
+         , Length r <= NestedCount ts
+         , ((NestedCount ts - Length r) + Length r) ~ NestedCount ts
+         ) => Take r (Indexed ts) where
    type ListFrom (Indexed ts) a = ListFrom (Nested ts) a
    take r (Indexed i t) = take (heterogenize id (getMovement r i)) t
 
@@ -80,8 +81,9 @@ instance ( Functor (Nested ts), View rs (Nested ts) )
    view (r :-: rs) (Nest t) = view rs . fmap (tapeView r) $ t
 
 instance ( View (Replicate (NestedCount ts) Relative) (Nested ts)
-         , Pad (NestedCount ts) (Length r))
-         => View r (Indexed ts) where
+         , Length r <= NestedCount ts
+         , ((NestedCount ts - Length r) + Length r) ~ NestedCount ts
+         ) => View r (Indexed ts) where
    type StreamFrom (Indexed ts) a = StreamFrom (Nested ts) a
    view r (Indexed i t) = view (heterogenize id (getMovement r i)) t
 
@@ -101,7 +103,8 @@ instance (Go rs (Nested ts), Functor (Nested ts)) => Go (Relative :-: rs) (Neste
    go (r :-: rs) (Nest t) = Nest . go rs . fmap (tapeGo r) $ t
 
 instance ( Go (Replicate (NestedCount ts) Relative) (Nested ts)
-         , Pad (NestedCount ts) (Length r)
+         , Length r <= NestedCount ts
+         , ((NestedCount ts - Length r) + Length r) ~ NestedCount ts
          , ReifyNatural (NestedCount ts) )
          => Go r (Indexed ts) where
    go r (Indexed i t) =
