@@ -55,7 +55,7 @@ printConway c r t = mapM_ putStr
    . take (rightBy c & belowBy r & outwardBy t)
    where
       separator x y z = [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z] ++ "\n"
-      frame = map (fencepost ' ' . map ((== O) ? '●' $ ' '))
+      frame = map $ fencepost ' ' . map ((== O) ? '●' $ ' ')
 
 fencepost :: a -> [a] -> [a]
 fencepost x xs = x : intersperse x xs ++ [x]
