@@ -54,7 +54,7 @@ printConway c r t = mapM_ putStr
    . take (rightBy c & belowBy r & outwardBy t)
    where
       separator x y z = [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z] ++ "\n"
-      frame = map $ intersperse ' ' . map (bool '●' ' ' . (O ==))
+      frame = map $ intersperse ' ' . map (bool ' ' '●' . (O ==))
 
 glider :: ConwayUniverse
 glider = conway [[X,X,O],
