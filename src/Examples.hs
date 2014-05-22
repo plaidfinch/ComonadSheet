@@ -3,8 +3,12 @@ module Examples where
 import All
 
 import Control.Applicative
+import Control.Category ( (>>>) , (<<<) )
 import Prelude hiding ( repeat , take )
 import qualified Prelude as P
+import Data.List ( intersperse , intercalate )
+import Data.Functor
+import Data.Bool
 
 import Stream ( Stream , repeat , (<:>) )
 
@@ -43,25 +47,30 @@ conway seed = evaluate $ insert [map (map const) seed] blank
                   verticals   =        [above , below]
                   horizontals = map d2 [left  , right]
 
-printConway :: (Int,Int) -> Int -> ConwayUniverse -> IO ()
-printConway (c,r) generations universe =
-   (separator >>) . mapM_ ((>> separator) . printFrame) $
-      take (rightBy c & belowBy r & outwardBy generations) universe
+printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
+printConway c r t =
+   (separator '┌' '─' '┐' >>) . (>> separator '└' '─' '┘')
+   . sequence_ . intersperse (separator '├' '─' '┤')
+   . map printFrame . take (rightBy c & belowBy r & outwardBy t)
    where
-      separator  = putStrLn $ "+" ++ P.replicate (succ c) '-' ++ "+"
-      printFrame = mapM_ $ putStrLn . ("|" ++) . (++ "|") . map showCell
-      showCell X = ' '
-      showCell O = '*'
+      separator x y z = putStrLn $ [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z]
+      printFrame = mapM_ $ putStrLn . ("│" ++) . (++ "│") . fencepost ' ' . map ((== O) ? '●' $ ' ')
 
-lonelyGlider :: ConwayUniverse
-lonelyGlider = conway [[X,X,O],
-                       [O,X,O],
-                       [X,O,O]]
+fencepost :: a -> [a] -> [a]
+fencepost x xs = x : intersperse x xs ++ [x]
 
-lonelySpaceship :: ConwayUniverse
-lonelySpaceship = conway [[X,X,X,X,X],
-                          [X,O,O,O,O],
-                          [O,X,X,X,O],
-                          [X,X,X,X,O],
-                          [O,X,X,O,X],
-                          [X,X,X,X,X]]
+(?) :: (a -> Bool) -> b -> b -> a -> b
+(?) test consequent alternative a =
+   if test a then consequent else alternative
+
+glider :: ConwayUniverse
+glider = conway [[X,X,O],
+                 [O,X,O],
+                 [X,O,O]]
+
+spaceship :: ConwayUniverse
+spaceship = conway [[X,X,X,X,X],
+                    [X,O,O,O,O],
+                    [O,X,X,X,O],
+                    [X,X,X,X,O],
+                    [O,X,X,O,X]]
