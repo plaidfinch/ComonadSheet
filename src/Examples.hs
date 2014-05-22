@@ -44,8 +44,8 @@ conway seed = evaluate $ insert [map (map const) seed] blank
                   neighbors   = length . filter (== O) <$> cells bordering
                   bordering   = map (inward &) (diagonals ++ verticals ++ horizontals)
                   diagonals   = (&) <$> horizontals <*> verticals
-                  verticals   =        [above , below]
-                  horizontals = map d2 [left  , right]
+                  verticals   =        [above, below]
+                  horizontals = map d2 [right, left]
 
 printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
 printConway c r t =
