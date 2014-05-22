@@ -6,7 +6,7 @@ import Control.Applicative
 import Control.Category ( (>>>) , (<<<) )
 import Prelude hiding ( repeat , take )
 import qualified Prelude as P
-import Data.List ( intersperse , intercalate )
+import Data.List ( intersperse )
 import Data.Functor
 import Data.Bool
 
@@ -49,20 +49,12 @@ conway seed = evaluate $ insert [map (map const) seed] blank
 
 printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
 printConway c r t = mapM_ putStr
-   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘'])
-   . intersperse (separator '├' '─' '┤')
-   . map (unlines . map (("│" ++) . (++ "│")) . frame)
+   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘']) . intersperse (separator '├' '─' '┤')
+   . map (unlines . map (("│ " ++) . (++ " │")) . frame)
    . take (rightBy c & belowBy r & outwardBy t)
    where
       separator x y z = [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z] ++ "\n"
-      frame = map $ fencepost ' ' . map ((== O) ? '●' $ ' ')
-
-fencepost :: a -> [a] -> [a]
-fencepost x xs = x : intersperse x xs ++ [x]
-
-(?) :: (a -> Bool) -> b -> b -> a -> b
-(?) test consequent alternative a =
-   if test a then consequent else alternative
+      frame = map $ intersperse ' ' . map (bool '●' ' ' . (O ==))
 
 glider :: ConwayUniverse
 glider = conway [[X,X,O],
