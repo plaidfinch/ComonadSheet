@@ -37,24 +37,25 @@ type ConwayUniverse = Tape3 ConwayCell
 conway :: [[ConwayCell]] -> ConwayUniverse
 conway seed = evaluate $ insert [map (map const) seed] blank
    where blank = sheet (const X) (repeat . tapeOf . tapeOf $ rule)
-            where rule z = case neighbors z of
-                              2 -> cell inward z
-                              3 -> O
-                              _ -> X
-                  neighbors   = length . filter (== O) <$> cells bordering
-                  bordering   = map (inward &) (diagonals ++ verticals ++ horizontals)
-                  diagonals   = (&) <$> horizontals <*> verticals
-                  verticals   =        [above, below]
-                  horizontals = map d2 [right, left]
+         rule z = case neighbors z of
+                          2 -> cell inward z
+                          3 -> O
+                          _ -> X
+         neighbors   = length . filter (== O) <$> cells bordering
+         bordering   = map (inward &) (diagonals ++ verticals ++ horizontals)
+         diagonals   = (&) <$> horizontals <*> verticals
+         verticals   =        [above, below]
+         horizontals = map d2 [right, left]
 
 printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
-printConway c r t =
-   (separator '┌' '─' '┐' >>) . (>> separator '└' '─' '┘')
-   . sequence_ . intersperse (separator '├' '─' '┤')
-   . map printFrame . take (rightBy c & belowBy r & outwardBy t)
+printConway c r t = mapM_ putStr
+   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘'])
+   . intersperse (separator '├' '─' '┤')
+   . map (unlines . map (("│" ++) . (++ "│")) . frame)
+   . take (rightBy c & belowBy r & outwardBy t)
    where
-      separator x y z = putStrLn $ [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z]
-      printFrame = mapM_ $ putStrLn . ("│" ++) . (++ "│") . fencepost ' ' . map ((== O) ? '●' $ ' ')
+      separator x y z = [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z] ++ "\n"
+      frame = map (fencepost ' ' . map ((== O) ? '●' $ ' '))
 
 fencepost :: a -> [a] -> [a]
 fencepost x xs = x : intersperse x xs ++ [x]
