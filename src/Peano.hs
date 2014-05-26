@@ -8,8 +8,6 @@
 
 module Peano where
 
-import Data.Proxy
-
 data Zero
 data Succ n
 
