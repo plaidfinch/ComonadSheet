@@ -3,11 +3,9 @@ module Examples where
 import All
 
 import Control.Applicative
-import Control.Category ( (>>>) , (<<<) )
 import Prelude hiding ( repeat , take )
 import qualified Prelude as P
 import Data.List ( intersperse )
-import Data.Functor
 import Data.Bool
 
 import Stream ( Stream , repeat , (<:>) )
