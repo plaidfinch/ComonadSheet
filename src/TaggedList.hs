@@ -1,6 +1,7 @@
-{-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE GADTs         #-}
+{-# LANGUAGE PolyKinds     #-}
+{-# LANGUAGE TypeFamilies  #-}
+{-# LANGUAGE TypeOperators #-}
 
 module TaggedList where
 

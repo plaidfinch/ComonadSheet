@@ -1,10 +1,12 @@
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE ConstraintKinds        #-}
-{-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE ConstraintKinds     #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving  #-}
+{-# LANGUAGE TypeFamilies        #-}
+{-# LANGUAGE TypeOperators       #-}
 
 module Peano where
 
