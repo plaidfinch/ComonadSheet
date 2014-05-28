@@ -14,8 +14,7 @@ import Peano
 
 import Control.Applicative
 import Data.List hiding ( replicate , zip )
-
-import Prelude hiding ( replicate , zip )
+import Prelude   hiding ( replicate , zip )
 
 infixr 5 :::
 
