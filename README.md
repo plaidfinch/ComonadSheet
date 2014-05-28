@@ -10,8 +10,15 @@ Examples
 
 The environment I'll be using as a demo-space looks like:
 ```Haskell
-import Examples
+import All
+import Stream ( Stream , repeat , (<:>) )
+
+import Control.Applicative ( (<$>), (<*>) )
+import Data.List ( intersperse )
+import Data.Bool ( bool )
+
 import qualified Prelude as P
+import Prelude hiding ( repeat , take )
 ```
 
 ### Pascal's Triangle
@@ -145,7 +152,8 @@ For aesthetics, we can define a printer function for generations of the game of 
 ```Haskell
 printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
 printConway c r t = mapM_ putStr
-   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘']) . intersperse (separator '├' '─' '┤')
+   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘'])
+   . intersperse (separator '├' '─' '┤')
    . map (unlines . map (("│ " ++) . (++ " │")) . frame)
    . take (rightBy c & belowBy r & outwardBy t)
    where
