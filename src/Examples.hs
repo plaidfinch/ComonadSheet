@@ -24,8 +24,8 @@ diagonalize =
 fibLike :: Tape3 Integer
 fibLike = evaluate $ sheet 0 $
    fibSheetFrom 1 1 <:> repeat (fibSheetFrom (cell inward + 1) (cell inward))
-   where fibSheetFrom a b = (a          <:> b                <:> fibRow) <:> repeat
-                            (cell above <:> (1 + cell above) <:> fibRow)
+   where fibSheetFrom a b = (a          <:> b                <:> fibRow) <:>
+                     repeat (cell above <:> (1 + cell above) <:> fibRow)
          fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 data ConwayCell = X | O deriving ( Eq , Show )

@@ -8,21 +8,27 @@ This work was inspired by reading [this article](http://blog.emillon.org/posts/2
 Examples
 --------
 
+The environment I'll be using as a demo-space looks like:
+```Haskell
+import Examples
+import qualified Prelude as P
+```
+
 ### Pascal's Triangle
 
 An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwards diagonals:
 
 ```Haskell
-pascal :: Z2 Int Int Integer
-pascal = evaluate $ sheet (0,0) 0 $
-  repeat 1 : repeat (1 : pascalRow)
-  where pascalRow = repeat $ cell above + cell left
+pascal :: Tape2 Integer
+pascal = evaluate . sheet 0 $
+   repeat 1 <:> repeat (1 <:> pascalRow)
+   where pascalRow = repeat $ cell above + cell left
 ```
 
 This looks like:
 
 ```Haskell
-> slice (at (0,0)) (at (10,10)) pascal
+> take (belowBy 9 & rightBy 9) pascal
 [[1,  1,  1,   1,   1,    1,    1,     1,     1,     1], 
  [1,  2,  3,   4,   5,    6,    7,     8,     9,    10], 
  [1,  3,  6,  10,  15,   21,   28,    36,    45,    55], 
@@ -38,20 +44,17 @@ This looks like:
 We can also traverse it to find the rows of Pascal's triangle, which are the diagonals of this spreadsheet:
 
 ```Haskell
-pascalLists :: [[Integer]]
-pascalLists = map pascalList [0..]
-   where
-      pascalList n =
-         map view .
-         takeWhile ((>= 0) . row) .
-         iterate (go $ above & right) .
-         goto (0,n) $ pascal
+diagonalize :: Tape2 a -> [[a]]
+diagonalize = 
+   zipWith P.take [1..]
+   . map (map extract . P.iterate (go (above & right)))
+   . P.iterate (go below)
 ```
 
 This results in:
 
 ```Haskell
-> take 15 pascalLists
+> P.take 15 (diagonalize pascal)
 [[1],
  [1,  1], 
  [1,  2,  1], 
@@ -76,18 +79,18 @@ We may define a three-dimensional space enumerating all the Fibonacci-like seque
 This example is thanks to an enlightening conversation with Eden Zik.
 
 ```Haskell
-fibLike :: Z3 Int Int Int Integer
-fibLike = evaluate $ sheet (0,0,0) 0 $
-   fibSheetFrom 1 1 : repeat (fibSheetFrom (cell inward + 1) (cell inward))
-   where fibSheetFrom a b = ([a, b]                       ++ fibRow) : repeat
-                            ([cell above, 1 + cell above] ++ fibRow)
-         fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2
+fibLike :: Tape3 Integer
+fibLike = evaluate $ sheet 0 $
+   fibSheetFrom 1 1 <:> repeat (fibSheetFrom (cell inward + 1) (cell inward))
+   where fibSheetFrom a b = (a          <:> b                <:> fibRow) <:>
+                     repeat (cell above <:> (1 + cell above) <:> fibRow)
+         fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 ```
 
 Examining a slice of this space, we find the following:
 
 ```Haskell
-> slice (at (0,0,0)) (at (4,4,3)) fibLike
+> take (rightBy 4 & belowBy 4 & outwardBy 2) fibLike
 [[[1,1,2, 3, 5], -- the original Fibonacci sequence
   [1,2,3, 5, 8],
   [1,3,4, 7,11],
@@ -112,8 +115,8 @@ Of course, as this is a comonadic library, we're obligated to implement the cano
 For convenience, we define a few types:
 
 ```Haskell
-data ConwayCell = X | O deriving (Eq,Show)
-type ConwayUniverse = Z3 Int Int Int ConwayCell
+data ConwayCell = X | O deriving ( Eq , Show )
+type ConwayUniverse = Tape3 ConwayCell
 ```
 
 Then we can define a function which takes a starting configuration (seed) for the Game of Life, and inserts it into the infinite universe of Game-of-Life cells.
@@ -124,119 +127,118 @@ In the Conway space, all cells before time zero are always dead cells, and all c
 
 ```Haskell
 conway :: [[ConwayCell]] -> ConwayUniverse
-conway seed = evaluate $ insert [map (map const) seed] blankConway
-   where blankConway = wrapZ3 (insert . repeat $ pure rule) $ pure (const X)
-            where rule z = case neighborCount z of
-                              2 -> cell inward z
-                              3 -> O
-                              _ -> X
-                  neighborCount = length . filter (== O) <$> cells bordering
-                  bordering = map (inward &) . filter (/= here) $
-                              (&) <$> [left,here,right] <*> [above,here,below]
+conway seed = evaluate $ insert [map (map const) seed] blank
+   where blank = sheet (const X) (repeat . tapeOf . tapeOf $ rule)
+         rule z = case neighbors z of
+                          2 -> cell inward z
+                          3 -> O
+                          _ -> X
+         neighbors   = length . filter (== O) <$> cells bordering
+         bordering   = map (inward &) (diagonals ++ verticals ++ horizontals)
+         diagonals   = (&) <$> horizontals <*> verticals
+         verticals   =        [above, below]
+         horizontals = map d2 [right, left]
 ```
 
-For aesthetics, we can define a printer function for generations of the game of life. Note that the printer function is as long as the definition of the real computation!
+For aesthetics, we can define a printer function for generations of the game of life. Note that the printer function is more or less as long as the definition of the real computation!
 
 ```Haskell
-printConway :: (Int,Int) -> (Int,Int) -> Int -> ConwayUniverse -> IO ()
-printConway (c,r) (c',r') generations universe = do
-   separator
-   mapM_ ((>> separator) . printGen) $
-      slice (at (c,r,0)) (at (c',r',generations)) universe
+printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
+printConway c r t = mapM_ putStr
+   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘']) . intersperse (separator '├' '─' '┤')
+   . map (unlines . map (("│ " ++) . (++ " │")) . frame)
+   . take (rightBy c & belowBy r & outwardBy t)
    where
-      separator = putStrLn $ replicate (1 + abs $ c - c') '-'
-      printGen = mapM_ $ putStrLn . map showCell
-      showCell X = ' '
-      showCell O = '*'
+      separator x y z = [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z] ++ "\n"
+      frame = map $ intersperse ' ' . map (bool ' ' '●' . (O ==))
 ```
 
 Here's how we define a universe containing only a single glider:
 
 ```Haskell
-lonelyGlider :: ConwayUniverse
-lonelyGlider = conway [[X,X,O],
-                       [O,X,O],
-                       [X,O,O]]
+glider :: ConwayUniverse
+glider = conway [[X,X,O],
+                 [O,X,O],
+                 [X,O,O]]
 ```
 
 And it works!
 
 ```Haskell
-> printConway (0,0) (3,3) 4 lonelyGlider
-----
-  * 
-* * 
- ** 
-    
-----
- *  
-  **
- ** 
-    
-----
-  * 
-   *
- ***
-    
-----
-    
- * *
-  **
-  * 
-----
-    
-   *
- * *
-  **
-----
+> printConway 3 3 4 glider
+┌─────────┐
+│     ●   │
+│ ●   ●   │
+│   ● ●   │
+│         │
+├─────────┤
+│   ●     │
+│     ● ● │
+│   ● ●   │
+│         │
+├─────────┤
+│     ●   │
+│       ● │
+│   ● ● ● │
+│         │
+├─────────┤
+│         │
+│   ●   ● │
+│     ● ● │
+│     ●   │
+├─────────┤
+│         │
+│       ● │
+│   ●   ● │
+│     ● ● │
+└─────────┘
 ```
 
 Here's a Lightweight Spaceship:
 
 ```Haskell
-lonelySpaceship :: ConwayUniverse
-lonelySpaceship = conway [[X,X,X,X,X],
-                          [X,O,O,O,O],
-                          [O,X,X,X,O],
-                          [X,X,X,X,O],
-                          [O,X,X,O,X],
-                          [X,X,X,X,X]]
+spaceship :: ConwayUniverse
+spaceship = conway [[X,X,X,X,X],
+                    [X,O,O,O,O],
+                    [O,X,X,X,O],
+                    [X,X,X,X,O],
+                    [O,X,X,O,X]]
 ```
 
 When we run it...
 
 ```Haskell
-> printConway (0,0) (7,4) 4 lonelySpaceship
---------
-        
- ****   
-*   *   
-    *   
-*  *    
---------
-  **    
- ****   
- ** **  
-   **   
-        
---------
- *  *   
-     *  
- *   *  
-  ****  
-        
---------
-        
-    **  
-  ** ** 
-  ****  
-   **   
---------
-        
-   **** 
-  *   * 
-      * 
-  *  *  
---------
+> printConway 6 4 4 spaceship
+┌───────────────┐
+│               │
+│   ● ● ● ●     │
+│ ●       ●     │
+│         ●     │
+│ ●     ●       │
+├───────────────┤
+│     ● ●       │
+│   ● ● ● ●     │
+│   ● ●   ● ●   │
+│       ● ●     │
+│               │
+├───────────────┤
+│   ●     ●     │
+│           ●   │
+│   ●       ●   │
+│     ● ● ● ●   │
+│               │
+├───────────────┤
+│               │
+│         ● ●   │
+│     ● ●   ● ● │
+│     ● ● ● ●   │
+│       ● ●     │
+├───────────────┤
+│               │
+│       ● ● ● ● │
+│     ●       ● │
+│             ● │
+│     ●     ●   │
+└───────────────┘
 ```
 
