@@ -47,7 +47,8 @@ conway seed = evaluate $ insert [map (map const) seed] blank
 
 printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
 printConway c r t = mapM_ putStr
-   . ([separator '┌' '─' '┐'] ++) . (++ [separator '└' '─' '┘']) 
+   .            ([separator '┌' '─' '┐'] ++)
+   .         (++ [separator '└' '─' '┘']) 
    . intersperse (separator '├' '─' '┤')
    . map (unlines . map (("│ " ++) . (++ " │")) . frame)
    . take (rightBy c & belowBy r & outwardBy t)
