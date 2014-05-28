@@ -2,13 +2,14 @@ module Examples where
 
 import All
 
-import Control.Applicative
-import Prelude hiding ( repeat , take )
-import qualified Prelude as P
+import Control.Applicative ( (<$>), (<*>) )
 import Data.List ( intersperse )
-import Data.Bool
+import Data.Bool ( bool )
 
 import Stream ( Stream , repeat , (<:>) )
+
+import qualified Prelude as P
+import Prelude hiding ( repeat , take )
 
 pascal :: Tape2 Integer
 pascal = evaluate . sheet 0 $

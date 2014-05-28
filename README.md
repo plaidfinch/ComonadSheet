@@ -10,8 +10,15 @@ Examples
 
 The environment I'll be using as a demo-space looks like:
 ```Haskell
-import Examples
+import All
+import Stream ( Stream , repeat , (<:>) )
+
+import Control.Applicative ( (<$>), (<*>) )
+import Data.List ( intersperse )
+import Data.Bool ( bool )
+
 import qualified Prelude as P
+import Prelude hiding ( repeat , take )
 ```
 
 ### Pascal's Triangle
