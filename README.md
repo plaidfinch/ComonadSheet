@@ -164,7 +164,7 @@ glider = conway [[X,X,O],
 
 And it works!
 
-```Haskell
+```
 > printConway 3 3 4 glider
 ┌─────────┐
 │     ●   │
@@ -207,7 +207,7 @@ spaceship = conway [[X,X,X,X,X],
 
 When we run it...
 
-```Haskell
+```
 > printConway 6 4 4 spaceship
 ┌───────────────┐
 │               │
