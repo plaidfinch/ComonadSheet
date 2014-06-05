@@ -27,6 +27,10 @@ data Ref (t :: RefType) where
    Abs :: Int -> Ref Absolute
 deriving instance Show (Ref t)
 
+getRef :: Ref t -> Int
+getRef (Abs x) = x
+getRef (Rel x) = x
+
 instance Enum (Ref Relative) where
    fromEnum (Rel r) = r
    toEnum = Rel
