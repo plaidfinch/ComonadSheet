@@ -29,24 +29,32 @@ fibLike = evaluate $ sheet 0 $
                      repeat (cell above <:> (1 + cell above) <:> fibRow)
          fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
-data ConwayCell = X | O deriving ( Eq , Show )
-type ConwayUniverse = Tape3 ConwayCell
+data Cell = X | O deriving ( Eq , Show )
+type Universe = Tape3 Cell
+type Ruleset = ([Int],[Int]) -- list of numbers of neighbors to trigger
+                             -- being born, and staying alive, respectively
 
-conway :: [[ConwayCell]] -> ConwayUniverse
-conway seed = evaluate $ insert [map (map const) seed] blank
+life :: Ruleset -> [[Cell]] -> Universe
+life ruleset seed = evaluate $ insert [map (map const) seed] blank
    where blank = sheet (const X) (repeat . tapeOf . tapeOf $ rule)
-         rule z = case neighbors z of
-                          2 -> cell inward z
-                          3 -> O
-                          _ -> X
-         neighbors   = length . filter (== O) <$> cells bordering
+         rule place  = case (neighbors place `elem`) `onBoth` ruleset of
+                            (True,_)  -> O
+                            (_,True)  -> cell inward place
+                            _         -> X
+         neighbors   = length . filter (O ==) . cells bordering
          bordering   = map (inward &) (diagonals ++ verticals ++ horizontals)
          diagonals   = (&) <$> horizontals <*> verticals
          verticals   =        [above, below]
          horizontals = map d2 [right, left]
 
-printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
-printConway c r t = mapM_ putStr
+onBoth :: (a -> b) -> (a,a) -> (b,b)
+f `onBoth` (x,y) = (f x,f y)
+
+conway :: [[Cell]] -> Universe
+conway = life ([3],[2,3])
+
+printLife :: Int -> Int -> Int -> Universe -> IO ()
+printLife c r t = mapM_ putStr
    .            ([separator '┌' '─' '┐'] ++)
    .         (++ [separator '└' '─' '┘']) 
    . intersperse (separator '├' '─' '┤')
@@ -56,12 +64,12 @@ printConway c r t = mapM_ putStr
       separator x y z = [x] ++ P.replicate (1 + (1 + c) * 2) y ++ [z] ++ "\n"
       frame = map $ intersperse ' ' . map (bool ' ' '●' . (O ==))
 
-glider :: ConwayUniverse
+glider :: Universe
 glider = conway [[X,X,O],
                  [O,X,O],
                  [X,O,O]]
 
-spaceship :: ConwayUniverse
+spaceship :: Universe
 spaceship = conway [[X,X,X,X,X],
                     [X,O,O,O,O],
                     [O,X,X,X,O],

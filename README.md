@@ -122,8 +122,10 @@ Of course, as this is a comonadic library, we're obligated to implement the cano
 For convenience, we define a few types:
 
 ```Haskell
-data ConwayCell = X | O deriving ( Eq , Show )
-type ConwayUniverse = Tape3 ConwayCell
+data Cell = X | O deriving ( Eq , Show )
+type Universe = Tape3 Cell
+type Ruleset = ([Int],[Int]) -- list of numbers of neighbors to trigger
+                             -- being born, and staying alive, respectively
 ```
 
 Then we can define a function which takes a starting configuration (seed) for the Game of Life, and inserts it into the infinite universe of Game-of-Life cells.
@@ -133,25 +135,31 @@ Here, we represent the evolution of an instance of the game of life as a three-d
 In the Conway space, all cells before time zero are always dead cells, and all cells starting at time zero are equal to the Life rule applied to their neighboring cells in the previous time frame. To instantiate a timeline for a seed pattern, it is inserted as a series of constant cells into time frame zero of the blank Conway space. Then, the Conway space is evaluated, resulting in an infinite 3D space showing the evolution of the pattern.
 
 ```Haskell
-conway :: [[ConwayCell]] -> ConwayUniverse
-conway seed = evaluate $ insert [map (map const) seed] blank
+life :: Ruleset -> [[Cell]] -> Universe
+life ruleset seed = evaluate $ insert [map (map const) seed] blank
    where blank = sheet (const X) (repeat . tapeOf . tapeOf $ rule)
-         rule z = case neighbors z of
-                          2 -> cell inward z
-                          3 -> O
-                          _ -> X
-         neighbors   = length . filter (== O) <$> cells bordering
+         rule place  = case (neighbors place `elem`) `onBoth` ruleset of
+                            (True,_)  -> O
+                            (_,True)  -> cell inward place
+                            _         -> X
+         neighbors   = length . filter (O ==) . cells bordering
          bordering   = map (inward &) (diagonals ++ verticals ++ horizontals)
          diagonals   = (&) <$> horizontals <*> verticals
          verticals   =        [above, below]
          horizontals = map d2 [right, left]
+
+onBoth :: (a -> b) -> (a,a) -> (b,b)
+f `onBoth` (x,y) = (f x,f y)
+
+conway :: [[Cell]] -> Universe
+conway = life ([3],[2,3])
 ```
 
 For aesthetics, we can define a printer function for generations of the game of life. Note that the printer function is more or less as long as the definition of the real computation!
 
 ```Haskell
-printConway :: Int -> Int -> Int -> ConwayUniverse -> IO ()
-printConway c r t = mapM_ putStr
+printLife :: Int -> Int -> Int -> Universe -> IO ()
+printLife c r t = mapM_ putStr
    .            ([separator '┌' '─' '┐'] ++)
    .         (++ [separator '└' '─' '┘']) 
    . intersperse (separator '├' '─' '┤')
@@ -165,7 +173,7 @@ printConway c r t = mapM_ putStr
 Here's how we define a universe containing only a single glider:
 
 ```Haskell
-glider :: ConwayUniverse
+glider :: Universe
 glider = conway [[X,X,O],
                  [O,X,O],
                  [X,O,O]]
@@ -174,7 +182,7 @@ glider = conway [[X,X,O],
 And it works!
 
 ```
-> printConway 3 3 4 glider
+> printLife 3 3 4 glider
 ┌─────────┐
 │     ●   │
 │ ●   ●   │
@@ -206,7 +214,7 @@ And it works!
 Here's a Lightweight Spaceship:
 
 ```Haskell
-spaceship :: ConwayUniverse
+spaceship :: Universe
 spaceship = conway [[X,X,X,X,X],
                     [X,O,O,O,O],
                     [O,X,X,X,O],
@@ -217,7 +225,7 @@ spaceship = conway [[X,X,X,X,X],
 When we run it...
 
 ```
-> printConway 6 4 4 spaceship
+> printLife 6 4 4 spaceship
 ┌───────────────┐
 │               │
 │   ● ● ● ●     │
