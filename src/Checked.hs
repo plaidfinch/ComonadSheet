@@ -26,8 +26,8 @@ references (Pure _)              = Just []
 references (Ap (StaticRef  r) x) = (r :) <$> references x
 references (Ap (DynamicRef _) _) = Nothing
 
--- | An 'Extract' is a synonym for a function which knows how to take something out of a structure, but is 
---   existentially prohibited from thinking about the item it extracts.
+-- | An 'Extract' is a synonym for a function which knows how to take something out of a structure
+--   which may contain things of any type.
 type Extract f = forall x. f x -> x
 
 -- | Given an appropriate method of dereferencing and a CellExpr, returns the function from a structure 
