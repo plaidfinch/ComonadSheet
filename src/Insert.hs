@@ -58,18 +58,17 @@ instance ( InsertBase l t , InsertNested (Nested ls) (Nested ts)
 instance (InsertNested l (Nested ts)) => InsertNested l (Indexed ts) where
    insertNested l (Indexed i t) = Indexed i (insertNested l t)
 
-type family AsDimensionalAs x y where
-   x `AsDimensionalAs` (Indexed ts a) = x `AsNestedAs` (Nested ts a)
-   x `AsDimensionalAs` y              = x `AsNestedAs` y
-
 class DimensionalAs x y where
+   type AsDimensionalAs x y
    asDimensionalAs :: x -> y -> x `AsDimensionalAs` y
 
 instance (NestedAs x (Nested ts y), AsDimensionalAs x (Nested ts y) ~ AsNestedAs x (Nested ts y)) => DimensionalAs x (Nested ts y) where
+   type x `AsDimensionalAs` (Nested ts a) = x `AsNestedAs` (Nested ts a)
    asDimensionalAs = asNestedAs
 
 instance (NestedAs x (Nested ts y)) => DimensionalAs x (Indexed ts y) where
-   x `asDimensionalAs` (Indexed i t) = x `asNestedAs` t
+   type x `AsDimensionalAs` (Indexed ts a) = x `AsNestedAs` (Nested ts a)
+   x `asDimensionalAs` (Indexed i t)       = x `asNestedAs` t
 
 insert :: (DimensionalAs x (t a), InsertNested l t, AsDimensionalAs x (t a) ~ l a) => x -> t a -> t a
 insert l t = insertNested (l `asDimensionalAs` t) t
