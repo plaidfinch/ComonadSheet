@@ -340,7 +340,7 @@ main = print . S.take 10000 . viewR . possibility $
          (succ . extract . moveL)) -- 1 + leftward value
 ```
 
-(Don't worry, this syntax gets more elegant later.)
+(This syntax gets more elegant later.)
 
 # Well, sort of\dots
 
@@ -418,7 +418,7 @@ Why does this mean it's inefficient?
 
 . . .
 
-If we can't define it in terms of `fix` on its argument, we can't hold onto a singular (lazy) reference to the eventual future of the computation.
+We can't hold onto a singular (lazy) reference to the eventual future of the computation.
 
 # Filling in the holes to fix our problem
 
@@ -669,7 +669,7 @@ Etcetera, ad infinitum!
 
 # Do you want to build a comonad?
 
-We could define a `newtype` for each added dimension, but this carries an overhead of between $O(n^2)$ and $O(n^3)$ boilerplate.
+We could define a `newtype` for each added dimension, but this carries an overhead of between $O(n^2)$ and $O(n^3)$ boilerplate per dimension.
 
 . . .
 
@@ -687,11 +687,10 @@ instance ComonadApply Tape2 where ...
 instance Functor Tape3 where ...
 instance Comonad Tape3 where ...
 instance ComonadApply Tape3 where ...
-
 ...
 ```
 
-Yes, I tried it.
+That also `succ`s a lot.
 
 # Do you want to build a comonad?
 
