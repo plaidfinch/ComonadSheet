@@ -414,9 +414,11 @@ So more specifically: `wfix` can't be expressed in terms of `fix` on its *argume
 
 Why does this mean it's inefficient?
 
+\vspace*{1.5\baselineskip}
+
 . . .
 
-If we can't define it in terms of `fix` on its argument, we can't hold onto one lazy reference to the eventual future of the computation.
+If we can't define it in terms of `fix` on its argument, we can't hold onto a singular (lazy) reference to the eventual future of the computation.
 
 # Filling in the holes to fix our problem
 
@@ -718,9 +720,9 @@ Hmm. What *does* go there?
 
 # Do you want to build a comonad?
 
-What can you do with a `(Compose f g a)`{.haskell}?
-
 (N.B. In this section, I've specialized many of the type signatures to elucidate what's going on.)
+
+**What can you do with a `(Compose f g a)`{.haskell}?**
 
 . . .
 
@@ -728,25 +730,25 @@ Not much; you have to unwrap it. So, what can you do with something of type `(Co
 
 . . .
 
-You can duplicate the outer layer:
+**You can duplicate the outer layer:**
   
 `duplicate :: f (g a) -> f (f (g a))`{.haskell}
 
 . . .
 
-You can duplicate the inner layer:
+**You can duplicate the inner layer:**
 
 `fmap duplicate :: f (g a) -> f (g (g a))`{.haskell}
 
 . . .
 
-You can duplicate both:
+**You can duplicate both:**
 
 `duplicate . fmap duplicate :: f (g a) -> f (f (g (g a)))`{.haskell}
 
 . . .
 
-And that's about it.
+**And that's about it.**
 
 # Do you want to build a comonad?
 
