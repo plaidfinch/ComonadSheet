@@ -669,7 +669,7 @@ Etcetera, ad infinitum!
 
 # Do you want to build a comonad?
 
-We could define a `newtype` for each added dimension, but this carries an overhead of between $O(n^2)$ and $O(n^3)$ boilerplate.
+We could define a `newtype` for each added dimension, but this carries an overhead of between $O(n^2)$ and $O(n^3)$ boilerplate per dimension.
 
 . . .
 
@@ -687,11 +687,10 @@ instance ComonadApply Tape2 where ...
 instance Functor Tape3 where ...
 instance Comonad Tape3 where ...
 instance ComonadApply Tape3 where ...
-
 ...
 ```
 
-Yes, I tried it.
+That also `succ`s a lot.
 
 # Do you want to build a comonad?
 
