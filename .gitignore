@@ -7,4 +7,4 @@ doc
 *.chs.h
 *.pdf
 .virthualenv
-
+.DS_Store
