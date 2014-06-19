@@ -13,15 +13,15 @@ Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs = xs where xs = fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
 . . .
 
 Example:
 
-`> löb [length, (!! 0), liftA2 (+) (!! 0) (!! 1)]`{.haskell}
+`> loeb [length, (!! 0), \x -> x !! 0 + x !! 1]`{.haskell}
 \vspace*{1\baselineskip}
 
 # A tale of two blog articles
@@ -31,13 +31,13 @@ Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs = xs where xs = fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
 Example:
 
-`> löb [length, (!! 0), liftA2 (+) (!! 0) (!! 1)]`{.haskell}
+`> loeb [length, (!! 0), \x -> x !! 0 + x !! 1]`{.haskell}
 \newline
 `[3,3,6]`{.haskell}
 
@@ -48,13 +48,13 @@ Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs = xs where xs = fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
 Example:
 
-`> löb [length, sum]`{.haskell}
+`> loeb [length, sum]`{.haskell}
 \vspace*{1\baselineskip}
 
 # A tale of two blog articles
@@ -64,13 +64,13 @@ Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs = xs where xs = fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
 Example:
 
-`> löb [length, sum]`{.haskell}
+`> loeb [length, sum]`{.haskell}
 \newline
 $\bot$
 
@@ -87,15 +87,12 @@ Dan Piponi, December 2006 (<http://blog.sigfpe.com>):
 # An unexpected journey
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs = xs where xs = fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
-- `löb` is a fixed-point where each element of the structure refers to the whole structure in terms of *absolute position*
-
-- Comonadic computations are often described as computations in the context of a *relative position* within a larger structure
-
-. . .
+> - `loeb` is a fixed-point where each element of the structure refers to the whole structure in terms of *absolute position*
+> - Comonadic computations are often described as computations in the context of a *relative position* within a larger structure
 
 These articles are talking about almost the same thing!
 
@@ -134,7 +131,7 @@ class Functor w => Comonad w where
 ```Haskell
 join . return      == id
 join . fmap return == id  
-join . join        == join . fmap join 
+join . join        == join . fmap join
 ```
 
 . . .
@@ -192,7 +189,7 @@ data Tape a = (Stream a) a (Stream a)
 moveL, moveR :: Tape a -> Tape a
 moveL (Tape (Cons l ls) c rs) =
        Tape         ls  l (Cons c rs)
-moveR (Tape ls          c (Cons r rs)) = 
+moveR (Tape ls          c (Cons r rs)) =
        Tape (Cons c ls) r         rs
 ```
 
@@ -227,7 +224,7 @@ moveR . duplicate == duplicate . moveR
 
 \note{(I welcome proofs using more category theory than gesticulation.)}
 
-# Back to Piponi's `löb`
+# Back to Piponi's `loeb`
 
 Löb's theorem: $\Box(\Box P \to P) \to \Box P$
 
@@ -240,7 +237,7 @@ Löb's theorem: $\Box(\Box P \to P) \to \Box P$
 . . .
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
+loeb :: Functor f => f (f a -> a) -> f a
 ```
 
 . . .
@@ -250,8 +247,8 @@ But $\Box$ could also have more structure...
 # Fixed That For You
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs = xs where xs = fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
 . . .
@@ -263,11 +260,11 @@ fix f = let x = f x in x
 
 . . .
 
-We can redefine Piponi's `löb` in terms of `fix`:
+We can redefine Piponi's `loeb` in terms of `fix`:
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs  = fix $ \xs -> fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = fix $ \xs -> fmap ($ xs) fs
 ```
 
 I'll use this one from now on.
@@ -275,8 +272,8 @@ I'll use this one from now on.
 # Fixed That For You
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs  = fix $ \xs -> fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = fix $ \xs -> fmap ($ xs) fs
 ```
 
 We want to find:
@@ -289,19 +286,19 @@ We want to find:
 
 `cfix :: Comonad w =>   (w a -> a) -> w a`{.haskell}
 
-\vspace*{1.43\baselineskip} 
+\vspace*{1.43\baselineskip}
 
 . . .
 
 `wfix :: Comonad w => w (w a -> a) ->   a`{.haskell}
 
-\vspace*{1.51\baselineskip} 
+\vspace*{1.51\baselineskip}
 
 # Fixed That For You
 
 ```Haskell
-löb :: Functor f => f (f a -> a) -> f a
-löb fs  = fix $ \xs -> fmap ($ xs) fs
+loeb :: Functor f => f (f a -> a) -> f a
+loeb fs = fix $ \xs -> fmap ($ xs) fs
 ```
 
 We want to find:
@@ -515,7 +512,7 @@ Could not deduce (ComonadApply w)
    Possible fix:
       add (ComonadApply w) to the context
       of the type signature for evaluate.
-```     
+```
 
 \note{Oh, obviously: we need to fix that constraint now.}
 
@@ -738,7 +735,7 @@ Not much; you have to unwrap it. So, what can you do with something of type `(Co
 . . .
 
 **You can duplicate the outer layer:**
-  
+
 `duplicate :: f (g a) -> f (f (g a))`{.haskell}
 
 . . .
@@ -789,7 +786,7 @@ Whatever `???` is, it likely has a more generic type.
 
 \note{Let's guess that we're looking for something which swaps just two layers.}
 
-. . . 
+. . .
 
 ```Haskell
 ???      ::    f (g x)      ->    g (f x)
