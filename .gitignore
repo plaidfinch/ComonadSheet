@@ -7,4 +7,5 @@ doc
 *.chs.h
 *.pdf
 .virthualenv
-
+cabal.sandbox.config
+.cabal-sandbox
