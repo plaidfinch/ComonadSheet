@@ -11,9 +11,6 @@ import Control.Applicative
 import Data.Functor.Identity
 import Data.Functor.Compose
 
-import Control.Lens ( view , over )
-import Control.Lens.Tuple
-
 import Tape
 import Reference
 import Nested

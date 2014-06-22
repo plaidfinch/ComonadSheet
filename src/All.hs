@@ -11,10 +11,10 @@ module All
    , module Cartesian
    , module Tape
    , module Peano
-   , module NumericInstances
 
    , module Control.Comonad
    , module Data.Distributive
+   , module Data.Numeric.Function
    ) where
 
 import Names
@@ -29,7 +29,7 @@ import CountedList
 import Cartesian
 import Tape
 import Peano
-import NumericInstances
 
 import Control.Comonad
 import Data.Distributive
+import Data.Numeric.Function
