@@ -9,3 +9,5 @@ doc
 .virthualenv
 cabal.sandbox.config
 .cabal-sandbox
+.DS_Store
+
