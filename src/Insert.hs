@@ -17,25 +17,25 @@ data Signed f a = Positive (f a)
                 | Negative (f a)
                 deriving ( Eq , Ord , Show )
 
-class InsertBase l t where
-   insertBase :: l a -> t a -> t a
+class InsertBase l where
+   insertBase :: l a -> Tape a -> Tape a
 
-instance InsertBase Tape Tape where
+instance InsertBase Tape where
    insertBase t _ = t
 
-instance InsertBase Stream Tape where
+instance InsertBase Stream where
    insertBase (Cons x xs) (Tape ls _ _) = Tape ls x xs
 
-instance InsertBase (Signed Stream) Tape where
+instance InsertBase (Signed Stream) where
    insertBase (Positive (Cons x xs)) (Tape ls _ _) = Tape ls x xs
    insertBase (Negative (Cons x xs)) (Tape _ _ rs) = Tape xs x rs
 
-instance InsertBase [] Tape where
+instance InsertBase [] where
    insertBase [] t = t
    insertBase (x : xs) (Tape ls c rs) =
       Tape ls x (prefix xs (Cons c rs))
 
-instance InsertBase (Signed []) Tape where
+instance InsertBase (Signed []) where
    insertBase (Positive []) t = t
    insertBase (Negative []) t = t
    insertBase (Positive (x : xs)) (Tape ls c rs) =
@@ -46,12 +46,12 @@ instance InsertBase (Signed []) Tape where
 class InsertNested l t where
    insertNested :: l a -> t a -> t a
 
-instance (InsertBase l t) => InsertNested (Nested (Flat l)) (Nested (Flat t)) where
+instance (InsertBase l) => InsertNested (Nested (Flat l)) (Nested (Flat Tape)) where
    insertNested (Flat l) (Flat t) = Flat $ insertBase l t
 
-instance ( InsertBase l t , InsertNested (Nested ls) (Nested ts)
+instance ( InsertBase l , InsertNested (Nested ls) (Nested ts)
          , Functor (Nested ls) , Applicative (Nested ts) )
-         => InsertNested (Nested (Nest ls l)) (Nested (Nest ts t)) where
+         => InsertNested (Nested (Nest ls l)) (Nested (Nest ts Tape)) where
    insertNested (Nest l) (Nest t) =
       Nest $ insertNested (insertBase <$> l) (pure id) <*> t
 
