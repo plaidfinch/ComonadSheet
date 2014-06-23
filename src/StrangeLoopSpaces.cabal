@@ -31,7 +31,7 @@ library
       Stream,
       TaggedList,
       Tape,
-      Unchecked
+      Evaluate
 
   other-extensions:
       FlexibleContexts,

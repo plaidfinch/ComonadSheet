@@ -1,6 +1,6 @@
 module All
    ( module Names
-   , module Unchecked
+   , module Evaluate
    , module Slice
    , module Insert
    , module Nested
@@ -18,7 +18,7 @@ module All
    ) where
 
 import Names
-import Unchecked
+import Evaluate
 import Slice
 import Insert
 import Nested

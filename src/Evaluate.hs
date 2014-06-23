@@ -2,7 +2,7 @@
 {-# LANGUAGE ConstraintKinds  #-}
 {-# LANGUAGE TypeFamilies     #-}
 
-module Unchecked where
+module Evaluate where
 
 import Insert
 import Slice
