@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE UndecidableInstances  #-}
@@ -54,3 +55,11 @@ instance ( Cross (Succ n) t , Functor t
          => Cross (Succ (Succ n)) t where
    cross (t ::: ts) =
       Nest $ (\xs -> (::: xs) <$> t) <$> cross ts
+
+type family NestedCount x where
+   NestedCount (Flat f)   = Succ Zero
+   NestedCount (Nest f g) = Succ (NestedCount f)
+
+type family NestedNTimes n f where
+   NestedNTimes (Succ Zero) f = Flat f
+   NestedNTimes (Succ n)    f = Nest (NestedNTimes n f) f

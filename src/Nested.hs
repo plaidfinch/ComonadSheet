@@ -11,8 +11,6 @@
 
 module Nested where
 
-import Peano
-
 import Control.Applicative
 import Control.Comonad
 import Data.Foldable
@@ -42,18 +40,18 @@ instance (Functor f, Functor (Nested fs)) => Functor (Nested (Nest fs f)) where
    fmap f = Nest . fmap (fmap f) . unNest
 
 instance (Applicative f) => Applicative (Nested (Flat f)) where
-   pure    = Flat . pure
-   f <*> x = Flat (unNest f <*> unNest x)
+   pure              = Flat . pure
+   Flat f <*> Flat x = Flat (f <*> x)
 
 instance (Applicative f, Applicative (Nested fs)) => Applicative (Nested (Nest fs f)) where
-   pure    = Nest . pure . pure
-   f <*> x = Nest ((<*>) <$> unNest f <*> unNest x)
+   pure              = Nest . pure . pure
+   Nest f <*> Nest x = Nest ((<*>) <$> f <*> x)
 
 instance (ComonadApply f) => ComonadApply (Nested (Flat f)) where
-   f <@> x = Flat (unNest f <@> unNest x)
+   Flat f <@> Flat x = Flat (f <@> x)
 
 instance (ComonadApply f, Distributive f, ComonadApply (Nested fs)) => ComonadApply (Nested (Nest fs f)) where
-   f <@> x = Nest ((<@>) <$> unNest f <@> unNest x)
+   Nest f <@> Nest x = Nest ((<@>) <$> f <@> x)
 
 instance (Comonad f) => Comonad (Nested (Flat f)) where
    extract   = extract . unNest
@@ -67,6 +65,32 @@ instance (Comonad f, Comonad (Nested fs), Distributive f, Functor (Nested (Nest 
       . duplicate        -- duplicate outer functor f: f (g (g a)) -> f (f (g (g a)))
       . fmap duplicate   -- duplicate inner functor g: f (g a) -> f (g (g a))
       . unNest           -- NOTE: can't pattern-match on constructor or you break laziness!
+
+instance (Foldable f) => Foldable (Nested (Flat f)) where
+   foldMap f = foldMap f . unNest
+
+instance (Foldable f, Foldable (Nested fs)) => Foldable (Nested (Nest fs f)) where
+   foldMap f = foldMap (foldMap f) . unNest
+
+instance (Traversable f) => Traversable (Nested (Flat f)) where
+   traverse f = fmap Flat . traverse f . unNest
+
+instance (Traversable f, Traversable (Nested fs)) => Traversable (Nested (Nest fs f)) where
+   traverse f = fmap Nest . traverse (traverse f) . unNest
+
+instance (Alternative f) => Alternative (Nested (Flat f)) where
+   empty             = Flat empty
+   Flat x <|> Flat y = Flat (x <|> y)
+
+instance (Applicative f, Alternative (Nested fs)) => Alternative (Nested (Nest fs f)) where
+   empty             = Nest empty
+   Nest x <|> Nest y = Nest (x <|> y)
+
+instance (Distributive f) => Distributive (Nested (Flat f)) where
+   distribute = Flat . distribute . fmap unNest
+
+instance (Distributive f, Distributive (Nested fs)) => Distributive (Nested (Nest fs f)) where
+   distribute = Nest . fmap distribute . distribute . fmap unNest
 
 type family AddNest x where
    AddNest (Nested fs (f x)) = Nested (Nest fs f) x
@@ -87,15 +111,3 @@ instance ( AsNestedAs (f a) (UnNest (Nested (Nest g h) b)) ~ Nested fs (f' a')
          , NestedAs (f a) (UnNest (Nested (Nest g h) b)))
          => NestedAs (f a) (Nested (Nest g h) b) where
    x `asNestedAs` y = Nest (x `asNestedAs` (unNest y))
-
-type family NestedCount x where
-   NestedCount (Flat f)   = Succ Zero
-   NestedCount (Nest f g) = Succ (NestedCount f)
-
-nestedCount :: Nested f x -> Natural (NestedCount f)
-nestedCount (Flat x) = Succ Zero
-nestedCount (Nest x) = Succ (nestedCount x)
-
-type family NestedNTimes n f where
-   NestedNTimes (Succ Zero) f = Flat f
-   NestedNTimes (Succ n)    f = Nest (NestedNTimes n f) f
