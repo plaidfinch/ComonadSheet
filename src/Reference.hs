@@ -87,14 +87,6 @@ getMovement :: (Length ts <= n, ((n - Length ts) + Length ts) ~ n)
 getMovement refs coords =
    padTo (count coords) (Left (Rel 0)) (homogenize eitherFromRef refs) `diff` coords
 
-heterogenize :: (a -> f t) -> CountedList n a -> TaggedList f (Replicate n t)
-heterogenize _ CNil       = TNil
-heterogenize f (x ::: xs) = f x :-: heterogenize f xs
-
-homogenize :: (forall t. f t -> a) -> TaggedList f ts -> CountedList (Length ts) a
-homogenize _ TNil       = CNil
-homogenize f (x :-: xs) = f x ::: homogenize f xs
-
 eitherFromRef :: Ref t -> Either (Ref Relative) (Ref Absolute)
 eitherFromRef (Rel r) = Left  (Rel r)
 eitherFromRef (Abs a) = Right (Abs a)

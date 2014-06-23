@@ -3,6 +3,7 @@
 {-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
@@ -94,3 +95,13 @@ type family Tack x xs where
 tack :: f t -> TaggedList f ts -> TaggedList f (Tack t ts)
 tack a TNil       = a :-: TNil
 tack a (x :-: xs) = x :-: tack a xs
+
+-- We can convert between them using cones and co-cones
+
+heterogenize :: (a -> f t) -> CountedList n a -> TaggedList f (Replicate n t)
+heterogenize _ CNil       = TNil
+heterogenize f (x ::: xs) = f x :-: heterogenize f xs
+
+homogenize :: (forall t. f t -> a) -> TaggedList f ts -> CountedList (Length ts) a
+homogenize _ TNil       = CNil
+homogenize f (x :-: xs) = f x ::: homogenize f xs
