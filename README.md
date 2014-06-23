@@ -1,7 +1,7 @@
 Strange-Loop Spaces
 ===================
 
-Spreadsheet evaluation with absolute and relative references can be implemented as a comonadic fixed-point of an n-dimensional indexed list zipper.
+A library for expressing "spreadsheet-like" computations with absolute and relative references, using fixed-points of n-dimensional comonads.
 
 Examples
 --------
