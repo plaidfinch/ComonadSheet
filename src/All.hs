@@ -8,7 +8,6 @@ module All
    , module Reference
    , module TaggedList
    , module CountedList
-   , module Cartesian
    , module Tape
    , module Peano
 
@@ -26,7 +25,6 @@ import Indexed
 import Reference
 import TaggedList
 import CountedList
-import Cartesian
 import Tape
 import Peano
 
