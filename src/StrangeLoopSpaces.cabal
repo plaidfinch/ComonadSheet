@@ -49,8 +49,7 @@ library
       TypeOperators,
       PolyKinds,
       DeriveFunctor,
-      TupleSections,
-      FunctionalDependencies
+      TupleSections
 
   build-depends:
       base >=4.7,
