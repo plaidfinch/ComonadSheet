@@ -82,11 +82,3 @@ moveR (Tape ls c (Cons r rs)) = Tape (Cons c ls) r rs
 
 tapeOf :: a -> Tape a
 tapeOf = pure
-
--- | The tape of integers, with zero centered.
-ints :: Tape Integer
-ints = enumerate 0
-
--- | The tape of zeros in all directions
-zeros :: Tape Integer
-zeros = pure 0
