@@ -18,7 +18,7 @@ library
 
   exposed-modules:
       All,
-      CountedList,
+      IndexedList,
       Examples, 
       Indexed,
       Insert,
@@ -28,7 +28,6 @@ library
       Reference,
       Slice,
       Stream,
-      TaggedList,
       Tape,
       Evaluate
 

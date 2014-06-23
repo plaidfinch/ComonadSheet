@@ -10,8 +10,7 @@ import Peano
 import Tape
 import Indexed
 import Nested
-import TaggedList
-import CountedList
+import IndexedList
 
 -- One dimension...
 

@@ -13,8 +13,7 @@ import Indexed
 import Peano
 import Nested
 import Reference
-import TaggedList
-import CountedList ( padTo )
+import IndexedList hiding ( replicate )
 
 import Stream ( Stream(..) , (<:>) )
 import qualified Stream as S

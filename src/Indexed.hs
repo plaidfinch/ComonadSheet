@@ -17,7 +17,7 @@ import Peano
 import Tape
 import Reference
 import Nested
-import CountedList
+import IndexedList
 
 type Coordinate n = CountedList n (Ref Absolute)
 

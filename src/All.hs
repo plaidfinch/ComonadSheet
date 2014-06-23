@@ -6,8 +6,7 @@ module All
    , module Nested
    , module Indexed
    , module Reference
-   , module TaggedList
-   , module CountedList
+   , module IndexedList
    , module Tape
    , module Peano
 
@@ -23,8 +22,7 @@ import Insert
 import Nested
 import Indexed
 import Reference
-import TaggedList
-import CountedList
+import IndexedList
 import Tape
 import Peano
 

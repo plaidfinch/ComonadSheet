@@ -12,8 +12,7 @@
 module Reference where
 
 import Peano
-import CountedList
-import TaggedList
+import IndexedList
 
 import Control.Applicative
 import Data.List ( intercalate )
@@ -83,10 +82,8 @@ diff (Right (Abs r) ::: rs) (Abs i ::: is) = Rel (r - i) ::: diff rs is
 diff CNil _  = CNil
 diff _  CNil = CNil
 
-getMovement :: (Length ts <= n,
-                      ((n - Length ts) + Length ts) ~ n) =>
-                     TaggedList Ref ts
-                     -> CountedList n (Ref Absolute) -> CountedList n (Ref Relative)
+getMovement :: (Length ts <= n, ((n - Length ts) + Length ts) ~ n)
+            => TaggedList Ref ts -> CountedList n (Ref Absolute) -> CountedList n (Ref Relative)
 getMovement refs coords =
    padTo (count coords) (Left (Rel 0)) (homogenize eitherFromRef refs) `diff` coords
 

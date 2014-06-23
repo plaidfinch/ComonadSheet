@@ -1,5 +1,6 @@
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE GADTs                 #-}
@@ -8,13 +9,15 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-} 
 
-module CountedList where
+module IndexedList where
 
 import Peano
 
 import Control.Applicative
 import Data.List hiding ( replicate , zip )
 import Prelude   hiding ( replicate , zip )
+
+-- Counted lists: indexed by length in the type.
 
 infixr 5 :::
 
@@ -65,3 +68,29 @@ instance Functor (CountedList n) where
 instance (ReifyNatural n) => Applicative (CountedList n) where
    pure x    = replicate (reifyNatural :: Natural n) x
    fs <*> xs = uncurry id <$> zip fs xs
+
+-- Tagged lists are lists where each element is an (f a) for some a, but the a may be different for each element. Types of elements are kept track of in the type of the list.
+
+infixr 5 :-:
+data x :-: y
+data Nil
+
+data TaggedList f ts where
+   (:-:) :: f a -> TaggedList f rest -> TaggedList f (a :-: rest)
+   TNil  :: TaggedList f Nil
+
+type family Replicate n x where
+   Replicate Zero     x = Nil
+   Replicate (Succ n) x = x :-: Replicate n x
+
+type family Length ts where
+   Length Nil        = Zero
+   Length (x :-: xs) = Succ (Length xs)
+
+type family Tack x xs where
+   Tack a Nil        = a :-: Nil
+   Tack a (x :-: xs) = x :-: Tack a xs
+
+tack :: f t -> TaggedList f ts -> TaggedList f (Tack t ts)
+tack a TNil       = a :-: TNil
+tack a (x :-: xs) = x :-: tack a xs
