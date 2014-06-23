@@ -23,18 +23,17 @@ instance ReifyNatural Zero                         where reifyNatural = Zero
 instance (ReifyNatural n) => ReifyNatural (Succ n) where reifyNatural = Succ (reifyNatural :: Natural n)
 
 type family LessThanOrEqual a b where
-   LessThanOrEqual Zero Zero         = True
-   LessThanOrEqual Zero (Succ m)     = True
+   LessThanOrEqual Zero     Zero     = True
+   LessThanOrEqual Zero     (Succ m) = True
    LessThanOrEqual (Succ n) (Succ m) = LessThanOrEqual n m
    LessThanOrEqual x y               = False
 
 type a <= b = (LessThanOrEqual a b ~ True)
 
 type family LessThan a b where
-   LessThan Zero Zero         = True
-   LessThan Zero (Succ m)     = True
+   LessThan Zero     (Succ m) = True
    LessThan (Succ n) (Succ m) = LessThan n m
-   LessThan x y               = False
+   LessThan x        y        = False
 
 type a < b = (LessThan a b ~ True)
 
