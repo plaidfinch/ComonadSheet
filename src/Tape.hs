@@ -8,8 +8,8 @@ import Control.Arrow
 import Control.Applicative
 import Data.Distributive
 
-import Stream ( Stream(..) )
-import qualified Stream as S
+import Data.Stream ( Stream(..) )
+import qualified Data.Stream as S
 
 import Prelude hiding ( iterate , take )
 
@@ -56,7 +56,7 @@ instance Comonad Tape where
 --   @ZipList@ and @Stream@.
 instance ComonadApply Tape where
    (Tape ls c rs) <@> (Tape ls' c' rs') =
-      Tape (ls <@> ls') (c c') (rs <@> rs')
+      Tape (ls <*> ls') (c c') (rs <*> rs')
 
 -- | A tape is @Applicative@, where the @\<*\>@ is equivalent to its @ComonadApply@ instance (required
 --   by law), and a pure value is the tape consisting of copies of that value in both directions.

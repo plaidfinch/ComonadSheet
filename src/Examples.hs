@@ -6,7 +6,7 @@ import Control.Applicative ( (<$>), (<*>) )
 import Data.List ( intersperse )
 import Data.Bool ( bool )
 
-import Stream ( Stream , repeat , (<:>) )
+import Data.Stream ( Stream , repeat , (<:>) )
 
 import qualified Prelude as P
 import Prelude hiding ( repeat , take )

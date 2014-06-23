@@ -26,7 +26,6 @@ library
       Peano,
       Reference,
       Manipulate,
-      Stream,
       Tape,
       Evaluate
 

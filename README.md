@@ -9,7 +9,7 @@ Examples
 The environment I'll be using as a demo-space looks like:
 ```Haskell
 import All
-import Stream ( Stream , repeat , (<:>) )
+import Data.Stream ( Stream , repeat , (<:>) )
 
 import Control.Applicative ( (<$>), (<*>) )
 import Data.List ( intersperse )
