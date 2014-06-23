@@ -1,8 +1,7 @@
 module All
    ( module Names
    , module Evaluate
-   , module Slice
-   , module Insert
+   , module Manipulate
    , module Nested
    , module Indexed
    , module Reference
@@ -17,8 +16,7 @@ module All
 
 import Names
 import Evaluate
-import Slice
-import Insert
+import Manipulate
 import Nested
 import Indexed
 import Reference

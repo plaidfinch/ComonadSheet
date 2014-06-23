@@ -4,8 +4,7 @@
 
 module Evaluate where
 
-import Insert
-import Slice
+import Manipulate
 import Reference
 import Nested
 import Indexed

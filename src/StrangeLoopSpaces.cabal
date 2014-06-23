@@ -21,12 +21,11 @@ library
       IndexedList,
       Examples, 
       Indexed,
-      Insert,
       Names,
       Nested,
       Peano,
       Reference,
-      Slice,
+      Manipulate,
       Stream,
       Tape,
       Evaluate
