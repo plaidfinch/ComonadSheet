@@ -2,17 +2,42 @@
 {-# LANGUAGE ConstraintKinds  #-}
 {-# LANGUAGE TypeFamilies     #-}
 
-module Control.Comonad.Sheet where
+module Control.Comonad.Sheet
+   ( module Control.Comonad.Sheet.Names
+   , module Control.Comonad.Sheet.Manipulate
+   , module Control.Comonad.Sheet.Indexed
+   , module Control.Comonad.Sheet.Reference
 
+   , module Data.Functor.Nested
+   , module Data.List.IndexedList
+   , module Data.Stream.Tape
+   , module Data.Numeric.Witness.Peano
+
+   , module Control.Comonad
+   , module Data.Distributive
+   , module Data.Numeric.Function
+
+   , evaluate
+   , cell , cells
+   , sheet , indexedSheet
+   ) where
+
+import Control.Comonad.Sheet.Names
 import Control.Comonad.Sheet.Manipulate
-import Control.Comonad.Sheet.Reference
 import Control.Comonad.Sheet.Indexed
-import Data.Functor.Nested
+import Control.Comonad.Sheet.Reference
 
-import Data.Function
+import Data.Functor.Nested
+import Data.List.IndexedList
+import Data.Stream.Tape
+import Data.Numeric.Witness.Peano
+
 import Control.Comonad
 import Control.Applicative
+import Data.Distributive
 import Data.Traversable
+import Data.Numeric.Function
+import Data.Function
 
 evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 evaluate fs = fix $ (fs <@>) . duplicate
