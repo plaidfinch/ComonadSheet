@@ -1,5 +1,5 @@
-Strange-Loop Spaces
-===================
+ComonadSheets
+=============
 
 A library for expressing "spreadsheet-like" computations with absolute and relative references, using fixed-points of n-dimensional comonads.
 
@@ -8,7 +8,7 @@ Examples
 
 The environment I'll be using as a demo-space looks like:
 ```Haskell
-import All
+import Control.Comonad.Sheet
 import Data.Stream ( Stream , repeat , (<:>) )
 
 import Control.Applicative ( (<$>), (<*>) )

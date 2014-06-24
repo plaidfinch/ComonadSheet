@@ -21,6 +21,7 @@ library
       Control.Comonad.Sheet.Names,
       Control.Comonad.Sheet.Reference,
       Control.Comonad.Sheet.Manipulate,
+      Control.Comonad.Sheet.Examples,
       Control.Comonad.Sheet
 
   other-extensions:

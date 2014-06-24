@@ -1,6 +1,6 @@
-module Examples where
+module Control.Comonad.Sheet.Examples where
 
-import All
+import Control.Comonad.Sheet
 
 import Control.Applicative ( (<$>), (<*>) )
 import Data.List ( intersperse )
