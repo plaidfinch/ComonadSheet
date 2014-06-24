@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Tape where
+module Data.Stream.Tape where
 
 import Control.Comonad
 import Control.Arrow

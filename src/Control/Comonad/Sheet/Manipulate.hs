@@ -6,14 +6,14 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-module Manipulate where
+module Control.Comonad.Sheet.Manipulate where
 
-import Tape
-import Indexed
-import Peano
-import Nested
-import Reference
-import IndexedList hiding ( replicate )
+import Data.Stream.Tape
+import Control.Comonad.Sheet.Indexed
+import Data.Numeric.Witness.Peano
+import Data.Functor.Nested
+import Control.Comonad.Sheet.Reference
+import Data.List.IndexedList hiding ( replicate )
 
 import Data.Stream ( Stream(..) , (<:>) )
 import qualified Data.Stream as S

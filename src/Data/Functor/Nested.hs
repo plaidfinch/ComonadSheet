@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-module Nested where
+module Data.Functor.Nested where
 
 import Control.Applicative
 import Control.Comonad

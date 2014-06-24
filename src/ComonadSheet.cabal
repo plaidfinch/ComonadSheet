@@ -1,4 +1,4 @@
-name:                StrangeLoopSpaces
+name:                ComonadSheet
 version:             0.3.0.0
 stability:           experimental
 homepage:            https://github.com/kwef/Strange-Loop-Spaces
@@ -17,17 +17,15 @@ cabal-version:       >=1.10
 library
 
   exposed-modules:
-      All,
-      IndexedList,
-      Examples, 
-      Indexed,
-      Names,
-      Nested,
-      Peano,
-      Reference,
-      Manipulate,
-      Tape,
-      Evaluate
+      Data.List.IndexedList,
+      Control.Comonad.Sheet.Indexed,
+      Control.Comonad.Sheet.Names,
+      Data.Functor.Nested,
+      Data.Numeric.Witness.Peano,
+      Control.Comonad.Sheet.Reference,
+      Control.Comonad.Sheet.Manipulate,
+      Data.Stream.Tape,
+      Control.Comonad.Sheet
 
   other-extensions:
       FlexibleContexts,

@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeFamilies        #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module Peano where
+module Data.Numeric.Witness.Peano where
 
 data Zero
 data Succ n

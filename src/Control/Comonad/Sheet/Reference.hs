@@ -9,10 +9,10 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 
-module Reference where
+module Control.Comonad.Sheet.Reference where
 
-import Peano
-import IndexedList
+import Data.Numeric.Witness.Peano
+import Data.List.IndexedList
 
 import Control.Applicative
 import Data.List ( intercalate )

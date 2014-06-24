@@ -2,12 +2,12 @@
 {-# LANGUAGE ConstraintKinds  #-}
 {-# LANGUAGE TypeFamilies     #-}
 
-module Evaluate where
+module Control.Comonad.Sheet where
 
-import Manipulate
-import Reference
-import Nested
-import Indexed
+import Control.Comonad.Sheet.Manipulate
+import Control.Comonad.Sheet.Reference
+import Control.Comonad.Sheet.Indexed
+import Data.Functor.Nested
 
 import Data.Function
 import Control.Comonad

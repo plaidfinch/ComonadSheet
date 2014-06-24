@@ -7,18 +7,18 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-module Indexed where
+module Control.Comonad.Sheet.Indexed where
 
 import Control.Comonad
 import Control.Applicative
 import Data.Functor.Identity
 import Data.Functor.Compose
 
-import Peano
-import Tape
-import Reference
-import Nested
-import IndexedList
+import Data.Numeric.Witness.Peano
+import Data.Stream.Tape
+import Control.Comonad.Sheet.Reference
+import Data.Functor.Nested
+import Data.List.IndexedList
 
 type Coordinate n = CountedList n (Ref Absolute)
 

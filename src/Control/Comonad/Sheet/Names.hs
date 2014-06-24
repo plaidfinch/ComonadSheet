@@ -3,14 +3,14 @@
 {-# LANGUAGE TypeFamilies     #-}
 {-# LANGUAGE TypeOperators    #-}
 
-module Names where
+module Control.Comonad.Sheet.Names where
 
-import Reference
-import Peano
-import Tape
-import Indexed
-import Nested
-import IndexedList
+import Control.Comonad.Sheet.Reference
+import Data.Numeric.Witness.Peano
+import Data.Stream.Tape
+import Control.Comonad.Sheet.Indexed
+import Data.Functor.Nested
+import Data.List.IndexedList
 
 -- One dimension...
 

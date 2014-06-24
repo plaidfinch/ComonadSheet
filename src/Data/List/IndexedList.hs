@@ -10,9 +10,9 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-} 
 
-module IndexedList where
+module Data.List.IndexedList where
 
-import Peano
+import Data.Numeric.Witness.Peano
 
 import Control.Applicative
 import Data.List hiding ( replicate , zip )
