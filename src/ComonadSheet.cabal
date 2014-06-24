@@ -1,14 +1,14 @@
 name:                ComonadSheet
 version:             0.3.0.0
 stability:           experimental
-homepage:            https://github.com/kwef/ComonadSheet
+homepage:            https://github.com/kwf/ComonadSheet
 synopsis:            A library for expressing "spreadsheet-like" computations with absolute and relative references, using fixed-points of n-dimensional comonads.
 -- description:         
 -- license:             
 -- license-file:        LICENSE
 author:              Kenneth Foner
 maintainer:          kenny.foner@gmail.com
-bug-reports:         https://github.com/kwef/ComonadSheet/issues
+bug-reports:         https://github.com/kwf/ComonadSheet/issues
 copyright:           Copyright: (c) 2013-2014 Kenneth W. Foner
 category:            Control
 build-type:          Simple
