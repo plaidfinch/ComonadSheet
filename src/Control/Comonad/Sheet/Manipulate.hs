@@ -13,7 +13,7 @@ import Control.Comonad.Sheet.Indexed
 import Data.Numeric.Witness.Peano
 import Data.Functor.Nested
 import Control.Comonad.Sheet.Reference
-import Data.List.IndexedList hiding ( replicate )
+import Data.List.Indexed hiding ( replicate )
 
 import Data.Stream ( Stream(..) , (<:>) )
 import qualified Data.Stream as S
@@ -36,7 +36,7 @@ instance Take Nil (Nested (Flat Tape)) where
 
 instance (Take Nil (Nested ts), Functor (Nested ts)) => Take Nil (Nested (Nest ts Tape)) where
    type ListFrom (Nested (Nest ts Tape)) a = ListFrom (Nested ts) [a]
-   take _ = take (Rel 0 :-: TNil)
+   take _ = take (Rel 0 :-: ConicNil)
 
 instance Take (Relative :-: Nil) (Nested (Flat Tape)) where
    type ListFrom (Nested (Flat Tape)) a = [a]
@@ -68,7 +68,7 @@ instance View Nil (Nested (Flat Tape)) where
 
 instance (View Nil (Nested ts), Functor (Nested ts)) => View Nil (Nested (Nest ts Tape)) where
    type StreamFrom (Nested (Nest ts Tape)) a = StreamFrom (Nested ts) (Stream a)
-   view _ = view (Rel 0 :-: TNil)
+   view _ = view (Rel 0 :-: ConicNil)
 
 instance View (Relative :-: Nil) (Nested (Flat Tape)) where
    type StreamFrom (Nested (Flat Tape)) a = (Stream a)

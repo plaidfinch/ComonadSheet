@@ -12,7 +12,7 @@
 module Control.Comonad.Sheet.Reference where
 
 import Data.Numeric.Witness.Peano
-import Data.List.IndexedList
+import Data.List.Indexed
 
 import Control.Applicative
 import Data.List ( intercalate )
@@ -58,15 +58,15 @@ type family a & b where
    Nil        & bs         = bs
    as         & Nil        = as
 
-type RefList = TaggedList Ref
+type RefList = ConicList Ref
 
 class CombineRefLists as bs where
    (&) :: RefList as -> RefList bs -> RefList (as & bs)
 instance (CombineRefs a b, CombineRefLists as bs)
       => CombineRefLists (a :-: as) (b :-: bs) where (a :-: as) & (b :-: bs) = combine a b :-: (as & bs)
-instance CombineRefLists Nil        (b :-: bs) where TNil       & bs         = bs
-instance CombineRefLists (a :-: as) Nil        where as         & TNil       = as
-instance CombineRefLists Nil        Nil        where TNil       & TNil       = TNil
+instance CombineRefLists Nil        (b :-: bs) where ConicNil & bs           = bs
+instance CombineRefLists (a :-: as) Nil        where as       & ConicNil     = as
+instance CombineRefLists Nil        Nil        where ConicNil & ConicNil     = ConicNil
 
 merge :: (ReifyNatural n)
       => CountedList n (Ref Relative)
@@ -79,11 +79,11 @@ diff :: CountedList n (Either (Ref Relative) (Ref Absolute))
      -> CountedList n (Ref Relative)
 diff (Left  (Rel r) ::: rs) (Abs i ::: is) = Rel  r      ::: diff rs is
 diff (Right (Abs r) ::: rs) (Abs i ::: is) = Rel (r - i) ::: diff rs is
-diff CNil _  = CNil
-diff _  CNil = CNil
+diff CountedNil _  = CountedNil
+diff _  CountedNil = CountedNil
 
 getMovement :: (Length ts <= n, ((n - Length ts) + Length ts) ~ n)
-            => TaggedList Ref ts -> CountedList n (Ref Absolute) -> CountedList n (Ref Relative)
+            => RefList ts -> CountedList n (Ref Absolute) -> CountedList n (Ref Relative)
 getMovement refs coords =
    padTo (count coords) (Left (Rel 0)) (homogenize eitherFromRef refs) `diff` coords
 
@@ -99,4 +99,4 @@ instance Show (RefList ts) where
       (showString $ ( intercalate " :-: "
                     $ map (either show show)
                     $ unCount
-                    $ homogenize eitherFromRef xs ) ++ " :-: TNil")
+                    $ homogenize eitherFromRef xs ) ++ " :-: ConicNil")

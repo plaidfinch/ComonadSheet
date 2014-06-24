@@ -10,7 +10,7 @@ import Data.Numeric.Witness.Peano
 import Data.Stream.Tape
 import Control.Comonad.Sheet.Indexed
 import Data.Functor.Nested
-import Data.List.IndexedList
+import Data.List.Indexed
 
 -- One dimension...
 
@@ -24,7 +24,7 @@ type Tape1  = Nested  (NestedNTimes Nat1 Tape)
 type ITape1 = Indexed (NestedNTimes Nat1 Tape)
 
 here1 :: RefList Rel1
-here1 = Rel 0 :-: TNil
+here1 = Rel 0 :-: ConicNil
 
 d1 :: (CombineRefLists Rel1 x) => RefList x -> RefList (Rel1 & x)
 d1 = (here1 &)

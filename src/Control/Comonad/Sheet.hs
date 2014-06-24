@@ -9,7 +9,7 @@ module Control.Comonad.Sheet
    , module Control.Comonad.Sheet.Reference
 
    , module Data.Functor.Nested
-   , module Data.List.IndexedList
+   , module Data.List.Indexed
    , module Data.Stream.Tape
    , module Data.Numeric.Witness.Peano
 
@@ -28,7 +28,7 @@ import Control.Comonad.Sheet.Indexed
 import Control.Comonad.Sheet.Reference
 
 import Data.Functor.Nested
-import Data.List.IndexedList
+import Data.List.Indexed
 import Data.Stream.Tape
 import Data.Numeric.Witness.Peano
 

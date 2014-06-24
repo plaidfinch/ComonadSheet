@@ -17,7 +17,9 @@ cabal-version:       >=1.10
 library
 
   exposed-modules:
-      Data.List.IndexedList,
+      Data.List.Indexed,
+      Data.List.Indexed.Counted,
+      Data.List.Indexed.Conic,
       Control.Comonad.Sheet.Indexed,
       Control.Comonad.Sheet.Names,
       Data.Functor.Nested,

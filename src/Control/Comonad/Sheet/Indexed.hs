@@ -18,7 +18,7 @@ import Data.Numeric.Witness.Peano
 import Data.Stream.Tape
 import Control.Comonad.Sheet.Reference
 import Data.Functor.Nested
-import Data.List.IndexedList
+import Data.List.Indexed
 
 type Coordinate n = CountedList n (Ref Absolute)
 
@@ -48,7 +48,7 @@ class Cross n t where
 
 instance (Functor t) => Cross (Succ Zero) t where
    cross (t ::: _) =
-      Flat $ (::: CNil) <$> t
+      Flat $ (::: CountedNil) <$> t
 
 instance ( Cross (Succ n) t , Functor t
          , Functor (Nested (NestedNTimes (Succ n) t)) )
