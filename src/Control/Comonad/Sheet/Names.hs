@@ -1,9 +1,84 @@
+{- |
+Module      :  Control.Comonad.Sheet.Names
+Description :  Names for the relevant aspects of some smaller dimensions (currently up to 4).
+Copyright   :  Copyright (c) 2014 Kenneth Foner
+
+Maintainer  :  kenneth.foner@gmail.com
+Stability   :  experimental
+Portability :  non-portable
+
+This module defines names to be used manipulating n-dimensional sheets. Currently, names are defined for dimensions
+of 4 and fewer. Below is a summary of the names currently defined in this module. Template Haskell to define these names for new dimension numbers is coming soon!
+
+=Dimension 1:
+
+   * @Sheet1@ is the type of a 1-dimensional sheet
+
+   * @left@ (negative) and @right@ (positive) are directions
+
+   * @leftBy@ and @rightBy@ define relative position by some integer argument
+
+   * @columnAt@ defines absolute position at a given column
+
+   * @column@ retrieves the current column index
+
+   * @d1@ coerces a 1-or-fewer-dimensional reference to a 1-dimensional reference
+
+=Dimension 2:
+   
+   * @Sheet2@ is the type of a 2-dimensional sheet
+
+   * @above@ (negative) and @below@ (positive) are directions
+
+   * @aboveBy@ and @belowBy@ define relative position by some integer argument
+
+   * @rowAt@ defines absolute position at a given row
+
+   * @row@ retrieves the current row index
+
+   * @d2@ coerces a 2-or-fewer-dimensional reference to a 2-dimensional reference
+
+=Dimension 3:
+
+   * @Sheet3@ is the type of a 3-dimensional sheet
+
+   * @inward@ (negative) and @outward@ (positive) are directions
+
+   * @inwardBy@ and @outwardBy@ define relative position by some integer argument
+
+   * @levelAt@ defines absolute position at a given level
+
+   * @level@ retrieves the current level index
+
+   * @d3@ coerces a 3-or-fewer-dimensional reference to a 3-dimensional reference
+
+=Dimension 4:
+
+   * @Sheet4@ is the type of a 4-dimensional sheet
+
+   * @ana@ (negative) and @kata@ (positive) are directions
+
+   * @anaBy@ and @kataBy@ define relative position by some integer argument
+
+   * @spaceAt@ defines absolute position at a given space
+
+   * @space@ retrieves the current space index
+
+   * @d4@ coerces a 4-or-fewer-dimensional reference to a 4-dimensional reference
+
+-}
+
 {-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies     #-}
 {-# LANGUAGE TypeOperators    #-}
 
-module Control.Comonad.Sheet.Names where
+module Control.Comonad.Sheet.Names
+   ( Sheet1 , here1 , d1 , columnAt , column , rightBy , leftBy , right , left
+   , Sheet2 , here2 , d2 , rowAt , row , aboveBy , belowBy , above , below
+   , Sheet3 , here3 , d3 , levelAt , level , inwardBy , outwardBy , inward , outward
+   , Sheet4 , here4 , d4 , spaceAt , space , anaBy , kataBy , ana , kata
+   ) where
 
 import Control.Comonad.Sheet.Reference
 import Data.Numeric.Witness.Peano
@@ -20,8 +95,8 @@ type Nat1 = Succ Zero
 nat1 :: Natural Nat1
 nat1 = reifyNatural
 
-type Tape1  = Nested  (NestedNTimes Nat1 Tape)
-type ITape1 = Indexed (NestedNTimes Nat1 Tape)
+type Sheet1  = Nested  (NestedNTimes Nat1 Tape)
+type ISheet1 = Indexed (NestedNTimes Nat1 Tape)
 
 here1 :: RefList Rel1
 here1 = Rel 0 :-: ConicNil
@@ -51,8 +126,8 @@ type Nat2 = Succ Nat1
 nat2 :: Natural Nat2
 nat2 = reifyNatural
 
-type Tape2  = Nested  (NestedNTimes Nat2 Tape)
-type ITape2 = Indexed (NestedNTimes Nat2 Tape)
+type Sheet2  = Nested  (NestedNTimes Nat2 Tape)
+type ISheet2 = Indexed (NestedNTimes Nat2 Tape)
 
 here2 :: RefList Rel2
 here2 = Rel 0 :-: here1
@@ -82,8 +157,8 @@ type Nat3 = Succ Nat2
 nat3 :: Natural Nat3
 nat3 = reifyNatural
 
-type Tape3  = Nested  (NestedNTimes Nat3 Tape)
-type ITape3 = Indexed (NestedNTimes Nat3 Tape)
+type Sheet3  = Nested  (NestedNTimes Nat3 Tape)
+type ISheet3 = Indexed (NestedNTimes Nat3 Tape)
 
 here3 :: RefList Rel3
 here3 = Rel 0 :-: here2
@@ -113,8 +188,8 @@ type Nat4 = Succ Nat3
 nat4 :: Natural Nat4
 nat4 = reifyNatural
 
-type Tape4  = Nested  (NestedNTimes Nat4 Tape)
-type ITape4 = Indexed (NestedNTimes Nat4 Tape)
+type Sheet4  = Nested  (NestedNTimes Nat4 Tape)
+type ISheet4 = Indexed (NestedNTimes Nat4 Tape)
 
 here4 :: RefList Rel4
 here4 = Rel 0 :-: here3
