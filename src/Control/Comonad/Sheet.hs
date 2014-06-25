@@ -16,8 +16,11 @@ computations using the ComonadSheet library.
 {-# LANGUAGE TypeFamilies     #-}
 
 module Control.Comonad.Sheet
-   ( -- Names for the relevant aspects of some smaller dimensions.
-     module Control.Comonad.Sheet.Names
+   ( evaluate
+   , cell , cells
+   , sheet , indexedSheet
+     -- Names for the relevant aspects of some smaller dimensions.
+   , module Control.Comonad.Sheet.Names
      -- Generic functions for manipulating multi-dimensional comonadic spreadsheets.
    , module Control.Comonad.Sheet.Manipulate
      -- Adds absolute position to n-dimensional comonadic spreadsheets.
@@ -43,10 +46,6 @@ module Control.Comonad.Sheet
      -- Numeric instances for functions gives us, for functions @f, g :: Num b => a -> b@, e.g.
      -- @f + g == \x -> f x + g x@. This enables concise syntax for specifying numeric cells in sheets.
    , module Data.Numeric.Function
-
-   , evaluate
-   , cell , cells
-   , sheet , indexedSheet
    ) where
 
 import Control.Comonad.Sheet.Names
