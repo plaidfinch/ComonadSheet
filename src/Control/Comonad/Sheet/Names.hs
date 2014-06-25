@@ -12,59 +12,59 @@ of 4 and fewer. Below is a summary of the names currently defined in this module
 
 =Dimension 1:
 
-   * @Sheet1@ is the type of a 1-dimensional sheet
+   * 'Sheet1' is the type of a 1-dimensional sheet
 
-   * @left@ (negative) and @right@ (positive) are directions
+   * 'left' (negative) and 'right' (positive) are directions
 
-   * @leftBy@ and @rightBy@ define relative position by some integer argument
+   * 'leftBy' and 'rightBy' define relative position by some integer argument
 
-   * @columnAt@ defines absolute position at a given column
+   * 'columnAt' defines absolute position at a given column
 
-   * @column@ retrieves the current column index
+   * 'column' retrieves the current column index
 
-   * @d1@ coerces a 1-or-fewer-dimensional reference to a 1-dimensional reference
+   * 'd1' coerces a 1-or-fewer-dimensional reference to a 1-dimensional reference
 
 =Dimension 2:
    
-   * @Sheet2@ is the type of a 2-dimensional sheet
+   * 'Sheet2' is the type of a 2-dimensional sheet
 
-   * @above@ (negative) and @below@ (positive) are directions
+   * 'above' (negative) and 'below' (positive) are directions
 
-   * @aboveBy@ and @belowBy@ define relative position by some integer argument
+   * 'aboveBy' and 'belowBy' define relative position by some integer argument
 
-   * @rowAt@ defines absolute position at a given row
+   * 'rowAt' defines absolute position at a given row
 
-   * @row@ retrieves the current row index
+   * 'row' retrieves the current row index
 
-   * @d2@ coerces a 2-or-fewer-dimensional reference to a 2-dimensional reference
+   * 'd2' coerces a 2-or-fewer-dimensional reference to a 2-dimensional reference
 
 =Dimension 3:
 
-   * @Sheet3@ is the type of a 3-dimensional sheet
+   * 'Sheet3' is the type of a 3-dimensional sheet
 
-   * @inward@ (negative) and @outward@ (positive) are directions
+   * 'inward' (negative) and 'outward' (positive) are directions
 
-   * @inwardBy@ and @outwardBy@ define relative position by some integer argument
+   * 'inwardBy' and 'outwardBy' define relative position by some integer argument
 
-   * @levelAt@ defines absolute position at a given level
+   * 'levelAt' defines absolute position at a given level
 
-   * @level@ retrieves the current level index
+   * 'level' retrieves the current level index
 
-   * @d3@ coerces a 3-or-fewer-dimensional reference to a 3-dimensional reference
+   * 'd3' coerces a 3-or-fewer-dimensional reference to a 3-dimensional reference
 
 =Dimension 4:
 
-   * @Sheet4@ is the type of a 4-dimensional sheet
+   * 'Sheet4' is the type of a 4-dimensional sheet
 
-   * @ana@ (negative) and @kata@ (positive) are directions
+   * 'ana' (negative) and 'kata' (positive) are directions
 
-   * @anaBy@ and @kataBy@ define relative position by some integer argument
+   * 'anaBy' and 'kataBy' define relative position by some integer argument
 
-   * @spaceAt@ defines absolute position at a given space
+   * 'spaceAt' defines absolute position at a given space
 
-   * @space@ retrieves the current space index
+   * 'space' retrieves the current space index
 
-   * @d4@ coerces a 4-or-fewer-dimensional reference to a 4-dimensional reference
+   * 'd4' coerces a 4-or-fewer-dimensional reference to a 4-dimensional reference
 
 -}
 

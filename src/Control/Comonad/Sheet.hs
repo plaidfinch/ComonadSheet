@@ -16,18 +16,32 @@ computations using the ComonadSheet library.
 {-# LANGUAGE TypeFamilies     #-}
 
 module Control.Comonad.Sheet
-   ( module Control.Comonad.Sheet.Names
+   ( -- Names for the relevant aspects of some smaller dimensions.
+     module Control.Comonad.Sheet.Names
+     -- Generic functions for manipulating multi-dimensional comonadic spreadsheets.
    , module Control.Comonad.Sheet.Manipulate
+     -- Adds absolute position to n-dimensional comonadic spreadsheets.
    , module Control.Comonad.Sheet.Indexed
+     -- Relative and absolute references to locations in arbitrary-dimensional sheets.
    , module Control.Comonad.Sheet.Reference
 
+     -- The 'Nested' type enables us to abstract over dimensionality. For instance, a 2-dimensional sheet of integers
+     -- is represented by a @Nested (Nest (Flat Tape) Tape) Int@.
    , module Data.Functor.Nested
+     -- Counted and conic lists, used for representing references.
    , module Data.List.Indexed
+     -- The 'Tape' is the base type we use to construct sheets. A 'Tape' is a both-ways-infinite stream, like a Turing
+     -- machine's tape.
    , module Data.Stream.Tape
+     -- Peano numerals linked to type-level indices.
    , module Data.Numeric.Witness.Peano
 
+     -- Comonads form the basis of sheet evaluation.
    , module Control.Comonad
+     -- Distributivity enables composition of comonads.
    , module Data.Distributive
+     -- Numeric instances for functions gives us, for functions @f, g :: Num b => a -> b@, e.g.
+     -- @f + g == \x -> f x + g x@. This enables concise syntax for specifying numeric cells in sheets.
    , module Data.Numeric.Function
 
    , evaluate
