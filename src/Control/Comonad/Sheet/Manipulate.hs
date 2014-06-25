@@ -9,7 +9,7 @@ Portability :  non-portable
 
 This module defines the 'take', 'view', 'go', and 'insert' functions generically for any dimensionality of sheet. These
 constitute the preferred way of manipulating sheets, providing an interface to: take finite slices ('take'), infinite
-slices ('view'), move to locations ('go'), and insert finite structures ('insert').
+slices ('view'), move to locations ('go'), and insert finite or infinite structures ('insert').
 -}
 
 {-# LANGUAGE DataKinds             #-}
