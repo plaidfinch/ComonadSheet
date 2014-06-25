@@ -11,18 +11,18 @@ import Data.Stream ( Stream , repeat , (<:>) )
 import qualified Prelude as P
 import Prelude hiding ( repeat , take )
 
-pascal :: Tape2 Integer
+pascal :: Sheet2 Integer
 pascal = evaluate . sheet 0 $
   repeat 1 <:> repeat (1 <:> pascalRow)
   where pascalRow = repeat $ cell above + cell left
 
-diagonalize :: Tape2 a -> [[a]]
+diagonalize :: Sheet2 a -> [[a]]
 diagonalize = 
    zipWith P.take [1..]
    . map (map extract . P.iterate (go (above & right)))
    . P.iterate (go below)
 
-fibLike :: Tape3 Integer
+fibLike :: Sheet3 Integer
 fibLike = evaluate $ sheet 0 $
    fibSheetFrom 1 1 <:> repeat (fibSheetFrom (cell inward + 1) (cell inward))
    where fibSheetFrom a b = (a          <:> b                <:> fibRow) <:>
@@ -30,7 +30,7 @@ fibLike = evaluate $ sheet 0 $
          fibRow = repeat $ cell (leftBy 1) + cell (leftBy 2)
 
 data Cell = X | O deriving ( Eq , Show )
-type Universe = Tape3 Cell
+type Universe = Sheet3 Cell
 type Ruleset = ([Int],[Int]) -- list of numbers of neighbors to trigger
                              -- being born, and staying alive, respectively
 
