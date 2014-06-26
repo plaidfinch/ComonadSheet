@@ -25,7 +25,8 @@ interface. The @sheet@ function takes a default element value, and a structure c
 values into a space initially filled with the default value. For instance, @sheet 0 [[1]] :: Sheet2 Int@ makes a one-
 dimensional sheet which is 0 everywhere except the focus, which is 1. Note that because of overloading on @sheet@'s 
 operands, it is usually necessary to give a type signature somewhere. This is generally not a problem because GHC
-can almost always infer the type you wanted if you give it so much as a top-level signature.
+can almost always infer the type you wanted if you give it so much as a top-level signature. For more information about
+the sorts of things 'sheet' knows how to insert, see the documentation for 'insert' and 'InsertBase'.
 
 ==How do I manipulate sheets?
 
