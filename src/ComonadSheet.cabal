@@ -7,7 +7,7 @@ synopsis:            A library for expressing "spreadsheet-like" computations wi
 -- license:             
 -- license-file:        LICENSE
 author:              Kenneth Foner
-maintainer:          kenny.foner@gmail.com
+maintainer:          kenneth.foner@gmail.com
 bug-reports:         https://github.com/kwf/ComonadSheet/issues
 copyright:           Copyright: (c) 2013-2014 Kenneth W. Foner
 category:            Control

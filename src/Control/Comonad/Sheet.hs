@@ -10,13 +10,13 @@ Portability :  non-portable
 This module re-exports the various submodules and other dependencies necessary to write comonadic spreadsheet-like
 computations using the ComonadSheet library.
 
-=Quick-start
+For more examples of use than shown below, see the <https://github.com/kwf/ComonadSheet GitHub page> for the library.
 
 ==What is a sheet?
 
 A sheet is an n-dimensionally nested 'Tape', which is a stream infinite in both left and right directions, with a focus 
 element. For instance, @type Sheet1 a = Nested (Flat Tape) a@, which is isomorphic to @Tape a@. Nested @Tape@s describe
-multi-dimensional grid-like spaces, which I will refer to, rather leadingly, as /sheets/ made up of /cells/.
+multi-dimensional grid-like spaces, which I will refer to, rather leadingly, as /sheets/ made up of /cells/. Note that there is no single type corresponding to what I mean when I say /sheet/ -- I use the term to refer to any n-dimensional 'Nested' set of 'Tape's, possibly wrapped in an 'Indexed' type (which enables absolute references).
 
 ==How do I create sheets?
 
