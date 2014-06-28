@@ -3,10 +3,18 @@ ComonadSheets
 
 A library for expressing "spreadsheet-like" computations with absolute and relative references, using fixed-points of n-dimensional comonads. A sheet is an n-dimensionally nested `Tape`, which is a stream infinite in both left and right directions, with a focus element. For instance, `type Sheet1 a = Nested (Flat Tape) a`, which is isomorphic to `Tape a`. Nested `Tape`s describe multi-dimensional grid-like spaces, which I will refer to, rather leadingly, as *sheets* made up of *cells*.
 
-While a conventional spreadsheet combines the construction and evaluation of a space of formulae into one process for the user, these steps are distinct in the `ComonadSheet` library. To create a self-referencing spreadsheet-like computation, first construct a multi-dimensional space of functions which take as input a *space of values* and return a *single value*. Then, take its fixed point using the `evaluate` function, resulting in a *space of values*. In other words:
+While a conventional spreadsheet combines the construction and evaluation of a space of formulae into one process for the user, these steps are distinct in the `ComonadSheet` library. To create a self-referencing spreadsheet-like computation, first construct a multi-dimensional space of functions which take as input a *space of values* and return a *single value*. Then, take its fixed point using the `evaluate` function, resulting in a *space of values*. A type speaks more than a thousand words:
 
 ```Haskell
 evaluate :: (ComonadApply w) => w (w a -> a) -> w a
+```
+
+Installation
+------------
+
+```
+$ cabal update
+$ cabal install ComonadSheet
 ```
 
 Creating Sheets
