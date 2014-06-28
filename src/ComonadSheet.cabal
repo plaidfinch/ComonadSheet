@@ -2,10 +2,10 @@ name:                ComonadSheet
 version:             0.3.0.0
 stability:           experimental
 homepage:            https://github.com/kwf/ComonadSheet
-synopsis:            A library for expressing "spreadsheet-like" computations with absolute and relative references, using fixed-points of n-dimensional comonads.
--- description:         
--- license:             
--- license-file:        LICENSE
+synopsis:            A library for expressing spreadsheet-like computations as the fixed-points of comonads.
+description:         @ComonadSheet@ is a library for expressing spreadsheet-like computations with absolute and relative references, using fixed-points of n-dimensional comonads. For examples of use, see the <https://github.com/kwf/ComonadSheet GitHub page> for the library.
+license:             BSD3
+license-file:        LICENSE
 author:              Kenneth Foner
 maintainer:          kenneth.foner@gmail.com
 bug-reports:         https://github.com/kwf/ComonadSheet/issues

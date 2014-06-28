@@ -12,7 +12,7 @@ evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 Creating Sheets
 ---------------
 
-Usually, the best way to create a sheet is using the `sheet` function, or using the `pure` method of the `Applicative` interface. The `sheet` function takes a default element value, and a structure containing more values, and inserts those values into a space initially filled with the default value. For instance, `sheet 0 [[1]] :: Sheet2 Int` makes a one- dimensional sheet which is 0 everywhere except the focus, which is 1. Note that because of overloading on `sheet`'s operands, it is usually necessary to give a type signature somewhere. This is generally not a problem because GHC can almost always infer the type you wanted if you give it so much as a top-level signature.
+Usually, the best way to create a sheet is using the `sheet` function, or using the `pure` method of the `Applicative` interface. The `sheet` function takes a default element value, and a structure containing more values, and inserts those values into a space initially filled with the default value. For instance, `sheet 0 [[1]] :: Sheet2 Int` makes a two-dimensional sheet which is 0 everywhere except the focus, which is 1. Note that because of overloading on `sheet`'s operands, it is usually necessary to give a type signature somewhere. This is generally not a problem because GHC can almost always infer the type you wanted if you give it so much as a top-level signature.
 
 References and Manipulation
 ---------------------------
@@ -41,12 +41,28 @@ import qualified Prelude as P
 import Prelude hiding ( repeat , take )
 ```
 
+### Iterated Numbers
+
+A one-dimensional sheet which is zero left of the origin and lists the natural numbers right of the origin:
+
+```Haskell
+naturals :: Sheet3 Integer
+naturals = evaluate $ sheet 0 (repeat (cell left + 1))
+```
+
+When we print this out...
+
+```Haskell
+> take (rightBy 10) naturals
+[1,2,3,4,5,6,7,8,9,10,11]
+```
+
 ### Pascal's Triangle
 
 An infinite spreadsheet listing the rows of Pascal's triangle as upwards-rightwards diagonals:
 
 ```Haskell
-pascal :: Tape2 Integer
+pascal :: Sheet2 Integer
 pascal = evaluate . sheet 0 $
    repeat 1 <:> repeat (1 <:> pascalRow)
    where pascalRow = repeat $ cell above + cell left
@@ -73,7 +89,7 @@ This looks like:
 We can also traverse it to find the rows of Pascal's triangle, by defining a function to diagonalize an infinite space:
 
 ```Haskell
-diagonalize :: Tape2 a -> [[a]]
+diagonalize :: Sheet2 a -> [[a]]
 diagonalize = 
    zipWith P.take [1..]
    . map (map extract . P.iterate (go (above & right)))
@@ -108,7 +124,7 @@ We can define a three-dimensional space enumerating all the Fibonacci-like seque
 This example is thanks to an enlightening conversation with Eden Zik.
 
 ```Haskell
-fibLike :: Tape3 Integer
+fibLike :: Sheet3 Integer
 fibLike = evaluate $ sheet 0 $
    fibSheetFrom 1 1 <:> repeat (fibSheetFrom (cell inward + 1) (cell inward))
    where fibSheetFrom a b = (a          <:> b                <:> fibRow) <:>
@@ -145,7 +161,7 @@ For convenience, we define a few types:
 
 ```Haskell
 data Cell = X | O deriving ( Eq , Show )
-type Universe = Tape3 Cell
+type Universe = Sheet3 Cell
 type Ruleset = ([Int],[Int]) -- list of numbers of neighbors to trigger
                              -- being born, and staying alive, respectively
 ```

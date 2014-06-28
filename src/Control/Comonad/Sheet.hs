@@ -17,7 +17,7 @@ For examples of use, see the <https://github.com/kwf/ComonadSheet GitHub page> f
 
 =Creating Sheets
 
-Usually, the best way to create a sheet is using the 'sheet' function, or using the 'pure' method of the 'Applicative' interface. The @sheet@ function takes a default element value, and a structure containing more values, and inserts those values into a space initially filled with the default value. For instance, @sheet 0 [[1]] :: Sheet2 Int@ makes a one- dimensional sheet which is 0 everywhere except the focus, which is 1. Note that because of overloading on @sheet@'s operands, it is usually necessary to give a type signature somewhere. This is generally not a problem because GHC can almost always infer the type you wanted if you give it so much as a top-level signature.
+Usually, the best way to create a sheet is using the 'sheet' function, or using the 'pure' method of the 'Applicative' interface. The @sheet@ function takes a default element value, and a structure containing more values, and inserts those values into a space initially filled with the default value. For instance, @sheet 0 [[1]] :: Sheet2 Int@ makes a two- dimensional sheet which is 0 everywhere except the focus, which is 1. Note that because of overloading on @sheet@'s operands, it is usually necessary to give a type signature somewhere. This is generally not a problem because GHC can almost always infer the type you wanted if you give it so much as a top-level signature.
 
 =References and Manipulation
 
@@ -28,6 +28,17 @@ For instance, @rightBy 5@ is a relative reference in the first dimension. If I l
 References can be relative or absolute. An absolute reference can only be used to refer to an `Indexed` sheet, as this is the only kind of sheet with a notion of absolute position.
 
 References can be combined using the @(&)@ operator. For example, @columnAt 5 & aboveBy 10@ represents a reference to a location above the current focus position by 10 cells, and at column 5, regardless of the current column position. Relative references may be combined with one another, and absolute and relative references may be combined, but combining two absolute references is a type error.
+
+=A Simple Example
+
+A one-dimensional sheet which is zero left of the origin and lists the natural numbers right of the origin:
+
+> naturals :: Sheet3 Integer
+> naturals = evaluate $ sheet 0 (repeat (cell left + 1))
+
+> take (rightBy 10) naturals == [1,2,3,4,5,6,7,8,9,10,11]
+
+For more examples, including Pascal's triangle, Fibonacci numbers, and Conway's Game of Life, see the <https://github.com/kwf/ComonadSheet GitHub page> for the library.
 -}
 
 {-# LANGUAGE FlexibleContexts #-}
