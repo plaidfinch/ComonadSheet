@@ -1,5 +1,5 @@
-ComonadSheets
-=============
+ComonadSheet
+============
 
 A library for expressing "spreadsheet-like" computations with absolute and relative references, using fixed-points of n-dimensional comonads. A sheet is an n-dimensionally nested `Tape`, which is a stream infinite in both left and right directions, with a focus element. For instance, `type Sheet1 a = Nested (Flat Tape) a`, which is isomorphic to `Tape a`. Nested `Tape`s describe multi-dimensional grid-like spaces, which I will refer to, rather leadingly, as *sheets* made up of *cells*.
 
