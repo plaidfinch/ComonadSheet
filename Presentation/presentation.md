@@ -8,7 +8,7 @@
 
 # A tale of two blog articles
 
-Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
+Dan Piponi, November 2006 (`blog.sigfpe.com`):
 
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
@@ -26,7 +26,7 @@ Example:
 
 # A tale of two blog articles
 
-Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
+Dan Piponi, November 2006 (`blog.sigfpe.com`):
 
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
@@ -43,7 +43,7 @@ Example:
 
 # A tale of two blog articles
 
-Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
+Dan Piponi, November 2006 (`blog.sigfpe.com`):
 
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
@@ -59,7 +59,7 @@ Example:
 
 # A tale of two blog articles
 
-Dan Piponi, November 2006 (<http://blog.sigfpe.com>):
+Dan Piponi, November 2006 (`blog.sigfpe.com`):
 
 ### "From Löb's Theorem to Spreadsheet Evaluation"
 
@@ -76,7 +76,7 @@ $\bot$
 
 # A tale of two blog articles
 
-Dan Piponi, December 2006 (<http://blog.sigfpe.com>):
+Dan Piponi, December 2006 (`blog.sigfpe.com`):
 
 ### "Evaluating Cellular Automata is Comonadic"
 
@@ -91,10 +91,10 @@ loeb :: Functor f => f (f a -> a) -> f a
 loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
-> - `loeb` is a fixed-point where each element of the structure refers to the whole structure in terms of *absolute position*
-> - Comonadic computations are often described as computations in the context of a *relative position* within a larger structure
+> - `loeb`: each element refers to *absolute positions* in the structure
+> - comonads: computations in context of *relative position* in a structure
 
-These articles are talking about almost the same thing!
+These are almost the same thing!
 
 \note{This talk is about my quest to find that missing *je ne sais quoi* and unify these two notions.}
 
@@ -102,7 +102,7 @@ These articles are talking about almost the same thing!
 
 ### Monads:
 
-Most Haskellers define monads via `return` and `>>=`{.haskell}. Today, we'll use `return` and `join`. Note: `x >>= f == join (fmap f x)`{.haskell}.
+Most Haskellers define monads via `return` and `(>>=)`{.haskell}. Today, we'll use `return` and `join`. *Note:* `x >>= f == join (fmap f x)`{.haskell}.
 
 ```Haskell
 class Functor m => Monad m where
@@ -122,7 +122,9 @@ class Functor w => Comonad w where
 
 (from Edward Kmett's `Control.Comonad`)
 
-\note{Why am I going to ignore extend? Same reason as why I'm ignoring bind: it 's the less clear presentation of the same ideas for our purposes today.}
+\note{Perhaps I should say coproductary instead of summary, for you category theory folk.
+
+  Why am I going to ignore extend? Same reason as why I'm ignoring bind: it 's the less clear presentation of the same ideas for our purposes today.}
 
 <!-- # (Co)monads (co)ntinued: laws
 
@@ -244,7 +246,7 @@ loeb :: Functor f => f (f a -> a) -> f a
 
 But $\Box$ could also have more structure...
 
-# Fixed That For You
+# Fixed that for you
 
 ```Haskell
 loeb :: Functor f => f (f a -> a) -> f a
@@ -269,7 +271,7 @@ loeb fs = fix $ \xs -> fmap ($ xs) fs
 
 I'll use this one from now on.
 
-# Fixed That For You
+# Fixed that for you
 
 ```Haskell
 loeb :: Functor f => f (f a -> a) -> f a
@@ -294,7 +296,7 @@ We want to find:
 
 \vspace*{1.51\baselineskip}
 
-# Fixed That For You
+# Fixed that for you
 
 ```Haskell
 loeb :: Functor f => f (f a -> a) -> f a
@@ -315,7 +317,7 @@ wfix :: Comonad w => w (w a -> a) ->   a
 wfix w = extract w (fmap wfix (duplicate w))
 ```
 
-# A possible candidate
+# Is this our fix?
 
 ```Haskell
 possibility :: Comonad w => w (w a -> a) -> w a
@@ -359,7 +361,7 @@ main = print . S.take 10000 . viewR . possibility $
 
 (And this gets worse—it's not linear\dots)
 
-# Sharing is caring
+# Sharing is caring (as well as polynomial complexity)
 
 ```Haskell
 wfix :: Comonad w => w (w a -> a) -> a
@@ -377,13 +379,15 @@ possibility = fmap wfix . duplicate
 
 - Count all the way up from zero for each number, so $O(n^2)$
 
-      + possibly worse than that, as I saw when experimenting with it—likely due to the garbage collector
+- In a higher-dimensional space with $> 1$ reference per cell, would be exponential or worse.
+
+<!-- + possibly worse than that, as I saw when experimenting with it—likely due to the garbage collector -->
 
 . . .
 
 That really `succ`s.
 
-# Sharing is caring
+# Sharing is caring (as well as polynomial complexity)
 
 ```Haskell
 wfix :: Comonad w => w (w a -> a) -> a
@@ -394,7 +398,7 @@ The root of the problem: `wfix` can't be expressed in terms of `fix`.
 
 . . .
 
-For the wise-guys in the audience, the following is *not* what I mean by "in terms of `fix`":
+<!-- For the wise-guys in the audience, the following is *not* what I mean by "in terms of `fix`": -->
 
 ```Haskell
 notWhatI'mTalkingAbout :: Comonad w => w (w a -> a) -> a
@@ -403,14 +407,14 @@ notWhatI'mTalkingAbout =
       \w -> extract w (fmap wfix (duplicate w))
 ```
 
-# Sharing is caring
+# Holding on to the future
 
 ```Haskell
 wfix :: Comonad w => w (w a -> a) -> a
 wfix w = extract w (fmap wfix (duplicate w))
 ```
 
-So more specifically: `wfix` can't be expressed in terms of `fix` on its *argument*—there's always that extra `extract w` on the outside which can't be folded into the recursion.
+More specifically: `wfix` is inexpressible in terms of `fix` on its *argument*.
 
 Why does this mean it's inefficient?
 
@@ -418,20 +422,22 @@ Why does this mean it's inefficient?
 
 . . .
 
-We can't hold onto a singular (lazy) reference to the eventual future of the computation.
+No single reference to the eventual future of the computation.
 
-# Filling in the holes to fix our problem
+# Holding on to the future
 
-**Epiphany**: Any optimally sharing "evaluation" function has to be expressible in the form:
+**Epiphany**: Any efficient "evaluation" function looks like:
 
 ```Haskell
 evaluate :: Comonad w => w (w a -> a) -> w a
 evaluate fs = fix $ _
 ```
 
-GHC 7.8 gave us typed holes—let's use them to fill in the blank!
+<!-- and by efficient, I mean optimally sharing -->
 
-# Filling in the holes to fix our problem
+<!-- GHC 7.8 gave us typed holes—let's use them to fill in the blank! -->
+
+# Filling in the holes
 
 ```Haskell
 evaluate :: Comonad w => w (w a -> a) -> w a
@@ -440,20 +446,15 @@ evaluate fs = fix $ _
 
 . . .
 
-```
-Found hole ‘_’ with type: w a -> w a
-    Relevant bindings include
-      fs       :: w (w a -> a)
-      evaluate :: w (w a -> a) -> w a
-```
+\texttt{Found hole with type: \color{purple}w a -> w a}
 
 (Error messages have been cleaned for your viewing enjoyment.)
 
-\vspace*{1.5\baselineskip}
+\vspace*{5.75\baselineskip}
 
 \note{All of the previous comonadic fixed-points we were using duplicated their argument, so that each location can consume a version of the final structure located at its own position. Let's stick a duplicate in here.}
 
-# Filling in the holes to fix our problem
+# Filling in the holes
 
 ```Haskell
 evaluate :: Comonad w => w (w a -> a) -> w a
@@ -462,20 +463,15 @@ evaluate fs = fix $ _ . duplicate
 
 . . .
 
-```
-Found hole ‘_’ with type: w (w a) -> w a
-    Relevant bindings include
-      fs       :: w (w a -> a)
-      evaluate :: w (w a -> a) -> w a
-```
+\texttt{Found hole with type: \color{purple}w (w a) -> w a}
 
-\vspace*{3\baselineskip}
+\vspace*{7.25\baselineskip}
 
 \note{So we've got something of type w (w a $\to$ a) -- our input -- and we'll *be given* something of type w (w a) -- by the fixed-point operator -- and we need to synthesize something of type (w a) from those two.}
 
 \note{Let's put our fs argument in as an argument to our hole: we know it has to be used somewhere, and it's gotta be there.}
 
-# Filling in the holes to fix our problem
+# Filling in the holes
 
 ```Haskell
 evaluate :: Comonad w => w (w a -> a) -> w a
@@ -484,18 +480,13 @@ evaluate fs = fix $ _ fs . duplicate
 
 . . .
 
-```
-Found hole ‘_’ with type: w (w a -> a) -> w (w a) -> w a
-    Relevant bindings include
-      fs       :: w (w a -> a)
-      evaluate :: w (w a -> a) -> w a
-```
+\texttt{Found hole with type: \color{purple}w (w a -> a) -> w (w a) -> w a}
 
-\vspace*{3\baselineskip}
+\vspace*{7.25\baselineskip}
 
 \note{Hoogling this exact type signature doesn't work, but if we replace (w a) in the above with some arbitrary type b, this looks exactly like the Applicative pattern! f (b $\to$ a) $\to$ f b $\to$ f a. And Hoogle will now happily tell us that there's a version of Applicative for comonads: ComonadApply.}
 
-# Filling in the holes to fix our problem
+# Filling in the holes
 
 ```Haskell
 evaluate :: Comonad w => w (w a -> a) -> w a
@@ -516,7 +507,7 @@ Could not deduce (ComonadApply w)
 
 \note{Oh, obviously: we need to fix that constraint now.}
 
-# Filling in the holes to fix our problem
+# Filling in the holes
 
 \vspace*{3.4\baselineskip}
 
@@ -527,15 +518,17 @@ evaluate fs = fix $ (fs <@>) . duplicate
 
 `(<@>) :: ComonadApply w => w (a -> b) -> w a -> w b`{.haskell}
 
-. . .
+\vspace*{12.5\baselineskip}
+
+# 
 
 \begin{center}
-   \includegraphics[height=10\baselineskip]{Rainbow.jpg}
+   \includegraphics[width=\textwidth]{Rainbow.jpg}
 \end{center}
 
 \note{We just derived our comonadic fixed point, in the process discovering a necessary and sufficient condition for its efficiency. Thanks, type inference!}
 
-# But will it blend?
+# Will it blend?
 
 Let's try to count to 10000\dots again!
 
@@ -550,7 +543,7 @@ main = print . S.take 10000 . viewR . evaluate $
          (succ . extract . moveL)) -- 1 + leftward value
 ```
 
-# But will it blend?
+# Will it blend?
 
 `$ time ./evaluate`
 
@@ -563,19 +556,19 @@ main = print . S.take 10000 . viewR . evaluate $
 
 . . .
 
-Still very slightly slower than `take 10000 [1..]`{.haskell}, almost certainly because GHC fuses away the intermediate list.
+<!-- Still very slightly slower than `take 10000 [1..]`{.haskell}, almost certainly because GHC fuses away the intermediate list. -->
 
 . . .
 
 **Aside**: list fusion in `evaluate`: reducible to halting problem?
 
-# Wait just a second!
+# Wait just a minute!
 
-"Hang on, Kenny! We don't know why `Tape`s are instances of `ComonadApply`!"
+"Hang on, Kenny! We don't know why `Tape`s are `ComonadApply`!"
 
 . . .
 
-Okay, here you go:
+<!-- Okay, here you go: -->
 
 ```Haskell
 instance ComonadApply Tape where
@@ -597,7 +590,7 @@ instance ComonadApply Stream where (<@>) = (<*>)
 
 . . .
 
-Just kidding; here's the `Applicative` instance for `Stream`:
+<!-- So clarity! Very explain! Just kidding; here's the `Applicative` instance for `Stream`: -->
 
 ```Haskell
 instance Applicative Stream where
@@ -607,7 +600,7 @@ instance Applicative Stream where
 
 \note{If something is both an Applicative and a ComonadApply, we have to make the two 'apply' operations equivalent. Edward Kmett says so.}
 
-# But what *is* a `ComonadApply` anyhow?
+# What *is* a `ComonadApply` anyhow?
 
 \note{Speaking of other things Edward Kmett says:}
 
@@ -627,7 +620,7 @@ instance Applicative Stream where
 \hspace*{.5em}
 —Edward Kmett
 
-# But what *is* a `ComonadApply` anyhow?
+# What *is* a `ComonadApply` anyhow?
 
 ### The laws of `ComonadApply`:
 
@@ -639,23 +632,35 @@ duplicate (p <@> q)   == (<@>) <$> duplicate p <@> duplicate q
 
 . . .
 
-These laws (among other things) imply that `(<@>)`{.haskell} *must* behave in a "zippy" fashion, lining up structure and preserving cardinality.
+These laws mean `(<@>)`{.haskell} *must* be "zippy."
+
+<!-- lining up structure and preserving cardinality -->
 
 . . .
 
-In Uustalu and Vene's *The Essence of Dataflow Programming*, `ComonadApply` was called `ComonadZip`, and defined in terms of the function:
+Uustalu and Vene's *The Essence of Dataflow Programming* calls it:
 
 \ \ \ \ \ `czip :: (ComonadZip d) => d a -> d b -> d (a,b)`{.haskell}
 
 . . .
 
-**Aside**: Enlightening exercise: for an arbitrary `Functor f`, given `pair :: forall a b. f a -> f b -> f (a,b)`{.haskell}, show that `pair` and `(<*>)`{.haskell} can be defined in terms of one another, modulo `fmap`.
+**Enlightening exercise:** for an arbitrary `Functor f`, show how `czip` and `(<@>)`{.haskell} can be defined in terms of each other and `fmap`.
 
 # Zippy comonads $\to$ zippy computation
 
 \large The "zippiness" required by the laws of `ComonadApply` is also the source of `evaluate`'s *computational* "zippiness."
 
-# Do you want to build a comonad?
+<!-- talk here about why you can't have dynamic cycle detection if you want asymptotic efficiency, also about how static checking is a dead-end, and why (laziness makes static reference analysis overpredict) -->
+
+# Can going fast be total(ly safe)?
+
+. . .
+
+\large Short answer: no.
+
+\large Long answer: not in ways we would care about.
+
+# But I'm more than a one-dimensional character
 
 \note{Now that we have an efficient evaluation function, the next step is to see what things we can evaluate!}
 
@@ -672,7 +677,7 @@ Nesting `Tape`s inside one another leads us into to higher-dimensional (discrete
 
 Etcetera, ad infinitum!
 
-# Do you want to build a comonad?
+# But I'm more than a one-dimensional character
 
 We could define a `newtype` for each added dimension, but this carries an overhead of between $O(n^2)$ and $O(n^3)$ boilerplate per dimension.
 
@@ -695,13 +700,11 @@ instance ComonadApply Tape3 where ...
 ...
 ```
 
-That also `succ`s a lot.
+That also really `succ`s.
 
-# Do you want to build a comonad?
+# But I'm more than a one-dimensional character
 
-There has to be a better solution—there's a pattern here.
-
-. . .
+<!-- There has to be a better solution—there's a pattern here. -->
 
 Composition of functors (from `Data.Functor.Compose`):
 
@@ -720,52 +723,39 @@ instance (Comonad f, Comonad g) => Comonad (Compose f g) where
   duplicate = ...
 ```
 
-Hmm. What *does* go there?
+<!-- Hmm. What *does* go there? -->
 
 # Do you want to build a comonad?
 
 (N.B. In this section, I've specialized many type signatures.)
 
-**What can you do with a `(Compose f g a)`{.haskell}?**
+**What can you do with `(Compose f g a)`{.haskell}?**
 
 . . .
 
-Not much; you have to unwrap it. So, what can you do with something of type `(Comonad f, Comonad g) => f (g a)`{.haskell}?
+Equivalent: what can you do with `(Comonad f, Comonad g) => f (g a)`{.haskell}?
 
 . . .
 
-**You can duplicate the outer layer:**
+**Duplicate outer layer:**
 
 `duplicate :: f (g a) -> f (f (g a))`{.haskell}
 
 . . .
 
-**You can duplicate the inner layer:**
+**Duplicate inner layer:**
 
 `fmap duplicate :: f (g a) -> f (g (g a))`{.haskell}
 
 . . .
 
-**You can duplicate both:**
+**Duplicate both:**
 
 `duplicate . fmap duplicate :: f (g a) -> f (f (g (g a)))`{.haskell}
 
-. . .
-
-**And that's about it.**
-
 # Do you want to build a comonad?
 
-If only we had `??? :: f (f (g (g a))) -> f (g (f (g a)))`{.haskell}, then we could wrap its result back up inside *two* `Compose`{.haskell}s:
-
-```Haskell
-Compose . fmap Compose
-    :: f (g (f (g a))) -> Compose f g (Compose f g a)
-```
-
-. . .
-
-Putting it together:
+If only we had `f (f (g (g a))) -> f (g (f (g a)))`{.haskell}\dots
 
 ```Haskell
 Compose . fmap Compose -- wrap again
@@ -775,8 +765,6 @@ Compose . fmap Compose -- wrap again
 . getCompose           -- unwrap
     :: Compose f g a -> Compose f g (Compose f g a)
 ```
-
-And that's our `duplicate`!
 
 \note{But what's the mystery function\dots?}
 
@@ -804,13 +792,14 @@ Compose . fmap Compose -- wrap again
     :: Compose f g a -> Compose f g (Compose f g a)
 ```
 
-. . .
+# Type sleuth vs. the mysterious functor-swapper
 
-Two candidates:
+Two candidates (thanks Hoogle!):
 
 ```Haskell
 sequenceA    -- from Data.Traversable
   :: (Traversable t, Applicative f) => t (f a) -> f (t a)
+
 distribute   -- from Data.Distributive
   :: (Distributive g, Functor f)    => f (g a) -> g (f a)
 ```
@@ -828,11 +817,14 @@ Initially promising—I know and love `Traversable`.
 
 Requires two constraints:
 
-- `Applicative f` means our outer comonad has to have both `(<*>)`{.haskell} and `pure`—somewhat acceptable.
-    + But `pure` is a hard pill to swallow.
-- `Traversable t`—that's a deal-breaker!
-    + Jaskelioff & Rypacek, MSFP 2012, "An Investigation of the Laws of Traversals": "We are not aware of any functor that is traversable and is not a finitary container."
-    + Moreover, infinite streams are definitely not traversable.
+> - `Applicative f`: outer layer has to have `(<*>)`{.haskell} and `pure`—`pure` is a hard pill to swallow.
+> - `Traversable t`—that's a deal-breaker!
+
+. . .
+
+Jaskelioff & Rypacek, MSFP 2012, "An Investigation of the Laws of Traversals": "We are not aware of any functor that is traversable and is not a finitary container."
+
+- Infinite streams are definitely not `Traversable`.
 
 # Type sleuth vs. the mysterious functor-swapper
 
@@ -851,12 +843,21 @@ What can you do underneath a `Functor`?
 
 "Touch, don't look."
 
-. . .
+# Type sleuth vs. the mysterious functor-swapper
 
-A strategy/intuition for `distribute`:
+```Haskell
+distribute   -- from Data.Distributive
+  :: (Distributive g, Functor f) => f (g a) -> g (f a)
+```
 
-- Fill a `g`-shaped structure with copies of `f (g a)`: `g (f (g a))`.
-- For each `f (g a)` on the inside, navigate to a particular focus (using `fmap`) and `fmap extract` to eliminate the inner `g`.
+Strategy/intuition for `distribute`:
+
+> - Start with `f (g a)`
+> - Create a `g` with `f (g a)` in each 'hole': `g (f (g a))`
+> - For each `f (g a)` on the inside of `g`:
+>     + navigate to a particular focus (using `fmap`)
+>     + `fmap extract` to eliminate the inner `g`
+> - Result: `g (f a)`
 
 \note{What do we need to have a Distributive?
 
@@ -920,11 +921,67 @@ I could make a library out of this!
 
 \note{First, though, some ugly truths have to be brought to light.}
 
-# Baby, there's a shark in the water
+# 
 
 \begin{center}
 \includegraphics[width=\textwidth]{shark-fin-ocean.jpg}
 \end{center}
+
+# Baby, there's a shark in the water
+
+```Haskell
+type family ComposeCount f where
+  ComposeCount (Compose f g a) = Succ (ComposeCount (f (g a)))
+  ComposeCount x               = Zero
+
+class CountCompose f where
+  countCompose :: f -> ComposeCount f
+```
+
+\vspace{3.75\baselineskip}
+
+# Baby, there's a shark in the water
+
+```Haskell
+{-# LANGUAGE FeelBadAboutYourself #-}
+
+type family ComposeCount f where
+  ComposeCount (Compose f g a) = Succ (ComposeCount (f (g a)))
+  ComposeCount x               = Zero
+
+class CountCompose f where
+  countCompose :: f -> ComposeCount f
+```
+
+\vspace{6.75\baselineskip}
+
+# Baby, there's a shark in the water
+
+```Haskell
+{-# LANGUAGE OverlappingInstances #-}
+
+type family ComposeCount f where
+  ComposeCount (Compose f g a) = Succ (ComposeCount (f (g a)))
+  ComposeCount x               = Zero
+
+class CountCompose f where
+  countCompose :: f -> ComposeCount f
+```
+
+. . .
+
+```Haskell
+instance (CountCompose (f (g a)))
+  => CountCompose (Compose f g a) where
+  countCompose (Compose x) = Succ (countCompose x)
+```
+
+. . .
+
+```Haskell
+instance (ComposeCount f ~ Zero) => CountCompose f where
+  countCompose _ = Zero
+```
 
 # GADTs to the rescue!
 
@@ -954,3 +1011,278 @@ data Nested fs a where
       Flat (Just [1])  :: Nested (Flat Maybe) [Int]
 Nest (Flat (Just [1])) :: Nested (Nest (Flat Maybe) []) Int
 ```
+
+# Nest it / `fmap` it / quick rewrap it
+
+Two cases for each instance (base case/recursive case):
+
+```Haskell
+instance (Functor f) => Functor (Nested (Flat f)) where
+   fmap f (Flat x) = Flat $ fmap f x
+
+instance (Functor f, Functor (Nested fs))
+   => Functor (Nested (Nest fs f)) where
+   fmap f (Nest x) = Nest $ fmap (fmap f) x
+```
+
+The rest of the instances for look similar.
+
+# Nest it / `fmap` it / quick rewrap it
+
+> - Match on types, not constraints
+> - Base case is `Flat`, not every type, so no "universal instance"
+> - See ya later, `OverlappingInstances`!
+
+# Drag and drop it / zip - unzip it
+
+### What's in a reference?
+
+. . .
+
+```Haskell
+{-# LANGUAGE DataKinds #-}
+
+data RefType = Relative | Absolute
+
+data Ref (t :: RefType) where
+   Rel :: Int -> Ref Relative
+   Abs :: Int -> Ref Absolute
+```
+
+# Drag and drop it / zip - unzip it
+
+```Haskell
+type family Combine a b where
+   Combine Relative Absolute = Absolute
+   Combine Absolute Relative = Absolute
+   Combine Relative Relative = Relative
+```
+
+. . .
+
+```Haskell
+class CombineRefs a b where ...
+instance CombineRefs Absolute Relative where ...
+instance CombineRefs Relative Absolute where ...
+instance CombineRefs Relative Relative where ...
+```
+
+. . .
+
+```Haskell
+... combine :: Ref a -> Ref b -> Ref (Combine a b)
+... combine (Abs a) (Rel b) = Abs (a + b)
+... combine (Rel a) (Abs b) = Abs (a + b)
+... combine (Rel a) (Rel b) = Rel (a + b)
+```
+
+. . .
+
+- Split presentation style due to Conor McBride, JFP 2001:\newline\emph{Faking It: Simulating Dependent Types in Haskell}
+
+# He's making a list and checking it statically
+
+```Haskell
+data x :-: y
+data Nil
+
+data ConicList f ts where
+   (:-:) :: f x -> ConicList f xs -> ConicList f (x :-: xs)
+   ConicNil  :: ConicList f Nil
+
+type RefList = ConicList Ref
+```
+
+It's called a conic list because category theory:\newline
+`forall a. f a -> x`{.haskell} is a co-cone, and this looks like that.
+
+# He's making a list and checking it statically
+
+```Haskell
+type family a & b where
+   (a :-: as) & (b :-: bs) = Combine a b :-: (as & bs)
+   Nil        & bs         = bs
+   as         & Nil        = as
+```
+
+. . .
+
+```Haskell
+class CombineRefLists as bs where ...
+instance (CombineRefs a b, CombineRefLists as bs)
+      => CombineRefLists (a :-: as) (b :-: bs) where ...
+instance CombineRefLists Nil        (b :-: bs) where ...
+instance CombineRefLists (a :-: as) Nil        where ...
+instance CombineRefLists Nil        Nil        where ...
+```
+
+. . .
+
+```Haskell
+... (&) :: RefList as -> RefList bs -> RefList (as & bs)
+... (a :-: as) & (b :-: bs) = combine a b :-: (as & bs)
+... ConicNil   & bs         = bs
+... as         & ConicNil   = as
+... ConicNil   & ConicNil   = ConicNil
+```
+
+<!-- Again, note the pattern of using closed type families to effectively close a nominally open typeclass -->
+
+# He's making a list and checking it statically
+
+With suitable definition of names\dots
+
+```Haskell
+a :: RefList (Relative :-: Relative :-: Nil)
+a = belowBy 3 & rightBy 14
+```
+
+. . .
+
+```Haskell
+b :: RefList (Relative :-: Absolute :-: Nil)
+b = columnAt 9000 & aboveBy 1
+```
+
+. . .
+
+\color{red}\texttt{c = columnAt 5 \& columnAt 10}
+
+# Take it / view it / go - insert it
+
+```Haskell
+class Take r t where
+   type ListFrom t a
+   take :: RefList r -> t a -> ListFrom t a
+
+class View r t where
+   type StreamFrom t a
+   view :: RefList r -> t a -> StreamFrom t a
+
+class Go r t where
+   go :: RefList r -> t a -> t a
+```
+
+. . .
+
+\dots and `insert` --- I have discovered a truly marvelous type signature for this, which this margin is too narrow to contain.
+
+# What have we learned?
+
+> - Efficient comonadic fixed-point requires zipping
+> - Distributive comonads compose
+> - Dimension polymorphism needs type-indexed composition
+> - Heterogeneous lists unify absolute and relative references
+
+. . .
+
+- (Co)monads are (co)ol!
+
+<!-- But what does it all look like? -->
+
+# With great power comes great code samples for a tech talk
+
+```Haskell
+fibonacci :: Sheet1 Integer
+fibonacci = evaluate . sheet 1 $
+  repeat $ cell (leftBy 2) + cell left
+```
+
+(I told you the syntax would get nicer!)
+
+. . .
+
+```Haskell
+> slice (leftBy 2) (rightBy 17) fibonacci
+[1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584]
+```
+
+# With great power comes great code samples for a tech talk
+
+<!-- This is where we are now: -->
+
+```Haskell
+pascal :: Sheet2 Integer
+pascal = evaluate . sheet 0 $
+   repeat 1 <:> repeat (1 <:> pascalRow)
+   where pascalRow = repeat $ cell above + cell left
+```
+
+. . .
+
+```Haskell
+> take (belowBy 9 & rightBy 9) pascal
+```
+
+. . .
+
+\vspace*{-\baselineskip}
+```Haskell
+[[1,  1,  1,   1,   1,    1,    1,     1,     1,     1], 
+ [1,  2,  3,   4,   5,    6,    7,     8,     9,    10], 
+ [1,  3,  6,  10,  15,   21,   28,    36,    45,    55], 
+ [1,  4, 10,  20,  35,   56,   84,   120,   165,   220], 
+ [1,  5, 15,  35,  70,  126,  210,   330,   495,   715], 
+ [1,  6, 21,  56, 126,  252,  462,   792,  1287,  2002], 
+ [1,  7, 28,  84, 210,  462,  924,  1716,  3003,  5005], 
+ [1,  8, 36, 120, 330,  792, 1716,  3432,  6435, 11440], 
+ [1,  9, 45, 165, 495, 1287, 3003,  6435, 12870, 24310], 
+ [1, 10, 55, 220, 715, 2002, 5005, 11440, 24310, 48620]]
+```
+
+# With great power comes great code samples for a tech talk
+
+```Haskell
+data Cell = X | O deriving ( Eq )
+
+life :: ([Int],[Int]) -> [[Cell]] -> Sheet3 Cell
+life ruleset seed =
+   evaluate $ insert [map (map const) seed] blank where
+     blank = sheet (const X) (repeat . tapeOf . tapeOf $ rule)
+     rule place =
+       case (neighbors place `elem`) `onBoth` ruleset of
+            (True,_) -> O
+            (_,True) -> cell inward place
+            _        -> X
+     neighbors = length . filter (O ==) . cells bordering
+     bordering = map (inward &) (diag ++ vert ++ horz)
+     diag = (&) <$> horizontals <*> verticals
+     vert =        [above, below]
+     horz = map d2 [right, left]
+
+conway :: [[Cell]] -> Sheet3 Cell
+conway = life ([3],[2,3])
+```
+
+# With great power comes great code samples for a tech talk
+
+```Haskell
+glider :: Sheet3 Cell
+glider = conway [[X,X,O],
+                 [O,X,O],
+                 [X,O,O]]
+```
+
+. . .
+
+```
+> printLife glider
+```
+
+. . .
+
+\vspace*{-\baselineskip}
+\includegraphics[width=6em]{glider.png}
+
+# 
+
+\vspace*{2\baselineskip}
+
+\begin{center}
+\LARGE\texttt{cabal install ComonadSheet}
+\vspace*{\baselineskip}
+
+\texttt{github.com/kwf/ComonadSheet}
+
+\Large Suggestions, bug reports, pull requests welcome!
+\end{center}

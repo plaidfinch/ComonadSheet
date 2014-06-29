@@ -54,7 +54,7 @@ import Prelude hiding ( repeat , take )
 A one-dimensional sheet which is zero left of the origin and lists the natural numbers right of the origin:
 
 ```Haskell
-naturals :: Sheet3 Integer
+naturals :: Sheet1 Integer
 naturals = evaluate $ sheet 0 (repeat (cell left + 1))
 ```
 
