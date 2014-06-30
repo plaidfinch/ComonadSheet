@@ -1112,8 +1112,7 @@ data ConicList f ts where
 type RefList = ConicList Ref
 ```
 
-It's called a conic list because category theory:\newline
-`forall a. f a -> x`{.haskell} is a co-cone, and this looks like that.
+It's called a conic list because category theory: `(forall a. f a -> x)`{.haskell} is known as a *co-cone* from `f` to `x`, and this is sort of like that.
 
 # He's making a list and checking it statically
 
@@ -1295,7 +1294,7 @@ glider = conway [[X,X,O],
 
 # 
 
-\vspace*{2\baselineskip}
+\vspace*{3\baselineskip}
 
 \begin{center}
 \LARGE\texttt{cabal install ComonadSheet}
