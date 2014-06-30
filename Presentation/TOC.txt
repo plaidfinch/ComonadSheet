@@ -1,0 +1,32 @@
+A tale of two blog articles
+An unexpected journey
+(Co)monads: a brief summary
+A particular flavor of comonad
+Back to Piponi's `loeb`
+Fixed that for you
+Is this our fix?
+Well, sort of...
+Sharing is caring (as well as polynomial complexity)
+Holding on to the future
+Filling in the holes
+[picture: rainbow typing rule]
+Will it blend?
+Wait just a minute!
+What *is* a `ComonadApply` anyhow?
+Zippy comonads -> zippy computation
+Can going fast be total(ly safe)?
+But I'm more than a one-dimensional character
+Do you want to build a comonad?
+Type sleuth vs. the mysterious functor-swapper
+Mystery solved
+The story so far
+[picture: overlapping instances shark]
+Baby, there's a shark in the water
+GADTs to the rescue!
+Nest it / `fmap` it / quick rewrap it
+Drag and drop it / zip - unzip it
+He's making a list and checking it statically
+Take it / view it / go - insert it
+What have we learned?
+With great power comes code snippets for a tech talk
+[cabal install / github]

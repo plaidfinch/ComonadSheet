@@ -1,10 +1,18 @@
-\title{Getting A Quick Fix on Comonads}
+\title{Getting a Quick Fix on Comonads}
 \subtitle{A quest to \texttt{extract} computation and not \texttt{duplicate} work}
 \author{Kenneth Foner}
 \institute{Brandeis University / Galois, Inc.}
 \date{\today}
 
 \titlepage
+
+\note{
+Hi, I'm Kenny Foner\dots
+
+This talk is about a journey I've been on\dots
+
+And in the telling of a journey, the best place to start is often the beginning.
+}
 
 # A tale of two blog articles
 
@@ -22,7 +30,12 @@ loeb fs = xs where xs = fmap ($ xs) fs
 Example:
 
 `> loeb [length, (!! 0), \x -> x !! 0 + x !! 1]`{.haskell}
-\vspace*{1\baselineskip}
+\vspace*{.9\baselineskip}
+
+\note{Beginning of journey: reading Dan Piponi's excellent blog.
+
+Explain loeb.
+}
 
 # A tale of two blog articles
 
@@ -55,7 +68,9 @@ loeb fs = xs where xs = fmap ($ xs) fs
 Example:
 
 `> loeb [length, sum]`{.haskell}
-\vspace*{1\baselineskip}
+\vspace*{.9\baselineskip}
+
+\note{But what if we try to evaluate this expression?}
 
 # A tale of two blog articles
 
@@ -84,6 +99,10 @@ Dan Piponi, December 2006 (`blog.sigfpe.com`):
 
 > We can think of a universe with the cursor pointing at a particular element as being an element with a neighbourhood on each side.
 
+\note{All that was fascinating. But the true beginning was when I read a second post, also by Dan Piponi.
+
+Thank you, Dan.}
+
 # An unexpected journey
 
 ```Haskell
@@ -91,12 +110,12 @@ loeb :: Functor f => f (f a -> a) -> f a
 loeb fs = xs where xs = fmap ($ xs) fs
 ```
 
-> - `loeb`: each element refers to *absolute positions* in the structure
+> - `loeb`: each element refers to *absolute positions* in a structure
 > - comonads: computations in context of *relative position* in a structure
 
 These are almost the same thing!
 
-\note{This talk is about my quest to find that missing *je ne sais quoi* and unify these two notions.}
+\note{This talk is about my quest to find that missing \emph{je ne sais quoi} and unify these two notions.}
 
 # (Co)monads: a brief summary
 
@@ -122,9 +141,11 @@ class Functor w => Comonad w where
 
 (from Edward Kmett's `Control.Comonad`)
 
-\note{Perhaps I should say coproductary instead of summary, for you category theory folk.
+\note{Before I go any further, I want to give a quick summary of comonads. They're the star of this show.
 
-  Why am I going to ignore extend? Same reason as why I'm ignoring bind: it 's the less clear presentation of the same ideas for our purposes today.}
+  Perhaps I should say coproductary instead of summary, for you category theory folk.
+
+  I'm ignoring extend (cobind) for the same reason as why I'm ignoring bind: things today will make more sense in terms of return/coreturn and join/cojoin.}
 
 <!-- # (Co)monads (co)ntinued: laws
 
@@ -167,15 +188,9 @@ iterate :: (a -> a) -> a -> Stream a
 iterate f x = Cons x (iterate f (f x))
 ```
 
-\note{Note that `head` and `tail` are total functions.}
+\note{In particular, most of the comonadic structures I'll be talking about are based off a very simple data structure.
 
-<!-- . . .
-
-```Haskell
-instance Comonad Stream where
-   extract   = head
-   duplicate = iterate tail
-``` -->
+  Note that `head` and `tail` are total functions.}
 
 # A particular flavor of comonad
 
@@ -203,6 +218,12 @@ iterate prev next x =
    Tape (Stream.iterate prev x) x (Stream.iterate next x)
 ```
 
+\note{Using the stream type, we can create something more interesting.
+
+Streams have no notion of the past, only the future; they can only look in one direction.
+
+Tapes are a bidirectional stream, also known as a stream zipper.}
+
 # A particular flavor of comonad
 
 ```Haskell
@@ -220,11 +241,11 @@ moveL . duplicate == duplicate . moveL
 moveR . duplicate == duplicate . moveR
 ```
 
-<!-- . . . -->
+\note{They have a more satisfying comonad instance than streams, IMO.
 
-\note{I have a hand-wavy proof that this is the only definition of `duplicate` which satisfies the comonad laws for `Tape`.}
+  I have a hand-wavy proof that this is the only definition of `duplicate` which satisfies the comonad laws for `Tape`.
 
-\note{(I welcome proofs using more category theory than gesticulation.)}
+(I welcome proofs using more category theory than gesticulation.)}
 
 # Back to Piponi's `loeb`
 
@@ -245,6 +266,10 @@ loeb :: Functor f => f (f a -> a) -> f a
 . . .
 
 But $\Box$ could also have more structure...
+
+\note{
+Now let's get back to Piponi's loeb function. He takes Lob's theorem from modal logic, and decides to find a computational interpretation of it.
+}
 
 # Fixed that for you
 
@@ -556,9 +581,7 @@ main = print . S.take 10000 . viewR . evaluate $
 
 . . .
 
-<!-- Still very slightly slower than `take 10000 [1..]`{.haskell}, almost certainly because GHC fuses away the intermediate list. -->
-
-. . .
+Still very slightly slower than `take 10000 [1..]`{.haskell}, almost certainly because GHC fuses away the intermediate list.
 
 **Aside**: list fusion in `evaluate`: reducible to halting problem?
 
@@ -567,8 +590,6 @@ main = print . S.take 10000 . viewR . evaluate $
 "Hang on, Kenny! We don't know why `Tape`s are `ComonadApply`!"
 
 . . .
-
-<!-- Okay, here you go: -->
 
 ```Haskell
 instance ComonadApply Tape where
@@ -589,8 +610,6 @@ instance ComonadApply Stream where (<@>) = (<*>)
 ```
 
 . . .
-
-<!-- So clarity! Very explain! Just kidding; here's the `Applicative` instance for `Stream`: -->
 
 ```Haskell
 instance Applicative Stream where
@@ -1180,7 +1199,7 @@ class Go r t where
 
 <!-- But what does it all look like? -->
 
-# With great power comes great code samples for a tech talk
+# With great power comes code snippets for a tech talk
 
 ```Haskell
 fibonacci :: Sheet1 Integer
@@ -1197,7 +1216,7 @@ fibonacci = evaluate . sheet 1 $
 [1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584]
 ```
 
-# With great power comes great code samples for a tech talk
+# With great power comes code snippets for a tech talk
 
 <!-- This is where we are now: -->
 
@@ -1230,7 +1249,7 @@ pascal = evaluate . sheet 0 $
  [1, 10, 55, 220, 715, 2002, 5005, 11440, 24310, 48620]]
 ```
 
-# With great power comes great code samples for a tech talk
+# With great power comes code snippets for a tech talk
 
 ```Haskell
 data Cell = X | O deriving ( Eq )
@@ -1254,7 +1273,7 @@ conway :: [[Cell]] -> Sheet3 Cell
 conway = life ([3],[2,3])
 ```
 
-# With great power comes great code samples for a tech talk
+# With great power comes code snippets for a tech talk
 
 ```Haskell
 glider :: Sheet3 Cell
