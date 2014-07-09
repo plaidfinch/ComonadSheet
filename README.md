@@ -9,6 +9,10 @@ While a conventional spreadsheet combines the construction and evaluation of a s
 evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 ```
 
+But if you want a thousand words, you can read the documentation (below and in the source), or listen to me talk:
+
+<http://vimeo.com/100176795>
+
 Installation
 ------------
 
