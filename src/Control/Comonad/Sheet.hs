@@ -46,7 +46,7 @@ For more examples, including Pascal's triangle, Fibonacci numbers, and Conway's 
 {-# LANGUAGE TypeFamilies     #-}
 
 module Control.Comonad.Sheet
-   ( evaluate
+   ( evaluate , evaluateF
    , cell , cells
    , sheet , indexedSheet
      -- Names for the relevant aspects of some smaller dimensions.
@@ -98,6 +98,12 @@ import Data.Function
 -- | Take a container of functions referencing containers of values and return the fixed-point: a container of values.
 evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 evaluate fs = fix $ (fs <@>) . duplicate
+
+evaluateF :: (ComonadApply w, Functor f) => w (f (w (f a) -> a)) -> w (f a)
+evaluateF fs = fix $ (<@> fs) . fmap (fmap . flip ($)) . duplicate
+
+-- evaluate in terms of evaluateF is:
+-- fmap runIdentity . evaluateF . fmap (Identity . (. fmap runIdentity))
 
 -- | Given a relative or absolute position, extract from a sheet the value at that location.
 cell :: (Comonad w, Go r w) => RefList r -> w a -> a
