@@ -1,7 +1,7 @@
 \title{Getting a Quick Fix on Comonads}
 \subtitle{A quest to \texttt{extract} computation and not \texttt{duplicate} work}
-\author{Kenneth Foner}
-\institute{Brandeis University / Galois, Inc.}
+\author{Kenneth Foner\\\url{kenny.foner@gmail.com}}
+\institute{Brandeis University}
 \date{\today}
 
 \titlepage
@@ -667,7 +667,7 @@ Uustalu and Vene's *The Essence of Dataflow Programming* calls it:
 
 # Zippy comonads $\to$ zippy computation
 
-\large The "zippiness" required by the laws of `ComonadApply` is also the source of `evaluate`'s *computational* "zippiness."
+\large The "zippiness" required by the laws of `ComonadApply` leads to `evaluate`'s *computational* "zippiness."
 
 <!-- talk here about why you can't have dynamic cycle detection if you want asymptotic efficiency, also about how static checking is a dead-end, and why (laziness makes static reference analysis overpredict) -->
 
@@ -1044,7 +1044,7 @@ instance (Functor f, Functor (Nested fs))
    fmap f (Nest x) = Nest $ fmap (fmap f) x
 ```
 
-The rest of the instances for look similar.
+Other typeclass instances are likewise defined in two parts.
 
 # Nest it / `fmap` it / quick rewrap it
 
@@ -1077,27 +1077,16 @@ type family Combine a b where
    Combine Relative Relative = Relative
 ```
 
-. . .
+<!-- . . . -->
 
 ```Haskell
-class CombineRefs a b where ...
-instance CombineRefs Absolute Relative where ...
-instance CombineRefs Relative Absolute where ...
-instance CombineRefs Relative Relative where ...
+class CombineRefs a b where
+   combine :: Ref a -> Ref b -> Ref (Combine a b)
 ```
 
-. . .
+<!-- . . . -->
 
-```Haskell
-... combine :: Ref a -> Ref b -> Ref (Combine a b)
-... combine (Abs a) (Rel b) = Abs (a + b)
-... combine (Rel a) (Abs b) = Abs (a + b)
-... combine (Rel a) (Rel b) = Rel (a + b)
-```
-
-. . .
-
-- Split presentation style due to Conor McBride, JFP 2001:\newline\emph{Faking It: Simulating Dependent Types in Haskell}
+<!-- - Split presentation style due to Conor McBride, JFP 2001:\newline\emph{Faking It: Simulating Dependent Types in Haskell} -->
 
 # He's making a list and checking it statically
 
@@ -1112,8 +1101,6 @@ data ConicList f ts where
 type RefList = ConicList Ref
 ```
 
-It's called a conic list because category theory: `(forall a. f a -> x)`{.haskell} is known as a *co-cone* from `f` to `x`, and this is sort of like that.
-
 # He's making a list and checking it statically
 
 ```Haskell
@@ -1123,25 +1110,9 @@ type family a & b where
    as         & Nil        = as
 ```
 
-. . .
-
 ```Haskell
-class CombineRefLists as bs where ...
-instance (CombineRefs a b, CombineRefLists as bs)
-      => CombineRefLists (a :-: as) (b :-: bs) where ...
-instance CombineRefLists Nil        (b :-: bs) where ...
-instance CombineRefLists (a :-: as) Nil        where ...
-instance CombineRefLists Nil        Nil        where ...
-```
-
-. . .
-
-```Haskell
-... (&) :: RefList as -> RefList bs -> RefList (as & bs)
-... (a :-: as) & (b :-: bs) = combine a b :-: (as & bs)
-... ConicNil   & bs         = bs
-... as         & ConicNil   = as
-... ConicNil   & ConicNil   = ConicNil
+class CombineRefLists as bs where
+   (&) :: RefList as -> RefList bs -> RefList (as & bs)
 ```
 
 <!-- Again, note the pattern of using closed type families to effectively close a nominally open typeclass -->
@@ -1291,6 +1262,91 @@ glider = conway [[X,X,O],
 
 \vspace*{-\baselineskip}
 \includegraphics[width=6em]{glider.png}
+
+# One more thing\dots
+
+```Haskell
+evaluate :: ComonadApply w
+         => w (w a -> a) -> w a
+evaluate fs =
+  fix $ (fs <@>) . duplicate
+```
+
+. . .
+
+```Haskell
+evaluateF :: (ComonadApply w, Functor f)
+          => w (f (w (f a) -> a)) -> w (f a)
+evaluateF fs =
+  fix $ (<@> fs) . fmap (fmap . flip ($)) . duplicate
+```
+
+# One more thing\dots
+
+\includegraphics[height=15em]{waterflow1.png}
+
+**Credit:** Chris Done: \url{chrisdone.com/posts/twitter-problem-loeb}
+
+# One more thing\dots
+
+\includegraphics[height=15em]{waterflow2.png}
+
+**Credit:** Chris Done: \url{chrisdone.com/posts/twitter-problem-loeb}
+
+# One more thing\dots
+
+Chris Done says:
+
+> I think if I'd've heard of [the comonadic fixed-point solution] before, this solution would’ve come to mind instead, it seems entirely natural!
+
+> Sadly, this is the slowest algorithm on the page. I’m not sure how to optimize it to be better.
+
+# One more thing\dots
+
+```Haskell
+waterflow :: [Integer] -> Integer
+waterflow heights =
+   sum . zipWith subtract heights . map (foldr1 min)
+   . S.toList . view right
+   . evaluateF
+   . sheet ground . map maxima $ heights
+
+maxima :: Integer -> Pair (Sheet1 (Pair Integer) -> Integer)
+maxima here =
+   Pair (max here . car . cell  left)
+        (max here . cdr . cell right)
+
+ground :: Pair (Sheet1 (Pair Integer) -> Integer)
+ground = Pair (const 0) (const 0)
+
+data Pair a = Pair { car :: a , cdr :: a }
+instance Functor     Pair ...
+instance Applicative Pair ...
+instance Foldable    Pair ...
+```
+
+# One more thing\dots
+
+\vspace*{1em}
+\includegraphics[height=10em]{waterflow2.png}
+
+```
+> waterflow [2,5,1,2,3,4,7,7,6]
+10
+```
+
+. . .
+
+```Haskell
+main =
+   print =<< waterflow . take 10000 . map abs <$> getRandoms
+```
+
+```
+> time ./Waterflow
+46023422461957264691440
+        0.12 real         0.11 user         0.01 sys
+```
 
 # 
 
