@@ -13,6 +13,9 @@ copyright:           Copyright: (c) 2013-2014 Kenneth W. Foner
 category:            Control
 build-type:          Simple
 cabal-version:       >=1.10
+Source-Repository head
+    Type: git
+    Location: https://github.com/kwf/ComonadSheet.git
 
 library
 
