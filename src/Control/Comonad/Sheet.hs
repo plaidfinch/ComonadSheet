@@ -48,7 +48,7 @@ For more examples, including Pascal's triangle, Fibonacci numbers, and Conway's 
 module Control.Comonad.Sheet
    ( evaluate , evaluateF
    , cell , cells
-   , sheet , indexedSheet
+   , sheet , indexedSheet , sheetFromNested
      -- Names for the relevant aspects of some smaller dimensions.
    , module Control.Comonad.Sheet.Names
      -- Generic functions for manipulating multi-dimensional comonadic spreadsheets.
@@ -95,6 +95,9 @@ import Data.Traversable
 import Data.Numeric.Function
 import Data.Function
 
+-- "It is senseless to speak of the number of all objects." -- Ludwig Wittgenstein
+-- "No one will drive us from the paradise which Cantor created for us." -- David Hilbert
+
 -- | Take a container of functions referencing containers of values and return the fixed-point: a container of values.
 evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 evaluate fs = fix $ (fs <@>) . duplicate
@@ -117,7 +120,12 @@ cells = traverse cell
 sheet :: ( InsertNested l (Nested ts) , Applicative (Nested ts)
          , DimensionalAs x (Nested ts a) , AsDimensionalAs x (Nested ts a) ~ l a )
          => a -> x -> Nested ts a
-sheet background functions = insert functions (pure background)
+sheet background list = insert list (pure background)
+
+sheetFromNested :: ( InsertNested (Nested fs) (Nested (NestedNTimes (NestedCount fs) Tape))
+                   , Applicative (Nested (NestedNTimes (NestedCount fs) Tape)) )
+                => a -> Nested fs a -> Nested (NestedNTimes (NestedCount fs) Tape) a
+sheetFromNested background list = insertNested list (pure background)
 
 -- | Given an origin index, a default value, and an insertable container of values, construct an indexed sheet.
 indexedSheet :: ( InsertNested l (Nested ts) , Applicative (Nested ts)

@@ -75,13 +75,3 @@ instance ( Cross (Succ n) t , Functor t
          => Cross (Succ (Succ n)) t where
    cross (t ::: ts) =
       Nest $ (\xs -> (::: xs) <$> t) <$> cross ts
-
--- | Counts how deeply a 'Nested' thing is nested.
-type family NestedCount x where
-   NestedCount (Flat f)   = Succ Zero
-   NestedCount (Nest f g) = Succ (NestedCount f)
-
--- | Computes the type of an n-deep nested structure (similar to replicate for 'Nested').
-type family NestedNTimes n f where
-   NestedNTimes (Succ Zero) f = Flat f
-   NestedNTimes (Succ n)    f = Nest (NestedNTimes n f) f
