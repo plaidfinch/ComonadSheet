@@ -11,7 +11,7 @@ evaluate :: (ComonadApply w) => w (w a -> a) -> w a
 
 But if you want a thousand words, you can read the documentation (below and in the source), or listen to me talk:
 
-- ["Getting a Quick Fix on Comonads"](http://vimeo.com/100176795): tech talk at Galois, Inc. on July 1, 2014
+- ["Getting a Quick Fix on Comonads"](https://www.youtube.com/watch?v=F7F-BzOB670): invited talk at the Boston Haskell meetup, September 17, 2014.
 
 Installation
 ------------
