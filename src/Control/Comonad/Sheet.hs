@@ -122,6 +122,12 @@ sheet :: ( InsertNested l (Nested ts) , Applicative (Nested ts)
          => a -> x -> Nested ts a
 sheet background list = insert list (pure background)
 
+change :: (InsertNested l w, ComonadApply w,
+           DimensionalAs x (w (w a -> a)), 
+           AsDimensionalAs x (w (w a -> a)) ~ l (w a -> a))
+       => x -> w a -> w a
+change new old = evaluate $ insert new (fmap const old)
+
 sheetFromNested :: ( InsertNested (Nested fs) (Nested (NestedNTimes (NestedCount fs) Tape))
                    , Applicative (Nested (NestedNTimes (NestedCount fs) Tape)) )
                 => a -> Nested fs a -> Nested (NestedNTimes (NestedCount fs) Tape) a
