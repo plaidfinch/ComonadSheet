@@ -43,7 +43,7 @@ library
       TupleSections
 
   build-depends:
-      base >=4.7 && < 4.8,
+      base >=4.7,
       comonad >=4.0,
       distributive >=0.1,
       transformers >=0.3,
