@@ -225,10 +225,10 @@ class DimensionalAs x y where
 
 -- | In the case of a @Nested@ structure, @asDimensionalAs@ defaults to @asNestedAs@.
 instance (NestedAs x (Nested ts y), AsDimensionalAs x (Nested ts y) ~ AsNestedAs x (Nested ts y)) => DimensionalAs x (Nested ts y) where
-   type x `AsDimensionalAs` (Nested ts a) = x `AsNestedAs` (Nested ts a)
+   type x `AsDimensionalAs` (Nested ts y) = x `AsNestedAs` (Nested ts y)
    asDimensionalAs = asNestedAs
 
 -- | @DimensionalAs@ also knows the dimensionality of an 'Indexed' sheet as well as regular @Nested@ structures.
 instance (NestedAs x (Nested ts y)) => DimensionalAs x (Indexed ts y) where
-   type x `AsDimensionalAs` (Indexed ts a) = x `AsNestedAs` (Nested ts a)
+   type x `AsDimensionalAs` (Indexed ts y) = x `AsNestedAs` (Nested ts y)
    x `asDimensionalAs` (Indexed i t)       = x `asNestedAs` t
